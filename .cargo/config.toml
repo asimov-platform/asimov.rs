@@ -1,0 +1,3 @@
+# See: https://doc.rust-lang.org/cargo/reference/config.html
+
+paths = ["lib/asimov-sdk", "lib/asimov-sys"]

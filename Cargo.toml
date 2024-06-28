@@ -1,0 +1,28 @@
+# See: https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[workspace]
+members = ["lib/*"]
+default-members = ["lib/asimov-sdk"]
+resolver = "2"
+
+[workspace.package]
+version = "24.0.0-dev.0"
+authors = ["Asimov AI <support@asimov.so>"]
+edition = "2021"
+rust-version = "1.70"
+description = "Asimov Software Development Kit (SDK) for Rust"
+documentation = "https://github.com/AsimovPlatform/asimov.rs/blob/master/README.md"
+readme = true
+homepage = "https://sdk.asimov.so"
+repository = "https://github.com/AsimovPlatform/asimov.rs"
+license = "Unlicense"
+keywords = []
+categories = []
+publish = true
+
+[workspace.dependencies]
+asimov-sdk = { path = "lib/asimov-sdk" }
+asimov-sys = { path = "lib/asimov-sys" }
+
+[patch.crates-io]
+asimov-sys = { path = "lib/asimov-sys" }
