@@ -1,0 +1,9 @@
+--allowlist-type=AsiInstance
+--allowlist-type=AsiVersion
+--allowlist-type=AsiResult
+--allowlist-function=asiCreateInstance
+--allowlist-function=asiDestroyInstance
+--allowlist-function=asiGetLicenseeString
+--allowlist-function=asiGetVersion
+--allowlist-function=asiGetVersionString
+--allowlist-function=asiInitLibrary
