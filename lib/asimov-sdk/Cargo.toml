@@ -15,10 +15,13 @@ categories = ["api-bindings", "text-processing"]
 publish.workspace = true
 
 [features]
-default = []
+default = ["std"]
+std = ["prost/std", "prost-types/std"]
 
 [dependencies]
 asimov-sys = "24.0.0-dev.0"
 know = "0"
-prost = { version = "0.13", default-features = false, features = ["prost-derive"] }
+prost = { version = "0.13", default-features = false, features = ["derive"] }
 prost-types = { version = "0.13", default-features = false }
+
+[target.'cfg(not(target_family = "wasm"))'.dependencies]

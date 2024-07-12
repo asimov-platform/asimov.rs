@@ -1,4 +1,5 @@
 BINDGEN = bindgen
+BINDGENFLAGS = --use-core
 CARGO = cargo
 
 SOURCES := $(wildcard lib/*/src/*.rs lib/*/src/*/*.rs lib/*/src/*/*/*.rs)
@@ -10,7 +11,7 @@ all: Cargo.toml $(SOURCES)
 bindgen: lib/asimov-sys/src/bindgen.rs
 
 lib/asimov-sys/src/bindgen.rs: etc/bindgen/allowlist.txt
-	$(BINDGEN) -o $@ ../c/src/asimov.h $(shell cat $<)
+	$(BINDGEN) -o $@ ../c/src/asimov.h $(BINDGENFLAGS) $(shell cat $<)
 
 check: Cargo.toml $(SOURCES)
 	$(CARGO) test

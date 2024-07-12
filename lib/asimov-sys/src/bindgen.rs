@@ -13,10 +13,10 @@ pub const AsiResult_ASI_ERROR_NOT_IMPLEMENTED: AsiResult = -1;
 pub const AsiResult_ASI_ERROR_PRECONDITION_VIOLATED: AsiResult = -2;
 pub const AsiResult_ASI_ERROR_HOST_MEMORY_EXHAUSTED: AsiResult = -3;
 pub const AsiResult_ASI_ERROR_DEVICE_MEMORY_EXHAUSTED: AsiResult = -4;
-pub type AsiResult = ::std::os::raw::c_int;
+pub type AsiResult = ::core::ffi::c_int;
 extern "C" {
     pub fn asiCreateInstance(
-        reserved: *const ::std::os::raw::c_void,
+        reserved: *const ::core::ffi::c_void,
         instance: *mut *mut AsiInstance_ptr,
     ) -> AsiResult;
 }
@@ -24,17 +24,17 @@ extern "C" {
     pub fn asiDestroyInstance(instance: *mut AsiInstance_ptr) -> AsiResult;
 }
 extern "C" {
-    pub fn asiGetLicenseeString() -> *const ::std::os::raw::c_char;
+    pub fn asiGetLicenseeString() -> *const ::core::ffi::c_char;
 }
 extern "C" {
     pub fn asiGetVersion() -> u64;
 }
 extern "C" {
-    pub fn asiGetVersionString() -> *const ::std::os::raw::c_char;
+    pub fn asiGetVersionString() -> *const ::core::ffi::c_char;
 }
 extern "C" {
     pub fn asiInitLibrary(
-        init_data: *mut ::std::os::raw::c_void,
-        print_callback: *mut ::std::os::raw::c_void,
+        init_data: *mut ::core::ffi::c_void,
+        print_callback: *mut ::core::ffi::c_void,
     ) -> AsiResult;
 }
