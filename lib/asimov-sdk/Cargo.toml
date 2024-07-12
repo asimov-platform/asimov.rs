@@ -20,3 +20,5 @@ default = []
 [dependencies]
 asimov-sys = "24.0.0-dev.0"
 know = "0"
+prost = { version = "0.13", default-features = false, features = ["prost-derive"] }
+prost-types = { version = "0.13", default-features = false }
