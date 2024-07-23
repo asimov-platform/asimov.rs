@@ -21,6 +21,7 @@ categories = []
 publish = true
 
 [workspace.dependencies]
+cfg_aliases = "0.2"
 asimov-sdk = { path = "lib/asimov-sdk" }
 asimov-sys = { path = "lib/asimov-sys" }
 

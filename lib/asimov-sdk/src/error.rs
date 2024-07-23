@@ -1,7 +1,12 @@
 // This is free and unencumbered software released into the public domain.
 
-use std::convert::TryFrom;
-use std::os::raw::c_int;
+use crate::prelude::{
+    c_int, fmt, format, FromBytesWithNulError, FromUtf16Error, FromUtf8Error, ParseFloatError,
+    ParseIntError, String, ToString, TryFrom, Utf8Error,
+};
+
+#[cfg(feature = "std")]
+extern crate std;
 
 #[allow(unused)]
 #[derive(Clone, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
@@ -21,8 +26,8 @@ impl Error {
     }
 }
 
-impl std::fmt::Debug for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+impl fmt::Debug for Error {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Self::NotImplemented => write!(f, "Error::NotImplemented"),
             Self::PreconditionViolated => write!(f, "Error::PreconditionViolated"),
@@ -33,8 +38,8 @@ impl std::fmt::Debug for Error {
     }
 }
 
-impl std::fmt::Display for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Self::NotImplemented => write!(f, "Not implemented"),
             Self::PreconditionViolated => write!(f, "Precondition violated"),
@@ -45,71 +50,77 @@ impl std::fmt::Display for Error {
     }
 }
 
+#[cfg(feature = "std")]
 impl std::error::Error for Error {}
 
-impl From<std::io::Error> for Error {
-    fn from(error: std::io::Error) -> Self {
+impl From<ParseFloatError> for Error {
+    fn from(error: ParseFloatError) -> Self {
         Self::Other(error.to_string())
     }
 }
 
-impl From<std::num::ParseFloatError> for Error {
-    fn from(error: std::num::ParseFloatError) -> Self {
+impl From<ParseIntError> for Error {
+    fn from(error: ParseIntError) -> Self {
         Self::Other(error.to_string())
     }
 }
 
-impl From<std::num::ParseIntError> for Error {
-    fn from(error: std::num::ParseIntError) -> Self {
+impl From<Utf8Error> for Error {
+    fn from(error: Utf8Error) -> Self {
         Self::Other(error.to_string())
     }
 }
 
-impl From<std::str::Utf8Error> for Error {
-    fn from(error: std::str::Utf8Error) -> Self {
+impl From<FromUtf8Error> for Error {
+    fn from(error: FromUtf8Error) -> Self {
         Self::Other(error.to_string())
     }
 }
 
-impl From<std::string::FromUtf8Error> for Error {
-    fn from(error: std::string::FromUtf8Error) -> Self {
+impl From<FromUtf16Error> for Error {
+    fn from(error: FromUtf16Error) -> Self {
         Self::Other(error.to_string())
     }
 }
 
-impl From<std::string::FromUtf16Error> for Error {
-    fn from(error: std::string::FromUtf16Error) -> Self {
+impl From<FromBytesWithNulError> for Error {
+    fn from(error: FromBytesWithNulError) -> Self {
         Self::Other(error.to_string())
     }
 }
 
+#[cfg(feature = "std")]
 impl From<std::ffi::CString> for Error {
     fn from(error: std::ffi::CString) -> Self {
         Self::Other(error.to_string_lossy().to_string())
     }
 }
 
-impl From<std::ffi::FromBytesWithNulError> for Error {
-    fn from(error: std::ffi::FromBytesWithNulError) -> Self {
-        Self::Other(error.to_string())
-    }
-}
-
+#[cfg(feature = "std")]
 impl From<std::ffi::IntoStringError> for Error {
     fn from(error: std::ffi::IntoStringError) -> Self {
         Self::Other(error.to_string())
     }
 }
 
+#[cfg(feature = "std")]
 impl From<std::ffi::NulError> for Error {
     fn from(error: std::ffi::NulError) -> Self {
         Self::Other(error.to_string())
     }
 }
 
+#[cfg(feature = "std")]
 impl From<std::ffi::OsString> for Error {
     fn from(error: std::ffi::OsString) -> Self {
         Self::Other(error.to_string_lossy().to_string())
+    }
+}
+
+#[cfg(feature = "std")]
+impl From<std::io::Error> for Error {
+    fn from(error: std::io::Error) -> Self {
+        Self::Other(error.to_string())
     }
 }
 
