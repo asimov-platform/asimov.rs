@@ -36,7 +36,7 @@ asimov-sys = "24.0.0-dev.3"
 know = "0"
 prost = { version = "0.13", default-features = false, features = ["derive"] }
 prost-types = { version = "0.13", default-features = false }
-protoflow = { version = "0.0.6", default-features = false, features = [] }
+protoflow = { version = "0.0.8", default-features = false, features = ["derive"] }
 tokio = { version = "1.38", optional = true, default-features = false }
 tracing = { version = "0.1", optional = true, default-features = false }
 
