@@ -32,7 +32,7 @@ tracing = ["dep:tracing", "protoflow/tracing"]
 cfg_aliases.workspace = true
 
 [dependencies]
-asimov-sys = "24.0.0-dev.4"
+asimov-sys = "24.0.0-dev.5"
 know = "0"
 prost = { version = "0.13", default-features = false, features = ["derive"] }
 prost-types = { version = "0.13", default-features = false }
