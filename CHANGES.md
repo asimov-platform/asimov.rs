@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## 24.0.0-dev.6 - 2024-08-02
+### Changed
+- Flow: Blocks now return a `BlockResult` (a typedef for `Result<(), BlockError>`)
+- Flow: `InputPort#receive()` now renamed to `InputPort#recv()`
+### Added
+- Flow: `BlockError::Panic` error
+- Flow: `Buffer` block type
+- Flow: `Message` trait, combining `prost::Message`, `Clone`, and `Default`
+- Flow: `System::build()` DSL
+- Flow: `Transport` interface, and `MockTransport` implementation
 
 ## 24.0.0-dev.5 - 2024-07-29
 
