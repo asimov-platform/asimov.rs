@@ -16,7 +16,7 @@ publish.workspace = true
 
 [features]
 #default = []
-default = ["derive", "std", "tokio", "tracing"]
+default = ["derive", "std", "tracing"]
 derive = ["protoflow/derive"]
 std = [
     "prost/std",
@@ -27,6 +27,7 @@ std = [
 ]
 tokio = ["dep:tokio", "protoflow/tokio"]
 tracing = ["dep:tracing", "protoflow/tracing"]
+web = ["protoflow/web"]
 
 [build-dependencies]
 cfg_aliases.workspace = true
@@ -36,7 +37,7 @@ asimov-sys = "24.0.0-dev.5"
 know = "0"
 prost = { version = "0.13", default-features = false, features = ["derive"] }
 prost-types = { version = "0.13", default-features = false }
-protoflow = { version = "=0.0.9", default-features = false, features = ["derive"] }
+protoflow = { version = "=0.0.10", default-features = false, features = ["derive"] }
 tokio = { version = "1.38", optional = true, default-features = false }
 tracing = { version = "0.1", optional = true, default-features = false }
 
