@@ -33,7 +33,7 @@ web = ["protoflow/web"]
 cfg_aliases.workspace = true
 
 [dependencies]
-asimov-sys = "24.0.0-dev.5"
+asimov-sys = "24.0.0-dev.6"
 know = "0"
 prost = { version = "0.13", default-features = false, features = ["derive"] }
 prost-types = { version = "0.13", default-features = false }
