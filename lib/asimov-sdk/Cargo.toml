@@ -27,7 +27,7 @@ web = ["protoflow/web"]
 cfg_aliases.workspace = true
 
 [dependencies]
-asimov-sys = "24.0.0-dev.6"
+asimov-sys = "24.0.0-dev.7"
 know = "0"
 protoflow = { version = "=0.0.11", default-features = false, features = [
     "blocks",
