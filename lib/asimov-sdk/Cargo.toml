@@ -10,7 +10,7 @@ readme.workspace = true
 homepage.workspace = true
 repository.workspace = true
 license.workspace = true
-keywords = ["ai", "peer-to-peer", "sdk"]
+keywords = ["ai", "sdk", "peer-to-peer", "fbp"]
 categories = ["api-bindings", "text-processing"]
 publish.workspace = true
 
@@ -18,13 +18,7 @@ publish.workspace = true
 #default = []
 default = ["derive", "std", "tracing"]
 derive = ["protoflow/derive"]
-std = [
-    "prost/std",
-    "prost-types/std",
-    "protoflow/std",
-    "tokio?/full",
-    "tracing?/std",
-]
+std = ["protoflow/std", "tokio?/full", "tracing?/std"]
 tokio = ["dep:tokio", "protoflow/tokio"]
 tracing = ["dep:tracing", "protoflow/tracing"]
 web = ["protoflow/web"]
@@ -35,9 +29,11 @@ cfg_aliases.workspace = true
 [dependencies]
 asimov-sys = "24.0.0-dev.6"
 know = "0"
-prost = { version = "0.13", default-features = false, features = ["derive"] }
-prost-types = { version = "0.13", default-features = false }
-protoflow = { version = "=0.0.10", default-features = false, features = ["derive"] }
+protoflow = { version = "=0.0.11", default-features = false, features = [
+    "blocks",
+    "derive",
+    "sysml",
+] }
 tokio = { version = "1.38", optional = true, default-features = false }
 tracing = { version = "0.1", optional = true, default-features = false }
 
