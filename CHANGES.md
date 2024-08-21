@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 24.0.0-dev.8 - 2024-08-21
 ### Changed
-- Flow: Upgrade to Protoflow 0.2.0
+- Flow: Upgrade to [Protoflow 0.2.0]
 
 ## 24.0.0-dev.7 - 2024-08-09
 ### Added
@@ -55,3 +55,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Flow: `Block#execute` now takes a parameter
 
 ## 24.0.0-dev.0 - 2024-06-29
+
+[Protoflow 0.2.0]: https://github.com/AsimovPlatform/protoflow/compare/0.1.0...0.2.0
