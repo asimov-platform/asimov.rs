@@ -16,7 +16,13 @@ publish.workspace = true
 
 [features]
 default = []
+dylib = ["dep:libloading"]
+std = []
 
 [dependencies]
 num-derive = "0.4"
 num-traits = "0.2"
+
+[target.'cfg(any(unix, windows))'.dependencies.libloading]
+version = "0.8"
+optional = true
