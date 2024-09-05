@@ -7,7 +7,10 @@
 #[macro_use]
 extern crate num_derive;
 
-use core::ffi::c_int;
+#[cfg(feature = "std")]
+extern crate std;
+
+use core::{ffi::c_int, mem::size_of};
 use num_traits::FromPrimitive;
 
 include!("bindgen.rs");
@@ -37,3 +40,18 @@ impl TryFrom<c_int> for AsiResult {
         FromPrimitive::from_i64(code as _).ok_or(())
     }
 }
+
+#[cfg(feature = "std")]
+impl From<std::io::Error> for AsiResult {
+    fn from(error: std::io::Error) -> Self {
+        use std::io::ErrorKind::*;
+        match error.kind() {
+            NotFound => Self::ASI_ERROR_PRECONDITION_VIOLATED,
+            _ => Self::ASI_ERROR_NOT_IMPLEMENTED,
+        }
+    }
+}
+
+const _: () = assert!(size_of::<AsiPortState>() == 4, "sizeof(AsiPortState) == 4");
+const _: () = assert!(size_of::<AsiPortType>() == 4, "sizeof(AsiPortType) == 4");
+const _: () = assert!(size_of::<AsiResult>() == 4, "sizeof(AsiResult) == 4");
