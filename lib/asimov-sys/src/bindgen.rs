@@ -5,7 +5,6 @@ pub type AsiInstance = u64;
 #[doc = " An SDK version number as a packed integer."]
 pub type AsiVersion = u64;
 #[repr(u32)]
-#[non_exhaustive]
 #[doc = " The set of possible port states."]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq, FromPrimitive, ToPrimitive)]
 pub enum AsiPortState {
@@ -14,7 +13,6 @@ pub enum AsiPortState {
     ASI_PORT_STATE_CLOSED = 3,
 }
 #[repr(u32)]
-#[non_exhaustive]
 #[doc = " The set of possible port types."]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq, FromPrimitive, ToPrimitive)]
 pub enum AsiPortType {
@@ -22,7 +20,6 @@ pub enum AsiPortType {
     ASI_PORT_TYPE_OUTPUT = 2,
 }
 #[repr(i32)]
-#[non_exhaustive]
 #[doc = " Result codes returned by SDK functions."]
 #[must_use]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq, FromPrimitive, ToPrimitive)]
