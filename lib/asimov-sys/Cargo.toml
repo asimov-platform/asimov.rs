@@ -18,3 +18,5 @@ publish.workspace = true
 default = []
 
 [dependencies]
+num-derive = "0.4"
+num-traits = "0.2"

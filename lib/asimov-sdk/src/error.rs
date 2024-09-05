@@ -9,13 +9,14 @@ use crate::prelude::{
 extern crate std;
 
 #[allow(unused)]
-#[derive(Clone, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub enum Error {
     #[default]
     NotImplemented,
     PreconditionViolated,
     HostMemoryExhausted,
     DeviceMemoryExhausted,
+    SizeInsufficient,
     Other(String),
 }
 
@@ -26,18 +27,6 @@ impl Error {
     }
 }
 
-impl fmt::Debug for Error {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::NotImplemented => write!(f, "Error::NotImplemented"),
-            Self::PreconditionViolated => write!(f, "Error::PreconditionViolated"),
-            Self::HostMemoryExhausted => write!(f, "Error::HostMemoryExhausted"),
-            Self::DeviceMemoryExhausted => write!(f, "Error::DeviceMemoryExhausted"),
-            Self::Other(message) => write!(f, "Error::Other(\"{}\")", message),
-        }
-    }
-}
-
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
@@ -45,6 +34,7 @@ impl fmt::Display for Error {
             Self::PreconditionViolated => write!(f, "Precondition violated"),
             Self::HostMemoryExhausted => write!(f, "Host memory exhausted"),
             Self::DeviceMemoryExhausted => write!(f, "Device memory exhausted"),
+            Self::SizeInsufficient => write!(f, "Size insufficient"),
             Self::Other(message) => write!(f, "{}", message),
         }
     }
@@ -129,14 +119,14 @@ impl TryFrom<c_int> for Error {
 
     fn try_from(code: c_int) -> Result<Self, Self::Error> {
         use asimov_sys::*;
-        #[allow(non_upper_case_globals)]
-        match code {
-            AsiResult_ASI_ERROR_NOT_IMPLEMENTED => Ok(Error::NotImplemented),
-            AsiResult_ASI_ERROR_PRECONDITION_VIOLATED => Ok(Error::PreconditionViolated),
-            AsiResult_ASI_ERROR_HOST_MEMORY_EXHAUSTED => Ok(Error::HostMemoryExhausted),
-            AsiResult_ASI_ERROR_DEVICE_MEMORY_EXHAUSTED => Ok(Error::DeviceMemoryExhausted),
-            _ => Ok(Error::Other(format!("ASI_ERROR_{}", code))),
-        }
+        Ok(match AsiResult::try_from(code)? {
+            AsiResult::ASI_ERROR_NOT_IMPLEMENTED => Error::NotImplemented,
+            AsiResult::ASI_ERROR_PRECONDITION_VIOLATED => Error::PreconditionViolated,
+            AsiResult::ASI_ERROR_HOST_MEMORY_EXHAUSTED => Error::HostMemoryExhausted,
+            AsiResult::ASI_ERROR_DEVICE_MEMORY_EXHAUSTED => Error::DeviceMemoryExhausted,
+            AsiResult::ASI_ERROR_SIZE_INSUFFICIENT => Error::SizeInsufficient,
+            _ => Error::Other(format!("ASI_ERROR_{}", code)),
+        })
     }
 }
 
@@ -145,12 +135,13 @@ impl TryFrom<Error> for c_int {
 
     fn try_from(error: Error) -> Result<Self, Self::Error> {
         use asimov_sys::*;
-        match error {
-            Error::NotImplemented => Ok(AsiResult_ASI_ERROR_NOT_IMPLEMENTED),
-            Error::PreconditionViolated => Ok(AsiResult_ASI_ERROR_PRECONDITION_VIOLATED),
-            Error::HostMemoryExhausted => Ok(AsiResult_ASI_ERROR_HOST_MEMORY_EXHAUSTED),
-            Error::DeviceMemoryExhausted => Ok(AsiResult_ASI_ERROR_DEVICE_MEMORY_EXHAUSTED),
-            Error::Other(_) => Ok(0x7FFFFFFF),
-        }
+        Ok(match error {
+            Error::NotImplemented => AsiResult::ASI_ERROR_NOT_IMPLEMENTED,
+            Error::PreconditionViolated => AsiResult::ASI_ERROR_PRECONDITION_VIOLATED,
+            Error::HostMemoryExhausted => AsiResult::ASI_ERROR_HOST_MEMORY_EXHAUSTED,
+            Error::DeviceMemoryExhausted => AsiResult::ASI_ERROR_DEVICE_MEMORY_EXHAUSTED,
+            Error::SizeInsufficient => AsiResult::ASI_ERROR_SIZE_INSUFFICIENT,
+            Error::Other(_) => return Err(()),
+        } as c_int)
     }
 }
