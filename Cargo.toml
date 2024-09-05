@@ -6,8 +6,8 @@ default-members = ["lib/asimov-sdk"]
 resolver = "2"
 
 [workspace.package]
-version = "24.0.0-dev.8"
-authors = ["ASIMOV AI <support@asimov.so>"]
+version = "24.0.0-dev.9"
+authors = ["ASIMOV by Haltia.AI <support@asimov.so>"]
 edition = "2021"
 rust-version = "1.70"
 description = "ASIMOV Software Development Kit (SDK) for Rust"
