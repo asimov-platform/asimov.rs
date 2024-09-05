@@ -21,6 +21,7 @@ derive = ["protoflow/derive"]
 std = ["asimov-sys/std", "protoflow/std", "tokio?/full", "tracing?/std"]
 tokio = ["dep:tokio", "protoflow/tokio"]
 tracing = ["dep:tracing", "protoflow/tracing"]
+unstable = []
 web = ["protoflow/web"]
 
 [build-dependencies]
@@ -37,6 +38,7 @@ protoflow = { version = "=0.2.1", default-features = false, features = [
 protoflow-blocks = { version = "=0.2.1", default-features = false, features = [
     "hash",
 ] }
+stability = "0.2"
 tokio = { version = "1.38", default-features = false, optional = true }
 tracing = { version = "0.1", default-features = false, optional = true }
 
