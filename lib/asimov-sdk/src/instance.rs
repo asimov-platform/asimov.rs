@@ -1,6 +1,6 @@
 // This is free and unencumbered software released into the public domain.
 
-use crate::prelude::Vec;
+use crate::prelude::{vec, Vec};
 use asimov_sys::{
     asiCreateInstance, asiDestroyInstance, asiEnumerateBlocks, asiEnumerateFlows,
     asiEnumerateModels, asiEnumerateModules, AsiBlockDefinition, AsiFlowDefinition, AsiInstance,
@@ -31,7 +31,7 @@ impl Instance {
             AsiResult::ASI_SUCCESS => (),
             error => return Err(error),
         };
-        let mut buffer = Vec::with_capacity(count as _);
+        let mut buffer = vec![AsiBlockDefinition::default(); count as _];
         match unsafe { asiEnumerateBlocks(self.handle, count, &mut count, buffer.as_mut_ptr()) } {
             AsiResult::ASI_SUCCESS => Ok(buffer),
             error => return Err(error),
@@ -45,7 +45,7 @@ impl Instance {
             AsiResult::ASI_SUCCESS => (),
             error => return Err(error),
         };
-        let mut buffer = Vec::with_capacity(count as _);
+        let mut buffer = vec![AsiFlowDefinition::default(); count as _];
         match unsafe { asiEnumerateFlows(self.handle, count, &mut count, buffer.as_mut_ptr()) } {
             AsiResult::ASI_SUCCESS => Ok(buffer),
             error => return Err(error),
@@ -59,7 +59,7 @@ impl Instance {
             AsiResult::ASI_SUCCESS => (),
             error => return Err(error),
         };
-        let mut buffer = Vec::with_capacity(count as _);
+        let mut buffer = vec![AsiModelManifest::default(); count as _];
         match unsafe { asiEnumerateModels(self.handle, count, &mut count, buffer.as_mut_ptr()) } {
             AsiResult::ASI_SUCCESS => Ok(buffer),
             error => return Err(error),
@@ -73,7 +73,7 @@ impl Instance {
             AsiResult::ASI_SUCCESS => (),
             error => return Err(error),
         };
-        let mut buffer = Vec::with_capacity(count as _);
+        let mut buffer = vec![AsiModuleRegistration::default(); count as _];
         match unsafe { asiEnumerateModules(self.handle, count, &mut count, buffer.as_mut_ptr()) } {
             AsiResult::ASI_SUCCESS => Ok(buffer),
             error => return Err(error),

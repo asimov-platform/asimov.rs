@@ -41,12 +41,30 @@ pub struct AsiBlockDefinition {
     pub output_port_count: u32,
     pub parameter_count: u32,
 }
+impl Default for AsiBlockDefinition {
+    fn default() -> Self {
+        let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
 #[doc = " A block parameter."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct AsiBlockParameter {
     pub name: [::core::ffi::c_char; 64usize],
     pub default_value: [::core::ffi::c_char; 64usize],
+}
+impl Default for AsiBlockParameter {
+    fn default() -> Self {
+        let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
 }
 #[doc = " A block port."]
 #[repr(C)]
@@ -55,12 +73,30 @@ pub struct AsiBlockPort {
     pub name: [::core::ffi::c_char; 64usize],
     pub type_: AsiPortType,
 }
+impl Default for AsiBlockPort {
+    fn default() -> Self {
+        let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
 #[doc = " A block usage (in a system or flow)."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct AsiBlockUsage {
     pub name: [::core::ffi::c_char; 64usize],
     pub type_: [::core::ffi::c_char; 64usize],
+}
+impl Default for AsiBlockUsage {
+    fn default() -> Self {
+        let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
 }
 #[doc = " A flow connection."]
 #[repr(C)]
@@ -71,12 +107,30 @@ pub struct AsiFlowConnection {
     pub target_block: [::core::ffi::c_char; 64usize],
     pub target_port: [::core::ffi::c_char; 64usize],
 }
+impl Default for AsiFlowConnection {
+    fn default() -> Self {
+        let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
 #[doc = " A flow definition."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct AsiFlowDefinition {
     pub name: [::core::ffi::c_char; 64usize],
     pub block_count: u32,
+}
+impl Default for AsiFlowDefinition {
+    fn default() -> Self {
+        let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
 }
 #[doc = " A flow execution."]
 #[repr(C)]
@@ -85,6 +139,15 @@ pub struct AsiFlowExecution {
     pub name: [::core::ffi::c_char; 64usize],
     pub pid: u64,
 }
+impl Default for AsiFlowExecution {
+    fn default() -> Self {
+        let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
 #[doc = " A model manifest."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -92,11 +155,29 @@ pub struct AsiModelManifest {
     pub name: [::core::ffi::c_char; 64usize],
     pub size: u64,
 }
+impl Default for AsiModelManifest {
+    fn default() -> Self {
+        let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
 #[doc = " A module registration."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct AsiModuleRegistration {
     pub name: [::core::ffi::c_char; 64usize],
+}
+impl Default for AsiModuleRegistration {
+    fn default() -> Self {
+        let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
 }
 extern "C" {
     #[must_use]
