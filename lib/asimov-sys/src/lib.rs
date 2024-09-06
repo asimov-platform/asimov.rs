@@ -4,12 +4,15 @@
 #![allow(non_camel_case_types)]
 #![allow(non_upper_case_globals)]
 
+extern crate alloc;
+
 #[macro_use]
 extern crate num_derive;
 
 #[cfg(feature = "std")]
 extern crate std;
 
+use alloc::borrow::Cow;
 use core::{
     ffi::{c_int, CStr},
     fmt::{Debug, Display},
@@ -65,11 +68,19 @@ impl AsiBlockDefinition {
     pub fn name(&self) -> Result<&str, Utf8Error> {
         unsafe { CStr::from_ptr(self.name.as_ptr()) }.to_str()
     }
+
+    pub fn name_lossy(&self) -> Cow<'_, str> {
+        unsafe { CStr::from_ptr(self.name.as_ptr()) }.to_string_lossy()
+    }
 }
 
 impl AsiBlockParameter {
     pub fn name(&self) -> Result<&str, Utf8Error> {
         unsafe { CStr::from_ptr(self.name.as_ptr()) }.to_str()
+    }
+
+    pub fn name_lossy(&self) -> Cow<'_, str> {
+        unsafe { CStr::from_ptr(self.name.as_ptr()) }.to_string_lossy()
     }
 }
 
@@ -77,11 +88,19 @@ impl AsiBlockPort {
     pub fn name(&self) -> Result<&str, Utf8Error> {
         unsafe { CStr::from_ptr(self.name.as_ptr()) }.to_str()
     }
+
+    pub fn name_lossy(&self) -> Cow<'_, str> {
+        unsafe { CStr::from_ptr(self.name.as_ptr()) }.to_string_lossy()
+    }
 }
 
 impl AsiBlockUsage {
     pub fn name(&self) -> Result<&str, Utf8Error> {
         unsafe { CStr::from_ptr(self.name.as_ptr()) }.to_str()
+    }
+
+    pub fn name_lossy(&self) -> Cow<'_, str> {
+        unsafe { CStr::from_ptr(self.name.as_ptr()) }.to_string_lossy()
     }
 }
 
@@ -91,11 +110,19 @@ impl AsiFlowDefinition {
     pub fn name(&self) -> Result<&str, Utf8Error> {
         unsafe { CStr::from_ptr(self.name.as_ptr()) }.to_str()
     }
+
+    pub fn name_lossy(&self) -> Cow<'_, str> {
+        unsafe { CStr::from_ptr(self.name.as_ptr()) }.to_string_lossy()
+    }
 }
 
 impl AsiFlowExecution {
     pub fn name(&self) -> Result<&str, Utf8Error> {
         unsafe { CStr::from_ptr(self.name.as_ptr()) }.to_str()
+    }
+
+    pub fn name_lossy(&self) -> Cow<'_, str> {
+        unsafe { CStr::from_ptr(self.name.as_ptr()) }.to_string_lossy()
     }
 }
 
@@ -103,18 +130,26 @@ impl AsiModelManifest {
     pub fn name(&self) -> Result<&str, Utf8Error> {
         unsafe { CStr::from_ptr(self.name.as_ptr()) }.to_str()
     }
+
+    pub fn name_lossy(&self) -> Cow<'_, str> {
+        unsafe { CStr::from_ptr(self.name.as_ptr()) }.to_string_lossy()
+    }
 }
 
 impl AsiModuleRegistration {
     pub fn name(&self) -> Result<&str, Utf8Error> {
         unsafe { CStr::from_ptr(self.name.as_ptr()) }.to_str()
     }
+
+    pub fn name_lossy(&self) -> Cow<'_, str> {
+        unsafe { CStr::from_ptr(self.name.as_ptr()) }.to_string_lossy()
+    }
 }
 
 impl Display for AsiBlockDefinition {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_struct("AsiBlockDefinition")
-            .field("name", &self.name().expect("name should be valid UTF-8"))
+            .field("name", &self.name_lossy())
             .field("input_port_count", &self.input_port_count)
             .field("output_port_count", &self.output_port_count)
             .field("parameter_count", &self.parameter_count)
@@ -125,7 +160,7 @@ impl Display for AsiBlockDefinition {
 impl Display for AsiBlockParameter {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_struct("AsiBlockParameter")
-            .field("name", &self.name().expect("name should be valid UTF-8"))
+            .field("name", &self.name_lossy())
             .field("default_value", &self.default_value)
             .finish()
     }
@@ -134,7 +169,7 @@ impl Display for AsiBlockParameter {
 impl Display for AsiBlockPort {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_struct("AsiBlockPort")
-            .field("name", &self.name().expect("name should be valid UTF-8"))
+            .field("name", &self.name_lossy())
             .field("type", &self.type_)
             .finish()
     }
@@ -143,7 +178,7 @@ impl Display for AsiBlockPort {
 impl Display for AsiBlockUsage {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_struct("AsiBlockUsage")
-            .field("name", &self.name().expect("name should be valid UTF-8"))
+            .field("name", &self.name_lossy())
             .field("type", &self.type_)
             .finish()
     }
@@ -163,7 +198,7 @@ impl Display for AsiFlowConnection {
 impl Display for AsiFlowDefinition {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_struct("AsiFlowDefinition")
-            .field("name", &self.name().expect("name should be valid UTF-8"))
+            .field("name", &self.name_lossy())
             .field("block_count", &self.block_count)
             .finish()
     }
@@ -172,7 +207,7 @@ impl Display for AsiFlowDefinition {
 impl Display for AsiFlowExecution {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_struct("AsiFlowExecution")
-            .field("name", &self.name().expect("name should be valid UTF-8"))
+            .field("name", &self.name_lossy())
             .field("pid", &self.pid)
             .finish()
     }
@@ -181,7 +216,7 @@ impl Display for AsiFlowExecution {
 impl Display for AsiModelManifest {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_struct("AsiModelManifest")
-            .field("name", &self.name().expect("name should be valid UTF-8"))
+            .field("name", &self.name_lossy())
             .field("size", &self.size)
             .finish()
     }
@@ -190,7 +225,7 @@ impl Display for AsiModelManifest {
 impl Display for AsiModuleRegistration {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_struct("AsiModuleRegistration")
-            .field("name", &self.name().expect("name should be valid UTF-8"))
+            .field("name", &self.name_lossy())
             .finish()
     }
 }
