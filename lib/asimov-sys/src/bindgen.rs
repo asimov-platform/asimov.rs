@@ -169,6 +169,7 @@ impl Default for AsiModelManifest {
 #[derive(Debug, Copy, Clone)]
 pub struct AsiModuleRegistration {
     pub name: [::core::ffi::c_char; 64usize],
+    pub block_count: u32,
 }
 impl Default for AsiModuleRegistration {
     fn default() -> Self {

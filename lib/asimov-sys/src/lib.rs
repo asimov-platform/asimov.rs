@@ -4,6 +4,8 @@
 #![allow(non_camel_case_types)]
 #![allow(non_upper_case_globals)]
 
+mod util;
+
 extern crate alloc;
 
 #[macro_use]
@@ -12,10 +14,11 @@ extern crate num_derive;
 #[cfg(feature = "std")]
 extern crate std;
 
+use crate::util::string_to_static_array;
 use alloc::borrow::Cow;
 use core::{
     ffi::{c_int, CStr},
-    fmt::{Debug, Display},
+    fmt::{self, Debug, Display},
     mem::size_of,
     str::Utf8Error,
 };
@@ -65,6 +68,21 @@ impl From<std::io::Error> for AsiResult {
 }
 
 impl AsiBlockDefinition {
+    pub fn new(
+        name: &str,
+        input_port_count: u32,
+        output_port_count: u32,
+        parameter_count: u32,
+    ) -> Self {
+        Self {
+            name: string_to_static_array(name),
+            input_port_count,
+            output_port_count,
+            parameter_count,
+            ..Default::default()
+        }
+    }
+
     pub fn name(&self) -> Result<&str, Utf8Error> {
         unsafe { CStr::from_ptr(self.name.as_ptr()) }.to_str()
     }
@@ -75,6 +93,14 @@ impl AsiBlockDefinition {
 }
 
 impl AsiBlockParameter {
+    pub fn new(name: &str, default_value: &str) -> Self {
+        Self {
+            name: string_to_static_array(name),
+            default_value: string_to_static_array(default_value),
+            ..Default::default()
+        }
+    }
+
     pub fn name(&self) -> Result<&str, Utf8Error> {
         unsafe { CStr::from_ptr(self.name.as_ptr()) }.to_str()
     }
@@ -85,6 +111,14 @@ impl AsiBlockParameter {
 }
 
 impl AsiBlockPort {
+    pub fn new(name: &str, r#type: AsiPortType) -> Self {
+        Self {
+            name: string_to_static_array(name),
+            type_: r#type,
+            ..Default::default()
+        }
+    }
+
     pub fn name(&self) -> Result<&str, Utf8Error> {
         unsafe { CStr::from_ptr(self.name.as_ptr()) }.to_str()
     }
@@ -95,6 +129,14 @@ impl AsiBlockPort {
 }
 
 impl AsiBlockUsage {
+    pub fn new(name: &str, r#type: &str) -> Self {
+        Self {
+            name: string_to_static_array(name),
+            type_: string_to_static_array(r#type),
+            ..Default::default()
+        }
+    }
+
     pub fn name(&self) -> Result<&str, Utf8Error> {
         unsafe { CStr::from_ptr(self.name.as_ptr()) }.to_str()
     }
@@ -104,9 +146,34 @@ impl AsiBlockUsage {
     }
 }
 
-impl AsiFlowConnection {}
+impl AsiFlowConnection {
+    pub fn new(
+        source_block: &str,
+        source_port: &str,
+        target_block: &str,
+        target_port: &str,
+    ) -> Self {
+        Self {
+            source_block: string_to_static_array(source_block),
+            source_port: string_to_static_array(source_port),
+            target_block: string_to_static_array(target_block),
+            target_port: string_to_static_array(target_port),
+            ..Default::default()
+        }
+    }
+
+    // TODO: getters for the string fields
+}
 
 impl AsiFlowDefinition {
+    pub fn new(name: &str, block_count: u32) -> Self {
+        Self {
+            name: string_to_static_array(name),
+            block_count,
+            ..Default::default()
+        }
+    }
+
     pub fn name(&self) -> Result<&str, Utf8Error> {
         unsafe { CStr::from_ptr(self.name.as_ptr()) }.to_str()
     }
@@ -117,6 +184,14 @@ impl AsiFlowDefinition {
 }
 
 impl AsiFlowExecution {
+    pub fn new(name: &str, pid: u64) -> Self {
+        Self {
+            name: string_to_static_array(name),
+            pid,
+            ..Default::default()
+        }
+    }
+
     pub fn name(&self) -> Result<&str, Utf8Error> {
         unsafe { CStr::from_ptr(self.name.as_ptr()) }.to_str()
     }
@@ -127,6 +202,14 @@ impl AsiFlowExecution {
 }
 
 impl AsiModelManifest {
+    pub fn new(name: &str, size: u64) -> Self {
+        Self {
+            name: string_to_static_array(name),
+            size,
+            ..Default::default()
+        }
+    }
+
     pub fn name(&self) -> Result<&str, Utf8Error> {
         unsafe { CStr::from_ptr(self.name.as_ptr()) }.to_str()
     }
@@ -137,6 +220,14 @@ impl AsiModelManifest {
 }
 
 impl AsiModuleRegistration {
+    pub fn new(name: &str, block_count: u32) -> Self {
+        Self {
+            name: string_to_static_array(name),
+            block_count,
+            ..Default::default()
+        }
+    }
+
     pub fn name(&self) -> Result<&str, Utf8Error> {
         unsafe { CStr::from_ptr(self.name.as_ptr()) }.to_str()
     }
@@ -147,7 +238,7 @@ impl AsiModuleRegistration {
 }
 
 impl Display for AsiBlockDefinition {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("AsiBlockDefinition")
             .field("name", &self.name_lossy())
             .field("input_port_count", &self.input_port_count)
@@ -158,7 +249,7 @@ impl Display for AsiBlockDefinition {
 }
 
 impl Display for AsiBlockParameter {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("AsiBlockParameter")
             .field("name", &self.name_lossy())
             .field("default_value", &self.default_value)
@@ -167,7 +258,7 @@ impl Display for AsiBlockParameter {
 }
 
 impl Display for AsiBlockPort {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("AsiBlockPort")
             .field("name", &self.name_lossy())
             .field("type", &self.type_)
@@ -176,7 +267,7 @@ impl Display for AsiBlockPort {
 }
 
 impl Display for AsiBlockUsage {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("AsiBlockUsage")
             .field("name", &self.name_lossy())
             .field("type", &self.type_)
@@ -185,7 +276,7 @@ impl Display for AsiBlockUsage {
 }
 
 impl Display for AsiFlowConnection {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("AsiFlowConnection")
             .field("source_block", &self.source_block)
             .field("source_port", &self.source_port)
@@ -196,7 +287,7 @@ impl Display for AsiFlowConnection {
 }
 
 impl Display for AsiFlowDefinition {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("AsiFlowDefinition")
             .field("name", &self.name_lossy())
             .field("block_count", &self.block_count)
@@ -205,7 +296,7 @@ impl Display for AsiFlowDefinition {
 }
 
 impl Display for AsiFlowExecution {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("AsiFlowExecution")
             .field("name", &self.name_lossy())
             .field("pid", &self.pid)
@@ -214,7 +305,7 @@ impl Display for AsiFlowExecution {
 }
 
 impl Display for AsiModelManifest {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("AsiModelManifest")
             .field("name", &self.name_lossy())
             .field("size", &self.size)
@@ -223,9 +314,10 @@ impl Display for AsiModelManifest {
 }
 
 impl Display for AsiModuleRegistration {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("AsiModuleRegistration")
             .field("name", &self.name_lossy())
+            .field("block_count", &self.block_count)
             .finish()
     }
 }

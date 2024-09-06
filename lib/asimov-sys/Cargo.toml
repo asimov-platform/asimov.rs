@@ -18,6 +18,7 @@ publish.workspace = true
 default = []
 dylib = ["dep:libloading"]
 std = []
+unstable = []
 
 [dependencies]
 num-derive = "0.4"
