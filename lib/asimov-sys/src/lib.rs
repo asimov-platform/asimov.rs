@@ -108,6 +108,14 @@ impl AsiBlockParameter {
     pub fn name_lossy(&self) -> Cow<'_, str> {
         unsafe { CStr::from_ptr(self.name.as_ptr()) }.to_string_lossy()
     }
+
+    pub fn default_value(&self) -> Result<&str, Utf8Error> {
+        unsafe { CStr::from_ptr(self.default_value.as_ptr()) }.to_str()
+    }
+
+    pub fn default_value_lossy(&self) -> Cow<'_, str> {
+        unsafe { CStr::from_ptr(self.default_value.as_ptr()) }.to_string_lossy()
+    }
 }
 
 impl AsiBlockPort {
@@ -144,6 +152,14 @@ impl AsiBlockUsage {
     pub fn name_lossy(&self) -> Cow<'_, str> {
         unsafe { CStr::from_ptr(self.name.as_ptr()) }.to_string_lossy()
     }
+
+    pub fn r#type(&self) -> Result<&str, Utf8Error> {
+        unsafe { CStr::from_ptr(self.type_.as_ptr()) }.to_str()
+    }
+
+    pub fn type_lossy(&self) -> Cow<'_, str> {
+        unsafe { CStr::from_ptr(self.type_.as_ptr()) }.to_string_lossy()
+    }
 }
 
 impl AsiFlowConnection {
@@ -162,7 +178,37 @@ impl AsiFlowConnection {
         }
     }
 
-    // TODO: getters for the string fields
+    pub fn source_block(&self) -> Result<&str, Utf8Error> {
+        unsafe { CStr::from_ptr(self.source_block.as_ptr()) }.to_str()
+    }
+
+    pub fn source_block_lossy(&self) -> Cow<'_, str> {
+        unsafe { CStr::from_ptr(self.source_block.as_ptr()) }.to_string_lossy()
+    }
+
+    pub fn source_port(&self) -> Result<&str, Utf8Error> {
+        unsafe { CStr::from_ptr(self.source_port.as_ptr()) }.to_str()
+    }
+
+    pub fn source_port_lossy(&self) -> Cow<'_, str> {
+        unsafe { CStr::from_ptr(self.source_port.as_ptr()) }.to_string_lossy()
+    }
+
+    pub fn target_block(&self) -> Result<&str, Utf8Error> {
+        unsafe { CStr::from_ptr(self.target_block.as_ptr()) }.to_str()
+    }
+
+    pub fn target_block_lossy(&self) -> Cow<'_, str> {
+        unsafe { CStr::from_ptr(self.target_block.as_ptr()) }.to_string_lossy()
+    }
+
+    pub fn target_port(&self) -> Result<&str, Utf8Error> {
+        unsafe { CStr::from_ptr(self.target_port.as_ptr()) }.to_str()
+    }
+
+    pub fn target_port_lossy(&self) -> Cow<'_, str> {
+        unsafe { CStr::from_ptr(self.target_port.as_ptr()) }.to_string_lossy()
+    }
 }
 
 impl AsiFlowDefinition {
@@ -252,7 +298,7 @@ impl Display for AsiBlockParameter {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("AsiBlockParameter")
             .field("name", &self.name_lossy())
-            .field("default_value", &self.default_value)
+            .field("default_value", &self.default_value_lossy())
             .finish()
     }
 }
@@ -270,7 +316,7 @@ impl Display for AsiBlockUsage {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("AsiBlockUsage")
             .field("name", &self.name_lossy())
-            .field("type", &self.type_)
+            .field("type", &self.type_lossy())
             .finish()
     }
 }
@@ -278,10 +324,10 @@ impl Display for AsiBlockUsage {
 impl Display for AsiFlowConnection {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("AsiFlowConnection")
-            .field("source_block", &self.source_block)
-            .field("source_port", &self.source_port)
-            .field("target_block", &self.target_block)
-            .field("target_port", &self.target_port)
+            .field("source_block", &self.source_block_lossy())
+            .field("source_port", &self.source_port_lossy())
+            .field("target_block", &self.target_block_lossy())
+            .field("target_port", &self.target_port_lossy())
             .finish()
     }
 }
