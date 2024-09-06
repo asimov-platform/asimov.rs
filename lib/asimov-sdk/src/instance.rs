@@ -83,8 +83,11 @@ impl Instance {
 
 impl Drop for Instance {
     fn drop(&mut self) {
+        if self.handle == ASI_NULL_HANDLE {
+            return;
+        }
         match unsafe { asiDestroyInstance(self.handle) } {
-            AsiResult::ASI_SUCCESS => (),
+            AsiResult::ASI_SUCCESS => self.handle = ASI_NULL_HANDLE,
             _ => unreachable!(),
         }
     }
