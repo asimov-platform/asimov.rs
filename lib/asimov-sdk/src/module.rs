@@ -1,10 +1,13 @@
 // This is free and unencumbered software released into the public domain.
 
-use crate::{prelude::String, Named};
+use crate::{
+    prelude::{fmt::Debug, String},
+    Named,
+};
 use asimov_sys::AsiModuleRegistration;
 
 #[stability::unstable]
-pub trait ModuleRegistration: Named {}
+pub trait ModuleRegistration: Debug + Named {}
 
 #[derive(Debug)]
 pub(crate) struct StaticModuleRegistration {

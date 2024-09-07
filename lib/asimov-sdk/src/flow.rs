@@ -3,13 +3,13 @@
 pub use protoflow::*;
 
 use crate::{
-    prelude::{vec, String, Vec},
+    prelude::{fmt::Debug, String},
     Named,
 };
 use asimov_sys::AsiFlowDefinition;
 
 #[stability::unstable]
-pub trait FlowDefinition: Named {}
+pub trait FlowDefinition: Debug + Named {}
 
 #[derive(Debug)]
 pub(crate) struct LocalFlowDefinition {

@@ -1,7 +1,7 @@
 // This is free and unencumbered software released into the public domain.
 
 use crate::{
-    flow::{BlockDescriptor, FlowDefinition, LocalFlowDefinition, PortDescriptor},
+    flow::{FlowDefinition, LocalFlowDefinition},
     prelude::{vec, Box, Vec},
     BlockDefinition, LocalBlockDefinition, LocalModelManifest, ModelManifest, ModuleRegistration,
     StaticModuleRegistration,

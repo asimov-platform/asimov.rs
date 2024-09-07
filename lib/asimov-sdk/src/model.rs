@@ -1,10 +1,13 @@
 // This is free and unencumbered software released into the public domain.
 
-use crate::{prelude::String, Named};
+use crate::{
+    prelude::{fmt::Debug, String},
+    Named,
+};
 use asimov_sys::AsiModelManifest;
 
 #[stability::unstable]
-pub trait ModelManifest: Named {}
+pub trait ModelManifest: Debug + Named {}
 
 #[derive(Debug)]
 pub(crate) struct LocalModelManifest {

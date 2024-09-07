@@ -2,13 +2,13 @@
 
 use crate::{
     flow::{BlockDescriptor, PortDescriptor},
-    prelude::{vec, String, Vec},
+    prelude::{fmt::Debug, vec, String, Vec},
     Named,
 };
 use asimov_sys::AsiBlockDefinition;
 
 #[stability::unstable]
-pub trait BlockDefinition: Named + BlockDescriptor {}
+pub trait BlockDefinition: Debug + Named + BlockDescriptor {}
 
 #[derive(Debug)]
 pub(crate) struct LocalBlockDefinition {
