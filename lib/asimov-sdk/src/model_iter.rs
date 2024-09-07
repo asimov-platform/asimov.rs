@@ -1,10 +1,10 @@
 // This is free and unencumbered software released into the public domain.
 
 use crate::{
-    prelude::{Box, Vec},
+    prelude::{null_mut, vec, Box, Vec},
     Error, LocalModelManifest, ModelManifest, Result,
 };
-use asimov_sys::{AsiInstance, AsiModelManifest};
+use asimov_sys::{asiEnumerateModels, AsiInstance, AsiModelManifest, AsiResult};
 
 pub(crate) struct ModelManifestIter {
     index: usize,
@@ -14,8 +14,20 @@ pub(crate) struct ModelManifestIter {
 impl TryFrom<AsiInstance> for ModelManifestIter {
     type Error = Error;
 
-    fn try_from(_instance: AsiInstance) -> Result<Self> {
-        todo!() // TODO
+    fn try_from(instance: AsiInstance) -> Result<Self> {
+        let mut count: u32 = 0;
+        match unsafe { asiEnumerateModels(instance, 0, &mut count, null_mut()) } {
+            AsiResult::ASI_SUCCESS => (),
+            error => return Err(error.try_into().unwrap()),
+        };
+
+        let mut buffer = vec![AsiModelManifest::default(); count as _];
+        match unsafe { asiEnumerateModels(instance, count, &mut count, buffer.as_mut_ptr()) } {
+            AsiResult::ASI_SUCCESS => (),
+            error => return Err(error.try_into().unwrap()),
+        };
+
+        Ok(Self::from(buffer))
     }
 }
 

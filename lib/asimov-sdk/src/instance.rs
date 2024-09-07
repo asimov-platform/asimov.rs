@@ -2,15 +2,11 @@
 
 use crate::{
     flow::FlowDefinition,
-    prelude::{null, null_mut, vec, Box},
-    BlockDefinition, BlockDefinitionIter, FlowDefinitionIter, ModelManifest, ModelManifestIter,
-    ModuleRegistration, ModuleRegistrationIter, Result,
+    prelude::{null, Box},
+    BlockDefinition, BlockDefinitionIter, Error, FlowDefinitionIter, ModelManifest,
+    ModelManifestIter, ModuleRegistration, ModuleRegistrationIter, Result,
 };
-use asimov_sys::{
-    asiCreateInstance, asiDestroyInstance, asiEnumerateBlocks, asiEnumerateFlows,
-    asiEnumerateModels, asiEnumerateModules, AsiBlockDefinition, AsiFlowDefinition, AsiInstance,
-    AsiModelManifest, AsiModuleRegistration, AsiResult, ASI_NULL_HANDLE,
-};
+use asimov_sys::{asiCreateInstance, asiDestroyInstance, AsiInstance, AsiResult, ASI_NULL_HANDLE};
 
 #[derive(Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Instance {
@@ -30,70 +26,37 @@ impl Instance {
 
     #[stability::unstable]
     pub fn blocks(&self) -> Result<impl Iterator<Item = Box<dyn BlockDefinition>>> {
-        let mut count: u32 = 0;
-        match unsafe { asiEnumerateBlocks(self.handle, 0, &mut count, null_mut()) } {
-            AsiResult::ASI_SUCCESS => (),
-            error => return Err(error.try_into().unwrap()),
-        };
+        BlockDefinitionIter::try_from(self.handle)
+    }
 
-        let mut buffer = vec![AsiBlockDefinition::default(); count as _];
-        match unsafe { asiEnumerateBlocks(self.handle, count, &mut count, buffer.as_mut_ptr()) } {
-            AsiResult::ASI_SUCCESS => (),
-            error => return Err(error.try_into().unwrap()),
-        };
-
-        Ok(BlockDefinitionIter::from(buffer))
+    #[stability::unstable]
+    pub fn constructs(&self) -> Result<()> {
+        todo!("Instance#constructs") // TODO
     }
 
     #[stability::unstable]
     pub fn flows(&self) -> Result<impl Iterator<Item = Box<dyn FlowDefinition>>> {
-        let mut count: u32 = 0;
-        match unsafe { asiEnumerateFlows(self.handle, 0, &mut count, null_mut()) } {
-            AsiResult::ASI_SUCCESS => (),
-            error => return Err(error.try_into().unwrap()),
-        };
-
-        let mut buffer = vec![AsiFlowDefinition::default(); count as _];
-        match unsafe { asiEnumerateFlows(self.handle, count, &mut count, buffer.as_mut_ptr()) } {
-            AsiResult::ASI_SUCCESS => (),
-            error => return Err(error.try_into().unwrap()),
-        };
-
-        Ok(FlowDefinitionIter::from(buffer))
+        FlowDefinitionIter::try_from(self.handle)
     }
 
     #[stability::unstable]
     pub fn models(&self) -> Result<impl Iterator<Item = Box<dyn ModelManifest>>> {
-        let mut count: u32 = 0;
-        match unsafe { asiEnumerateModels(self.handle, 0, &mut count, null_mut()) } {
-            AsiResult::ASI_SUCCESS => (),
-            error => return Err(error.try_into().unwrap()),
-        };
-
-        let mut buffer = vec![AsiModelManifest::default(); count as _];
-        match unsafe { asiEnumerateModels(self.handle, count, &mut count, buffer.as_mut_ptr()) } {
-            AsiResult::ASI_SUCCESS => (),
-            error => return Err(error.try_into().unwrap()),
-        };
-
-        Ok(ModelManifestIter::from(buffer))
+        ModelManifestIter::try_from(self.handle)
     }
 
     #[stability::unstable]
     pub fn modules(&self) -> Result<impl Iterator<Item = Box<dyn ModuleRegistration>>> {
-        let mut count: u32 = 0;
-        match unsafe { asiEnumerateModules(self.handle, 0, &mut count, null_mut()) } {
-            AsiResult::ASI_SUCCESS => (),
-            error => return Err(error.try_into().unwrap()),
-        };
+        ModuleRegistrationIter::try_from(self.handle)
+    }
 
-        let mut buffer = vec![AsiModuleRegistration::default(); count as _];
-        match unsafe { asiEnumerateModules(self.handle, count, &mut count, buffer.as_mut_ptr()) } {
-            AsiResult::ASI_SUCCESS => (),
-            error => return Err(error.try_into().unwrap()),
-        };
+    #[stability::unstable]
+    pub fn schemas(&self) -> Result<()> {
+        todo!("Instance#schemas") // TODO
+    }
 
-        Ok(ModuleRegistrationIter::from(buffer))
+    #[stability::unstable]
+    pub fn vaults(&self) -> Result<()> {
+        todo!("Instance#vaults") // TODO
     }
 }
 

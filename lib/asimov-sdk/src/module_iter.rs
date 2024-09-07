@@ -1,10 +1,10 @@
 // This is free and unencumbered software released into the public domain.
 
 use crate::{
-    prelude::{Box, Vec},
+    prelude::{null_mut, vec, Box, Vec},
     Error, ModuleRegistration, Result, StaticModuleRegistration,
 };
-use asimov_sys::{AsiInstance, AsiModuleRegistration};
+use asimov_sys::{asiEnumerateModules, AsiInstance, AsiModuleRegistration, AsiResult};
 
 pub(crate) struct ModuleRegistrationIter {
     index: usize,
@@ -14,8 +14,20 @@ pub(crate) struct ModuleRegistrationIter {
 impl TryFrom<AsiInstance> for ModuleRegistrationIter {
     type Error = Error;
 
-    fn try_from(_instance: AsiInstance) -> Result<Self> {
-        todo!() // TODO
+    fn try_from(instance: AsiInstance) -> Result<Self> {
+        let mut count: u32 = 0;
+        match unsafe { asiEnumerateModules(instance, 0, &mut count, null_mut()) } {
+            AsiResult::ASI_SUCCESS => (),
+            error => return Err(error.try_into().unwrap()),
+        };
+
+        let mut buffer = vec![AsiModuleRegistration::default(); count as _];
+        match unsafe { asiEnumerateModules(instance, count, &mut count, buffer.as_mut_ptr()) } {
+            AsiResult::ASI_SUCCESS => (),
+            error => return Err(error.try_into().unwrap()),
+        };
+
+        Ok(Self::from(buffer))
     }
 }
 
