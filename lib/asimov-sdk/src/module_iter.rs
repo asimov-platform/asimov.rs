@@ -7,8 +7,20 @@ use crate::{
 use asimov_sys::{asiEnumerateModules, AsiInstance, AsiModuleRegistration, AsiResult};
 
 pub(crate) struct ModuleRegistrationIter {
+    #[allow(unused)]
+    instance: AsiInstance,
     index: usize,
     elements: Vec<AsiModuleRegistration>,
+}
+
+impl ModuleRegistrationIter {
+    pub fn new(instance: AsiInstance, elements: Vec<AsiModuleRegistration>) -> Self {
+        Self {
+            instance,
+            index: 0,
+            elements,
+        }
+    }
 }
 
 impl TryFrom<AsiInstance> for ModuleRegistrationIter {
@@ -27,13 +39,7 @@ impl TryFrom<AsiInstance> for ModuleRegistrationIter {
             error => return Err(error.try_into().unwrap()),
         };
 
-        Ok(Self::from(buffer))
-    }
-}
-
-impl From<Vec<AsiModuleRegistration>> for ModuleRegistrationIter {
-    fn from(elements: Vec<AsiModuleRegistration>) -> Self {
-        Self { index: 0, elements }
+        Ok(Self::new(instance, buffer))
     }
 }
 

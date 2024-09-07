@@ -7,8 +7,20 @@ use crate::{
 use asimov_sys::{asiEnumerateModels, AsiInstance, AsiModelManifest, AsiResult};
 
 pub(crate) struct ModelManifestIter {
+    #[allow(unused)]
+    instance: AsiInstance,
     index: usize,
     elements: Vec<AsiModelManifest>,
+}
+
+impl ModelManifestIter {
+    pub fn new(instance: AsiInstance, elements: Vec<AsiModelManifest>) -> Self {
+        Self {
+            instance,
+            index: 0,
+            elements,
+        }
+    }
 }
 
 impl TryFrom<AsiInstance> for ModelManifestIter {
@@ -27,13 +39,7 @@ impl TryFrom<AsiInstance> for ModelManifestIter {
             error => return Err(error.try_into().unwrap()),
         };
 
-        Ok(Self::from(buffer))
-    }
-}
-
-impl From<Vec<AsiModelManifest>> for ModelManifestIter {
-    fn from(elements: Vec<AsiModelManifest>) -> Self {
-        Self { index: 0, elements }
+        Ok(Self::new(instance, buffer))
     }
 }
 

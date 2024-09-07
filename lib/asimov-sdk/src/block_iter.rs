@@ -7,8 +7,20 @@ use crate::{
 use asimov_sys::{asiEnumerateBlocks, AsiBlockDefinition, AsiInstance, AsiResult};
 
 pub(crate) struct BlockDefinitionIter {
+    #[allow(unused)]
+    instance: AsiInstance,
     index: usize,
     elements: Vec<AsiBlockDefinition>,
+}
+
+impl BlockDefinitionIter {
+    pub fn new(instance: AsiInstance, elements: Vec<AsiBlockDefinition>) -> Self {
+        Self {
+            instance,
+            index: 0,
+            elements,
+        }
+    }
 }
 
 impl TryFrom<AsiInstance> for BlockDefinitionIter {
@@ -27,13 +39,7 @@ impl TryFrom<AsiInstance> for BlockDefinitionIter {
             error => return Err(error.try_into().unwrap()),
         };
 
-        Ok(Self::from(buffer))
-    }
-}
-
-impl From<Vec<AsiBlockDefinition>> for BlockDefinitionIter {
-    fn from(elements: Vec<AsiBlockDefinition>) -> Self {
-        Self { index: 0, elements }
+        Ok(Self::new(instance, buffer))
     }
 }
 

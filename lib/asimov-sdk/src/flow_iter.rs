@@ -8,8 +8,20 @@ use crate::{
 use asimov_sys::{asiEnumerateFlows, AsiFlowDefinition, AsiInstance, AsiResult};
 
 pub(crate) struct FlowDefinitionIter {
+    #[allow(unused)]
+    instance: AsiInstance,
     index: usize,
     elements: Vec<AsiFlowDefinition>,
+}
+
+impl FlowDefinitionIter {
+    pub fn new(instance: AsiInstance, elements: Vec<AsiFlowDefinition>) -> Self {
+        Self {
+            instance,
+            index: 0,
+            elements,
+        }
+    }
 }
 
 impl TryFrom<AsiInstance> for FlowDefinitionIter {
@@ -28,13 +40,7 @@ impl TryFrom<AsiInstance> for FlowDefinitionIter {
             error => return Err(error.try_into().unwrap()),
         };
 
-        Ok(Self::from(buffer))
-    }
-}
-
-impl From<Vec<AsiFlowDefinition>> for FlowDefinitionIter {
-    fn from(elements: Vec<AsiFlowDefinition>) -> Self {
-        Self { index: 0, elements }
+        Ok(Self::new(instance, buffer))
     }
 }
 
