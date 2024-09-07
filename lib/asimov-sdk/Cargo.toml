@@ -30,12 +30,12 @@ cfg_aliases.workspace = true
 [dependencies]
 asimov-sys = "24.0.0-dev.13"
 know = "0"
-protoflow = { version = "=0.2.1", default-features = false, features = [
+protoflow = { version = "=0.2.2", default-features = false, features = [
     "blocks",
     "derive",
     "sysml",
 ] }
-protoflow-blocks = { version = "=0.2.1", default-features = false, features = [
+protoflow-blocks = { version = "=0.2.2", default-features = false, features = [
     "hash",
 ] }
 stability = "0.2"
