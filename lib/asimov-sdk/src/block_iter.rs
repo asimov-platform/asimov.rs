@@ -7,7 +7,6 @@ use crate::{
 use asimov_sys::{asiEnumerateBlocks, AsiBlockDefinition, AsiInstance, AsiResult};
 
 pub(crate) struct BlockDefinitionIter {
-    #[allow(unused)]
     instance: AsiInstance,
     index: usize,
     elements: Vec<AsiBlockDefinition>,
@@ -50,7 +49,7 @@ impl Iterator for BlockDefinitionIter {
         if self.index < self.elements.len() {
             let element = self.elements[self.index];
             self.index += 1;
-            Some(Box::new(LocalBlockDefinition::new(element)) as _)
+            Some(Box::new(LocalBlockDefinition::new(self.instance, element)) as _)
         } else {
             None // end of iteration
         }
