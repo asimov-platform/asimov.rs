@@ -4,9 +4,12 @@ use crate::prelude::{
     c_int, fmt, format, FromBytesWithNulError, FromUtf16Error, FromUtf8Error, ParseFloatError,
     ParseIntError, String, ToString, TryFrom, Utf8Error,
 };
+use asimov_sys::AsiResult;
 
 #[cfg(feature = "std")]
 extern crate std;
+
+pub type Result<T, E = Error> = crate::prelude::Result<T, E>;
 
 #[allow(unused)]
 #[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
@@ -116,23 +119,31 @@ impl From<std::io::Error> for Error {
     }
 }
 
+impl TryFrom<AsiResult> for Error {
+    type Error = ();
+
+    fn try_from(input: AsiResult) -> Result<Self, Self::Error> {
+        use AsiResult::*;
+        Ok(match input {
+            ASI_SUCCESS => return Err(()),
+            ASI_TIMEOUT_EXPIRED => Self::TimeoutExpired,
+            ASI_ERROR_NOT_IMPLEMENTED => Self::NotImplemented,
+            ASI_ERROR_PRECONDITION_VIOLATED => Self::PreconditionViolated,
+            ASI_ERROR_HOST_MEMORY_EXHAUSTED => Self::HostMemoryExhausted,
+            ASI_ERROR_DEVICE_MEMORY_EXHAUSTED => Self::DeviceMemoryExhausted,
+            ASI_ERROR_SIZE_INSUFFICIENT => Self::SizeInsufficient,
+        })
+    }
+}
+
 impl TryFrom<c_int> for Error {
     type Error = ();
 
     fn try_from(code: c_int) -> Result<Self, Self::Error> {
-        use asimov_sys::*;
-        let Ok(result) = AsiResult::try_from(code) else {
-            return Ok(Error::Other(format!("ASI_ERROR_{}", code)));
-        };
-        Ok(match result {
-            AsiResult::ASI_SUCCESS => return Err(()),
-            AsiResult::ASI_TIMEOUT_EXPIRED => Error::TimeoutExpired,
-            AsiResult::ASI_ERROR_NOT_IMPLEMENTED => Error::NotImplemented,
-            AsiResult::ASI_ERROR_PRECONDITION_VIOLATED => Error::PreconditionViolated,
-            AsiResult::ASI_ERROR_HOST_MEMORY_EXHAUSTED => Error::HostMemoryExhausted,
-            AsiResult::ASI_ERROR_DEVICE_MEMORY_EXHAUSTED => Error::DeviceMemoryExhausted,
-            AsiResult::ASI_ERROR_SIZE_INSUFFICIENT => Error::SizeInsufficient,
-        })
+        match AsiResult::try_from(code) {
+            Ok(result) => result.try_into(),
+            Err(_) => Ok(Error::Other(format!("ASI_ERROR_{}", code))),
+        }
     }
 }
 
@@ -140,14 +151,14 @@ impl TryFrom<Error> for c_int {
     type Error = ();
 
     fn try_from(error: Error) -> Result<Self, Self::Error> {
-        use asimov_sys::*;
+        use AsiResult::*;
         Ok(match error {
-            Error::TimeoutExpired => AsiResult::ASI_TIMEOUT_EXPIRED,
-            Error::NotImplemented => AsiResult::ASI_ERROR_NOT_IMPLEMENTED,
-            Error::PreconditionViolated => AsiResult::ASI_ERROR_PRECONDITION_VIOLATED,
-            Error::HostMemoryExhausted => AsiResult::ASI_ERROR_HOST_MEMORY_EXHAUSTED,
-            Error::DeviceMemoryExhausted => AsiResult::ASI_ERROR_DEVICE_MEMORY_EXHAUSTED,
-            Error::SizeInsufficient => AsiResult::ASI_ERROR_SIZE_INSUFFICIENT,
+            Error::TimeoutExpired => ASI_TIMEOUT_EXPIRED,
+            Error::NotImplemented => ASI_ERROR_NOT_IMPLEMENTED,
+            Error::PreconditionViolated => ASI_ERROR_PRECONDITION_VIOLATED,
+            Error::HostMemoryExhausted => ASI_ERROR_HOST_MEMORY_EXHAUSTED,
+            Error::DeviceMemoryExhausted => ASI_ERROR_DEVICE_MEMORY_EXHAUSTED,
+            Error::SizeInsufficient => ASI_ERROR_SIZE_INSUFFICIENT,
             Error::Other(_) => return Err(()),
         } as c_int)
     }

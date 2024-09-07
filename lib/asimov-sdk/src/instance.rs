@@ -2,16 +2,15 @@
 
 use crate::{
     flow::{FlowDefinition, LocalFlowDefinition},
-    prelude::{vec, Box, Vec},
-    BlockDefinition, LocalBlockDefinition, LocalModelManifest, ModelManifest, ModuleRegistration,
-    StaticModuleRegistration,
+    prelude::{null, null_mut, vec, Box, Vec},
+    BlockDefinition, Error, LocalBlockDefinition, LocalModelManifest, ModelManifest,
+    ModuleRegistration, Result, StaticModuleRegistration,
 };
 use asimov_sys::{
     asiCreateInstance, asiDestroyInstance, asiEnumerateBlocks, asiEnumerateFlows,
     asiEnumerateModels, asiEnumerateModules, AsiBlockDefinition, AsiFlowDefinition, AsiInstance,
     AsiModelManifest, AsiModuleRegistration, AsiResult, ASI_NULL_HANDLE,
 };
-use core::ptr::{null, null_mut};
 
 #[derive(Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Instance {
@@ -19,28 +18,28 @@ pub struct Instance {
 }
 
 impl Instance {
-    pub fn new() -> Result<Self, AsiResult> {
+    pub fn new() -> Result<Self> {
         let mut instance = Self {
             handle: ASI_NULL_HANDLE,
         };
         match unsafe { asiCreateInstance(null(), &mut instance.handle) } {
             AsiResult::ASI_SUCCESS => Ok(instance),
-            error => Err(error),
+            error => Err(error.try_into().unwrap()),
         }
     }
 
     #[stability::unstable]
-    pub fn blocks(&self) -> Result<Vec<Box<dyn BlockDefinition>>, AsiResult> {
+    pub fn blocks(&self) -> Result<Vec<Box<dyn BlockDefinition>>> {
         let mut count: u32 = 0;
         match unsafe { asiEnumerateBlocks(self.handle, 0, &mut count, null_mut()) } {
             AsiResult::ASI_SUCCESS => (),
-            error => return Err(error),
+            error => return Err(error.try_into().unwrap()),
         };
 
         let mut buffer = vec![AsiBlockDefinition::default(); count as _];
         match unsafe { asiEnumerateBlocks(self.handle, count, &mut count, buffer.as_mut_ptr()) } {
             AsiResult::ASI_SUCCESS => (),
-            error => return Err(error),
+            error => return Err(error.try_into().unwrap()),
         };
 
         Ok(buffer
@@ -50,17 +49,17 @@ impl Instance {
     }
 
     #[stability::unstable]
-    pub fn flows(&self) -> Result<Vec<Box<dyn FlowDefinition>>, AsiResult> {
+    pub fn flows(&self) -> Result<Vec<Box<dyn FlowDefinition>>> {
         let mut count: u32 = 0;
         match unsafe { asiEnumerateFlows(self.handle, 0, &mut count, null_mut()) } {
             AsiResult::ASI_SUCCESS => (),
-            error => return Err(error),
+            error => return Err(error.try_into().unwrap()),
         };
 
         let mut buffer = vec![AsiFlowDefinition::default(); count as _];
         match unsafe { asiEnumerateFlows(self.handle, count, &mut count, buffer.as_mut_ptr()) } {
             AsiResult::ASI_SUCCESS => (),
-            error => return Err(error),
+            error => return Err(error.try_into().unwrap()),
         };
 
         Ok(buffer
@@ -70,17 +69,17 @@ impl Instance {
     }
 
     #[stability::unstable]
-    pub fn models(&self) -> Result<Vec<Box<dyn ModelManifest>>, AsiResult> {
+    pub fn models(&self) -> Result<Vec<Box<dyn ModelManifest>>> {
         let mut count: u32 = 0;
         match unsafe { asiEnumerateModels(self.handle, 0, &mut count, null_mut()) } {
             AsiResult::ASI_SUCCESS => (),
-            error => return Err(error),
+            error => return Err(error.try_into().unwrap()),
         };
 
         let mut buffer = vec![AsiModelManifest::default(); count as _];
         match unsafe { asiEnumerateModels(self.handle, count, &mut count, buffer.as_mut_ptr()) } {
             AsiResult::ASI_SUCCESS => (),
-            error => return Err(error),
+            error => return Err(error.try_into().unwrap()),
         };
 
         Ok(buffer
@@ -90,17 +89,17 @@ impl Instance {
     }
 
     #[stability::unstable]
-    pub fn modules(&self) -> Result<Vec<Box<dyn ModuleRegistration>>, AsiResult> {
+    pub fn modules(&self) -> Result<Vec<Box<dyn ModuleRegistration>>> {
         let mut count: u32 = 0;
         match unsafe { asiEnumerateModules(self.handle, 0, &mut count, null_mut()) } {
             AsiResult::ASI_SUCCESS => (),
-            error => return Err(error),
+            error => return Err(error.try_into().unwrap()),
         };
 
         let mut buffer = vec![AsiModuleRegistration::default(); count as _];
         match unsafe { asiEnumerateModules(self.handle, count, &mut count, buffer.as_mut_ptr()) } {
             AsiResult::ASI_SUCCESS => (),
-            error => return Err(error),
+            error => return Err(error.try_into().unwrap()),
         };
 
         Ok(buffer

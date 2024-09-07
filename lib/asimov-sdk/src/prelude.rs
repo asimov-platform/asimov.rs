@@ -19,6 +19,7 @@ pub use core::{
     marker::PhantomData,
     num::{ParseFloatError, ParseIntError},
     ops::Range,
+    ptr::{null, null_mut},
     result::Result,
     str::Utf8Error,
     sync::atomic::{AtomicBool, Ordering},
