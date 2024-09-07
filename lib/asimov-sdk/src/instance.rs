@@ -1,10 +1,10 @@
 // This is free and unencumbered software released into the public domain.
 
 use crate::{
-    flow::{FlowDefinition, LocalFlowDefinition},
-    prelude::{null, null_mut, vec, Box, Vec},
-    BlockDefinition, Error, LocalBlockDefinition, LocalModelManifest, ModelManifest,
-    ModuleRegistration, Result, StaticModuleRegistration,
+    flow::FlowDefinition,
+    prelude::{null, null_mut, vec, Box},
+    BlockDefinition, BlockDefinitionIter, FlowDefinitionIter, ModelManifest, ModelManifestIter,
+    ModuleRegistration, ModuleRegistrationIter, Result,
 };
 use asimov_sys::{
     asiCreateInstance, asiDestroyInstance, asiEnumerateBlocks, asiEnumerateFlows,
@@ -29,7 +29,7 @@ impl Instance {
     }
 
     #[stability::unstable]
-    pub fn blocks(&self) -> Result<Vec<Box<dyn BlockDefinition>>> {
+    pub fn blocks(&self) -> Result<impl Iterator<Item = Box<dyn BlockDefinition>>> {
         let mut count: u32 = 0;
         match unsafe { asiEnumerateBlocks(self.handle, 0, &mut count, null_mut()) } {
             AsiResult::ASI_SUCCESS => (),
@@ -42,14 +42,11 @@ impl Instance {
             error => return Err(error.try_into().unwrap()),
         };
 
-        Ok(buffer
-            .into_iter()
-            .map(|inner| Box::new(LocalBlockDefinition::new(inner)) as _)
-            .collect())
+        Ok(BlockDefinitionIter::from(buffer))
     }
 
     #[stability::unstable]
-    pub fn flows(&self) -> Result<Vec<Box<dyn FlowDefinition>>> {
+    pub fn flows(&self) -> Result<impl Iterator<Item = Box<dyn FlowDefinition>>> {
         let mut count: u32 = 0;
         match unsafe { asiEnumerateFlows(self.handle, 0, &mut count, null_mut()) } {
             AsiResult::ASI_SUCCESS => (),
@@ -62,14 +59,11 @@ impl Instance {
             error => return Err(error.try_into().unwrap()),
         };
 
-        Ok(buffer
-            .into_iter()
-            .map(|inner| Box::new(LocalFlowDefinition::new(inner)) as _)
-            .collect())
+        Ok(FlowDefinitionIter::from(buffer))
     }
 
     #[stability::unstable]
-    pub fn models(&self) -> Result<Vec<Box<dyn ModelManifest>>> {
+    pub fn models(&self) -> Result<impl Iterator<Item = Box<dyn ModelManifest>>> {
         let mut count: u32 = 0;
         match unsafe { asiEnumerateModels(self.handle, 0, &mut count, null_mut()) } {
             AsiResult::ASI_SUCCESS => (),
@@ -82,14 +76,11 @@ impl Instance {
             error => return Err(error.try_into().unwrap()),
         };
 
-        Ok(buffer
-            .into_iter()
-            .map(|inner| Box::new(LocalModelManifest::new(inner)) as _)
-            .collect())
+        Ok(ModelManifestIter::from(buffer))
     }
 
     #[stability::unstable]
-    pub fn modules(&self) -> Result<Vec<Box<dyn ModuleRegistration>>> {
+    pub fn modules(&self) -> Result<impl Iterator<Item = Box<dyn ModuleRegistration>>> {
         let mut count: u32 = 0;
         match unsafe { asiEnumerateModules(self.handle, 0, &mut count, null_mut()) } {
             AsiResult::ASI_SUCCESS => (),
@@ -102,10 +93,7 @@ impl Instance {
             error => return Err(error.try_into().unwrap()),
         };
 
-        Ok(buffer
-            .into_iter()
-            .map(|inner| Box::new(StaticModuleRegistration::new(inner)) as _)
-            .collect())
+        Ok(ModuleRegistrationIter::from(buffer))
     }
 }
 
