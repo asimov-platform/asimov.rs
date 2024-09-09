@@ -29,6 +29,7 @@ cfg_aliases.workspace = true
 
 [dependencies]
 asimov-sys = "24.0.0-dev.13"
+dogma.workspace = true
 know = "0"
 protoflow = { version = "=0.3.0", default-features = false, features = [
     "blocks",
@@ -38,7 +39,7 @@ protoflow = { version = "=0.3.0", default-features = false, features = [
 protoflow-blocks = { version = "=0.3.0", default-features = false, features = [
     "hash",
 ] }
-stability = "0.2"
+stability.workspace = true
 tokio = { version = "1.38", default-features = false, optional = true }
 tracing = { version = "0.1", default-features = false, optional = true }
 
