@@ -37,8 +37,5 @@ pub use module::*;
 mod module_iter;
 pub use module_iter::*;
 
-mod traits;
-pub use traits::*;
-
 mod version;
 pub use version::*;

@@ -4,6 +4,7 @@ extern crate alloc;
 
 #[allow(unused)]
 pub use alloc::{
+    borrow::Cow,
     boxed::Box,
     format,
     string::{FromUtf16Error, FromUtf8Error, String, ToString},
@@ -25,3 +26,6 @@ pub use core::{
     sync::atomic::{AtomicBool, Ordering},
     time::Duration,
 };
+
+pub use dogma::traits::{Labeled, Named};
+pub use dogma::traits::{MaybeLabeled, MaybeNamed};

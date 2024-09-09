@@ -2,14 +2,11 @@
 
 pub use protoflow::*;
 
-use crate::{
-    prelude::{fmt::Debug, String},
-    Named,
-};
+use crate::prelude::{fmt::Debug, Cow, Named, String};
 use asimov_sys::AsiFlowDefinition;
 
 #[stability::unstable]
-pub trait FlowDefinition: Debug + Named {}
+pub trait FlowDefinition: Named + Debug {}
 
 #[derive(Debug)]
 pub(crate) struct LocalFlowDefinition {
@@ -23,8 +20,8 @@ impl LocalFlowDefinition {
 }
 
 impl Named for LocalFlowDefinition {
-    fn name(&self) -> String {
-        self.inner.name_lossy().into_owned()
+    fn name(&self) -> Cow<str> {
+        self.inner.name_lossy()
     }
 }
 

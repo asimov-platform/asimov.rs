@@ -2,15 +2,14 @@
 
 use crate::{
     flow::{BlockDescriptor, PortDescriptor},
-    prelude::{fmt::Debug, null_mut, vec, String, Vec},
-    Named,
+    prelude::{fmt::Debug, null_mut, vec, Cow, MaybeLabeled, MaybeNamed, String, Vec},
 };
 use asimov_sys::{
     asiEnumerateBlockPorts, AsiBlockDefinition, AsiBlockPort, AsiInstance, AsiResult,
 };
 
 #[stability::unstable]
-pub trait BlockDefinition: Debug + Named + BlockDescriptor {}
+pub trait BlockDefinition: BlockDescriptor + Debug {}
 
 #[derive(Debug)]
 pub(crate) struct LocalBlockDefinition {
@@ -54,21 +53,19 @@ impl LocalBlockDefinition {
     }
 }
 
-impl Named for LocalBlockDefinition {
-    fn name(&self) -> String {
-        self.inner.name_lossy().into_owned()
+impl MaybeNamed for LocalBlockDefinition {
+    fn name(&self) -> Option<Cow<str>> {
+        Some(self.inner.name_lossy())
+    }
+}
+
+impl MaybeLabeled for LocalBlockDefinition {
+    fn label(&self) -> Option<Cow<str>> {
+        None
     }
 }
 
 impl BlockDescriptor for LocalBlockDefinition {
-    fn name(&self) -> Option<String> {
-        Some(Named::name(self))
-    }
-
-    fn label(&self) -> Option<String> {
-        None
-    }
-
     fn inputs(&self) -> Vec<PortDescriptor> {
         if self.inner.input_port_count == 0 {
             return vec![]; // no input ports
