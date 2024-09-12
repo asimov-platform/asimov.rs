@@ -50,7 +50,7 @@ impl Iterator for ModuleRegistrationIter {
         if self.index < self.elements.len() {
             let element = self.elements[self.index];
             self.index += 1;
-            Some(Box::new(StaticModuleRegistration::new(element)) as _)
+            Some(Box::new(StaticModuleRegistration::new(self.instance, element)) as _)
         } else {
             None // end of iteration
         }

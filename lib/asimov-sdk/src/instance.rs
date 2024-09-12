@@ -2,7 +2,7 @@
 
 use crate::{
     flow::FlowDefinition,
-    prelude::{null, Box},
+    prelude::{format, null, Box},
     BlockDefinition, BlockDefinitionIter, Error, FlowDefinitionIter, ModelManifest,
     ModelManifestIter, ModuleRegistration, ModuleRegistrationIter, Result,
 };
@@ -22,6 +22,16 @@ impl Instance {
             AsiResult::ASI_SUCCESS => Ok(instance),
             error => Err(error.try_into().unwrap()),
         }
+    }
+
+    #[stability::unstable]
+    pub fn has_feature(&self, _name: &str) -> Result<bool> {
+        Ok(false) // TODO
+    }
+
+    #[stability::unstable]
+    pub fn has_module(&self, _name: &str) -> Result<bool> {
+        Ok(false) // TODO
     }
 
     #[stability::unstable]
@@ -57,6 +67,11 @@ impl Instance {
     #[stability::unstable]
     pub fn vaults(&self) -> Result<()> {
         todo!("Instance#vaults") // TODO
+    }
+
+    #[stability::unstable]
+    pub fn lookup_module(&self, name: &str) -> Option<Box<dyn ModuleRegistration>> {
+        self.modules().ok()?.find(|module| module.name() == name)
     }
 }
 
