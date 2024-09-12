@@ -4,7 +4,7 @@
 pub type AsiInstance = u64;
 #[doc = " An SDK version number as a packed integer."]
 pub type AsiVersion = u64;
-#[repr(u32)]
+#[repr(i32)]
 #[doc = " The set of possible port states."]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq, FromPrimitive, ToPrimitive)]
 pub enum AsiPortState {
@@ -12,7 +12,7 @@ pub enum AsiPortState {
     ASI_PORT_STATE_CONNECTED = 2,
     ASI_PORT_STATE_CLOSED = 3,
 }
-#[repr(u32)]
+#[repr(i32)]
 #[doc = " The set of possible port types."]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq, FromPrimitive, ToPrimitive)]
 pub enum AsiPortType {
@@ -32,10 +32,33 @@ pub enum AsiResult {
     ASI_ERROR_DEVICE_MEMORY_EXHAUSTED = -4,
     ASI_ERROR_SIZE_INSUFFICIENT = -5,
 }
+#[repr(i32)]
+#[doc = " The set of possible SDK structure types."]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq, FromPrimitive, ToPrimitive)]
+pub enum AsiStructureType {
+    ASI_TYPE_UNKNOWN = 0,
+}
+#[doc = " The common header for all SDK structures."]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct AsiStructureHeader {
+    pub type_: AsiStructureType,
+    pub next: *mut AsiStructureHeader,
+}
+impl Default for AsiStructureHeader {
+    fn default() -> Self {
+        let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
 #[doc = " A block definition."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct AsiBlockDefinition {
+    pub header: AsiStructureHeader,
     pub name: [::core::ffi::c_char; 64usize],
     pub input_port_count: u32,
     pub output_port_count: u32,
@@ -50,10 +73,26 @@ impl Default for AsiBlockDefinition {
         }
     }
 }
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct AsiBlockExecuteInfo {
+    pub header: AsiStructureHeader,
+    pub name: [::core::ffi::c_char; 64usize],
+}
+impl Default for AsiBlockExecuteInfo {
+    fn default() -> Self {
+        let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
 #[doc = " A block parameter."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct AsiBlockParameter {
+    pub header: AsiStructureHeader,
     pub name: [::core::ffi::c_char; 64usize],
     pub default_value: [::core::ffi::c_char; 64usize],
 }
@@ -70,6 +109,7 @@ impl Default for AsiBlockParameter {
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct AsiBlockPort {
+    pub header: AsiStructureHeader,
     pub name: [::core::ffi::c_char; 64usize],
     pub type_: AsiPortType,
 }
@@ -86,6 +126,7 @@ impl Default for AsiBlockPort {
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct AsiBlockUsage {
+    pub header: AsiStructureHeader,
     pub name: [::core::ffi::c_char; 64usize],
     pub type_: [::core::ffi::c_char; 64usize],
 }
@@ -102,6 +143,7 @@ impl Default for AsiBlockUsage {
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct AsiFlowConnection {
+    pub header: AsiStructureHeader,
     pub source_block: [::core::ffi::c_char; 64usize],
     pub source_port: [::core::ffi::c_char; 64usize],
     pub target_block: [::core::ffi::c_char; 64usize],
@@ -116,10 +158,27 @@ impl Default for AsiFlowConnection {
         }
     }
 }
+#[doc = " Defines the flow being created."]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct AsiFlowCreateInfo {
+    pub header: AsiStructureHeader,
+    pub name: [::core::ffi::c_char; 64usize],
+}
+impl Default for AsiFlowCreateInfo {
+    fn default() -> Self {
+        let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
 #[doc = " A flow definition."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct AsiFlowDefinition {
+    pub header: AsiStructureHeader,
     pub name: [::core::ffi::c_char; 64usize],
     pub block_count: u32,
 }
@@ -132,10 +191,26 @@ impl Default for AsiFlowDefinition {
         }
     }
 }
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct AsiFlowExecuteInfo {
+    pub header: AsiStructureHeader,
+    pub name: [::core::ffi::c_char; 64usize],
+}
+impl Default for AsiFlowExecuteInfo {
+    fn default() -> Self {
+        let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
 #[doc = " A flow execution."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct AsiFlowExecution {
+    pub header: AsiStructureHeader,
     pub name: [::core::ffi::c_char; 64usize],
     pub pid: u64,
 }
@@ -148,10 +223,26 @@ impl Default for AsiFlowExecution {
         }
     }
 }
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct AsiModelDownloadInfo {
+    pub header: AsiStructureHeader,
+    pub name: [::core::ffi::c_char; 64usize],
+}
+impl Default for AsiModelDownloadInfo {
+    fn default() -> Self {
+        let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
 #[doc = " A model manifest."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct AsiModelManifest {
+    pub header: AsiStructureHeader,
     pub name: [::core::ffi::c_char; 64usize],
     pub size: u64,
 }
@@ -164,10 +255,27 @@ impl Default for AsiModelManifest {
         }
     }
 }
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct AsiModuleEnableInfo {
+    pub header: AsiStructureHeader,
+    pub name: [::core::ffi::c_char; 64usize],
+    pub enabled: bool,
+}
+impl Default for AsiModuleEnableInfo {
+    fn default() -> Self {
+        let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
 #[doc = " A module registration."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct AsiModuleRegistration {
+    pub header: AsiStructureHeader,
     pub name: [::core::ffi::c_char; 64usize],
     pub block_count: u32,
 }
@@ -182,6 +290,15 @@ impl Default for AsiModuleRegistration {
 }
 extern "C" {
     #[must_use]
+    #[doc = " Creates a new flow definition."]
+    pub fn asiCreateFlow(
+        instance: AsiInstance,
+        createInfo: *const AsiFlowCreateInfo,
+        flow: *mut AsiFlowDefinition,
+    ) -> AsiResult;
+}
+extern "C" {
+    #[must_use]
     #[doc = " Creates a new SDK instance."]
     pub fn asiCreateInstance(
         reserved: *const ::core::ffi::c_void,
@@ -192,6 +309,14 @@ extern "C" {
     #[must_use]
     #[doc = " Destroys an SDK instance."]
     pub fn asiDestroyInstance(instance: AsiInstance) -> AsiResult;
+}
+extern "C" {
+    #[must_use]
+    pub fn asiDownloadModel(instance: AsiInstance, info: *const AsiModelDownloadInfo) -> AsiResult;
+}
+extern "C" {
+    #[must_use]
+    pub fn asiEnableModule(instance: AsiInstance, info: *const AsiModuleEnableInfo) -> AsiResult;
 }
 extern "C" {
     #[must_use]
@@ -289,6 +414,14 @@ extern "C" {
     ) -> AsiResult;
 }
 extern "C" {
+    #[must_use]
+    pub fn asiExecuteBlock(instance: AsiInstance, info: *const AsiBlockExecuteInfo) -> AsiResult;
+}
+extern "C" {
+    #[must_use]
+    pub fn asiExecuteFlow(instance: AsiInstance, info: *const AsiFlowExecuteInfo) -> AsiResult;
+}
+extern "C" {
     #[doc = " Returns the SDK build's licensee string, if any."]
     pub fn asiGetLicenseeString() -> *const ::core::ffi::c_char;
 }
@@ -307,4 +440,9 @@ extern "C" {
         reserved: *const ::core::ffi::c_void,
         print_callback: *mut ::core::ffi::c_void,
     ) -> AsiResult;
+}
+extern "C" {
+    #[must_use]
+    #[doc = " Removes an existing flow definition."]
+    pub fn asiRemoveFlow(instance: AsiInstance, flow: *const AsiFlowDefinition) -> AsiResult;
 }
