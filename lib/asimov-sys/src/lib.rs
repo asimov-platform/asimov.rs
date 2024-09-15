@@ -214,7 +214,7 @@ impl AsiFlowConnection {
 impl AsiFlowDefinition {
     pub fn new(name: &str, block_count: u32) -> Self {
         Self {
-            name: string_to_static_array(name),
+            name: string_to_static_array(name), // truncated as needed
             block_count,
             ..Default::default()
         }

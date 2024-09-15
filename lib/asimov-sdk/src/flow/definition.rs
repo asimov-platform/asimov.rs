@@ -1,7 +1,5 @@
 // This is free and unencumbered software released into the public domain.
 
-pub use protoflow::*;
-
 use crate::prelude::{fmt::Debug, Cow, Named, String};
 use asimov_sys::AsiFlowDefinition;
 
@@ -14,7 +12,16 @@ pub(crate) struct LocalFlowDefinition {
 }
 
 impl LocalFlowDefinition {
-    pub fn new(inner: AsiFlowDefinition) -> Self {
+    #[allow(unused)]
+    pub fn new(name: &str, block_count: u32) -> Self {
+        Self {
+            inner: AsiFlowDefinition::new(name, block_count),
+        }
+    }
+}
+
+impl From<AsiFlowDefinition> for LocalFlowDefinition {
+    fn from(inner: AsiFlowDefinition) -> Self {
         Self { inner }
     }
 }

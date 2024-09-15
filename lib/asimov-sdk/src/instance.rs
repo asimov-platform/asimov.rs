@@ -1,10 +1,12 @@
 // This is free and unencumbered software released into the public domain.
 
 use crate::{
-    flow::FlowDefinition,
+    flow::{
+        FlowDefinition, FlowDefinitionIter, FlowExecution, LocalFlowDefinition, LocalFlowExecution,
+    },
     prelude::{format, null, Box},
-    BlockDefinition, BlockDefinitionIter, Error, FlowDefinitionIter, ModelManifest,
-    ModelManifestIter, ModuleRegistration, ModuleRegistrationIter, Result,
+    BlockDefinition, BlockDefinitionIter, Error, ModelManifest, ModelManifestIter,
+    ModuleRegistration, ModuleRegistrationIter, Result,
 };
 use asimov_sys::{asiCreateInstance, asiDestroyInstance, AsiInstance, AsiResult, ASI_NULL_HANDLE};
 
@@ -72,6 +74,36 @@ impl Instance {
     #[stability::unstable]
     pub fn lookup_module(&self, name: &str) -> Option<Box<dyn ModuleRegistration>> {
         self.modules().ok()?.find(|module| module.name() == name)
+    }
+
+    #[stability::unstable]
+    pub fn create_flow(&self, _name: &str) -> Result<Box<dyn FlowDefinition>> {
+        Err(Error::NotImplemented) // TODO
+    }
+
+    #[stability::unstable]
+    pub fn remove_flow(&self, _name: &str) -> Result<()> {
+        Err(Error::NotImplemented) // TODO
+    }
+
+    #[stability::unstable]
+    pub fn rename_flow(&self, _old_name: &str, _new_name: &str) -> Result<()> {
+        Err(Error::NotImplemented) // TODO
+    }
+
+    #[stability::unstable]
+    pub fn clone_flow(&self, _old_name: &str, _new_name: &str) -> Result<()> {
+        Err(Error::NotImplemented) // TODO
+    }
+
+    #[stability::unstable]
+    pub fn start_flow(&self, _name: &str) -> Result<Box<dyn FlowExecution>> {
+        Err(Error::NotImplemented) // TODO
+    }
+
+    #[stability::unstable]
+    pub fn stop_flow(&self, _name: &str) -> Result<()> {
+        Err(Error::NotImplemented) // TODO
     }
 }
 

@@ -1,7 +1,7 @@
 // This is free and unencumbered software released into the public domain.
 
+use super::{FlowDefinition, LocalFlowDefinition};
 use crate::{
-    flow::{FlowDefinition, LocalFlowDefinition},
     prelude::{null_mut, vec, Box, Vec},
     Error, Result,
 };
@@ -51,7 +51,7 @@ impl Iterator for FlowDefinitionIter {
         if self.index < self.elements.len() {
             let element = self.elements[self.index];
             self.index += 1;
-            Some(Box::new(LocalFlowDefinition::new(element)) as _)
+            Some(Box::new(LocalFlowDefinition::from(element)) as _)
         } else {
             None // end of iteration
         }
