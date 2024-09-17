@@ -6,16 +6,12 @@ use crate::{
 };
 use asimov_sys::{AsiFlowExecution, AsiFlowExecutionState};
 
-#[stability::unstable]
-pub trait FlowExecution: Named + Debug {}
-
 #[derive(Debug)]
-pub(crate) struct LocalFlowExecution {
-    inner: AsiFlowExecution,
+pub struct FlowExecution {
+    pub(crate) inner: AsiFlowExecution,
 }
 
-impl LocalFlowExecution {
-    #[allow(unused)]
+impl FlowExecution {
     pub fn new(name: &str, pid: u64, state: AsiFlowExecutionState) -> Self {
         Self {
             inner: AsiFlowExecution::new(name, pid, state),
@@ -23,16 +19,14 @@ impl LocalFlowExecution {
     }
 }
 
-impl From<AsiFlowExecution> for LocalFlowExecution {
+impl From<AsiFlowExecution> for FlowExecution {
     fn from(inner: AsiFlowExecution) -> Self {
         Self { inner }
     }
 }
 
-impl Named for LocalFlowExecution {
+impl Named for FlowExecution {
     fn name(&self) -> Cow<str> {
         self.inner.name_lossy()
     }
 }
-
-impl FlowExecution for LocalFlowExecution {}

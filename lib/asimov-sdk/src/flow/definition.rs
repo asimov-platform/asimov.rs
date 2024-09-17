@@ -1,17 +1,19 @@
 // This is free and unencumbered software released into the public domain.
 
+use super::FlowExecution;
 use crate::{
     prelude::{fmt::Debug, null_mut, vec, Box, Cow, String, Vec},
     BlockDefinition, BlockUsage, Named, Result,
 };
 use asimov_sys::{
-    asiEnumerateFlowBlocks, AsiBlockDefinition, AsiBlockUsage, AsiFlowDefinition, AsiInstance,
-    AsiResult,
+    asiEnumerateFlowBlocks, asiEnumerateFlowExecutions, AsiBlockDefinition, AsiBlockUsage,
+    AsiFlowDefinition, AsiFlowExecution, AsiInstance, AsiResult,
 };
 
 #[stability::unstable]
 pub trait FlowDefinition: Named + Debug {
     fn blocks(&self) -> Result<Vec<BlockUsage>>;
+    fn history(&self) -> Result<Vec<FlowExecution>>;
 }
 
 #[derive(Debug, Default)]
@@ -62,5 +64,31 @@ impl FlowDefinition for LocalFlowDefinition {
         };
 
         Ok(buffer.into_iter().map(BlockUsage::from).collect())
+    }
+
+    fn history(&self) -> Result<Vec<FlowExecution>> {
+        let mut count: u32 = 0;
+        match unsafe {
+            asiEnumerateFlowExecutions(self.instance, &self.inner, 0, &mut count, null_mut())
+        } {
+            AsiResult::ASI_SUCCESS => (),
+            error => return Err(error.try_into().unwrap()),
+        };
+
+        let mut buffer = vec![AsiFlowExecution::default(); count as _];
+        match unsafe {
+            asiEnumerateFlowExecutions(
+                self.instance,
+                &self.inner,
+                count,
+                &mut count,
+                buffer.as_mut_ptr(),
+            )
+        } {
+            AsiResult::ASI_SUCCESS => (),
+            error => return Err(error.try_into().unwrap()),
+        };
+
+        Ok(buffer.into_iter().map(FlowExecution::from).collect())
     }
 }

@@ -1,9 +1,7 @@
 // This is free and unencumbered software released into the public domain.
 
 use crate::{
-    flow::{
-        FlowDefinition, FlowDefinitionIter, FlowExecution, LocalFlowDefinition, LocalFlowExecution,
-    },
+    flow::{FlowDefinition, FlowDefinitionIter, FlowExecution, LocalFlowDefinition},
     prelude::{format, null, Box},
     BlockDefinition, BlockDefinitionIter, Error, ModelManifest, ModelManifestIter,
     ModuleRegistration, ModuleRegistrationIter, Result,
@@ -162,11 +160,11 @@ impl Instance {
     }
 
     #[stability::unstable]
-    pub fn start_flow_execution(&self, name: &str) -> Result<Box<dyn FlowExecution>> {
+    pub fn start_flow_execution(&self, name: &str) -> Result<FlowExecution> {
         let request = AsiFlowExecuteInfo::new(name);
         let mut response = AsiFlowExecution::default();
         match unsafe { asiStartFlowExecution(self.handle, &request, &mut response) } {
-            AsiResult::ASI_SUCCESS => Ok(Box::new(LocalFlowExecution::from(response))),
+            AsiResult::ASI_SUCCESS => Ok(FlowExecution::from(response)),
             error => Err(error.try_into().unwrap()),
         }
     }
