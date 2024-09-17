@@ -26,6 +26,3 @@ pub use core::{
     sync::atomic::{AtomicBool, Ordering},
     time::Duration,
 };
-
-pub use dogma::traits::{Labeled, Named};
-pub use dogma::traits::{MaybeLabeled, MaybeNamed};

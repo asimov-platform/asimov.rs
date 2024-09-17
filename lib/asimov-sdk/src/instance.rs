@@ -111,6 +111,11 @@ impl Instance {
     }
 
     #[stability::unstable]
+    pub fn open_flow(&self, name: &str) -> Result<Box<dyn FlowDefinition>> {
+        Ok(Box::new(LocalFlowDefinition::named(self.handle, name)))
+    }
+
+    #[stability::unstable]
     pub fn create_flow(&self, name: &str) -> Result<Box<dyn FlowDefinition>> {
         let request = AsiFlowCreateInfo::new(name);
         let mut response = LocalFlowDefinition::default();

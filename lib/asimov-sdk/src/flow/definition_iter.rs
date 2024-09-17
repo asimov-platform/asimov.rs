@@ -51,7 +51,7 @@ impl Iterator for FlowDefinitionIter {
         if self.index < self.elements.len() {
             let element = self.elements[self.index];
             self.index += 1;
-            Some(Box::new(LocalFlowDefinition::from(element)) as _)
+            Some(Box::new(LocalFlowDefinition::new(self.instance, element)) as _)
         } else {
             None // end of iteration
         }

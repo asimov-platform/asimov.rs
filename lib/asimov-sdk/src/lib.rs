@@ -11,6 +11,9 @@ pub use block::*;
 mod block_iter;
 pub use block_iter::*;
 
+mod block_usage;
+pub use block_usage::*;
+
 mod error;
 pub use error::*;
 
@@ -44,3 +47,6 @@ pub use module_iter::*;
 
 mod version;
 pub use version::*;
+
+pub use dogma::traits::{Labeled, Named};
+pub use dogma::traits::{MaybeLabeled, MaybeNamed};

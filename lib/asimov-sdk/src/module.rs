@@ -1,6 +1,9 @@
 // This is free and unencumbered software released into the public domain.
 
-use crate::prelude::{fmt::Debug, Cow, Named, Result, String};
+use crate::{
+    prelude::{fmt::Debug, Cow, Result, String},
+    Named,
+};
 use asimov_sys::{AsiInstance, AsiModuleRegistration};
 
 #[stability::unstable]

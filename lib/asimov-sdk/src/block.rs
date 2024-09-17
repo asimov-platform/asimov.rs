@@ -2,7 +2,8 @@
 
 use crate::{
     flow::{BlockDescriptor, PortDescriptor},
-    prelude::{fmt::Debug, null_mut, vec, Cow, MaybeLabeled, MaybeNamed, String, Vec},
+    prelude::{fmt::Debug, null_mut, vec, Cow, String, Vec},
+    MaybeLabeled, MaybeNamed,
 };
 use asimov_sys::{
     asiEnumerateBlockPorts, AsiBlockDefinition, AsiBlockPort, AsiInstance, AsiResult,
