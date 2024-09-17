@@ -6,9 +6,9 @@ use asimov_sys::AsiFlowDefinition;
 #[stability::unstable]
 pub trait FlowDefinition: Named + Debug {}
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub(crate) struct LocalFlowDefinition {
-    inner: AsiFlowDefinition,
+    pub(crate) inner: AsiFlowDefinition,
 }
 
 impl LocalFlowDefinition {

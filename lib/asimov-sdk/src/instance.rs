@@ -8,7 +8,13 @@ use crate::{
     BlockDefinition, BlockDefinitionIter, Error, ModelManifest, ModelManifestIter,
     ModuleRegistration, ModuleRegistrationIter, Result,
 };
-use asimov_sys::{asiCreateInstance, asiDestroyInstance, AsiInstance, AsiResult, ASI_NULL_HANDLE};
+use asimov_sys::{
+    asiCloneFlow, asiCreateFlow, asiCreateInstance, asiDestroyInstance, asiDownloadModel,
+    asiEnableModule, asiExecuteFlow, asiPollFlowExecution, asiRemoveFlow, asiStartFlowExecution,
+    asiStopFlowExecution, asiUpdateFlow, AsiFlowCreateInfo, AsiFlowDefinition, AsiFlowExecuteInfo,
+    AsiFlowExecution, AsiFlowExecutionState, AsiFlowUpdateInfo, AsiInstance, AsiModelDownloadInfo,
+    AsiModuleEnableInfo, AsiResult, AsiStructureHeader, ASI_NULL_HANDLE,
+};
 
 #[derive(Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Instance {
@@ -77,33 +83,106 @@ impl Instance {
     }
 
     #[stability::unstable]
-    pub fn create_flow(&self, _name: &str) -> Result<Box<dyn FlowDefinition>> {
-        Err(Error::NotImplemented) // TODO
+    pub fn enable_module(&self, name: &str) -> Result<()> {
+        self.toggle_module(name, true)
     }
 
     #[stability::unstable]
-    pub fn remove_flow(&self, _name: &str) -> Result<()> {
-        Err(Error::NotImplemented) // TODO
+    pub fn disable_module(&self, name: &str) -> Result<()> {
+        self.toggle_module(name, false)
     }
 
     #[stability::unstable]
-    pub fn rename_flow(&self, _old_name: &str, _new_name: &str) -> Result<()> {
-        Err(Error::NotImplemented) // TODO
+    pub fn toggle_module(&self, name: &str, enabled: bool) -> Result<()> {
+        let request = AsiModuleEnableInfo::new(name, enabled);
+        match unsafe { asiEnableModule(self.handle, &request) } {
+            AsiResult::ASI_SUCCESS => Ok(()),
+            error => Err(error.try_into().unwrap()),
+        }
     }
 
     #[stability::unstable]
-    pub fn clone_flow(&self, _old_name: &str, _new_name: &str) -> Result<()> {
-        Err(Error::NotImplemented) // TODO
+    pub fn download_model(&self, name: &str) -> Result<()> {
+        let request = AsiModelDownloadInfo::new(name);
+        match unsafe { asiDownloadModel(self.handle, &request) } {
+            AsiResult::ASI_SUCCESS => Ok(()),
+            error => Err(error.try_into().unwrap()),
+        }
     }
 
     #[stability::unstable]
-    pub fn start_flow(&self, _name: &str) -> Result<Box<dyn FlowExecution>> {
-        Err(Error::NotImplemented) // TODO
+    pub fn create_flow(&self, name: &str) -> Result<Box<dyn FlowDefinition>> {
+        let request = AsiFlowCreateInfo::new(name);
+        let mut response = LocalFlowDefinition::default();
+        match unsafe { asiCreateFlow(self.handle, &request, &mut response.inner) } {
+            AsiResult::ASI_SUCCESS => Ok(Box::new(LocalFlowDefinition::from(response))),
+            error => Err(error.try_into().unwrap()),
+        }
     }
 
     #[stability::unstable]
-    pub fn stop_flow(&self, _name: &str) -> Result<()> {
-        Err(Error::NotImplemented) // TODO
+    pub fn remove_flow(&self, name: &str) -> Result<()> {
+        let request = AsiFlowDefinition::new(name, 0);
+        match unsafe { asiRemoveFlow(self.handle, &request) } {
+            AsiResult::ASI_SUCCESS => Ok(()),
+            error => Err(error.try_into().unwrap()),
+        }
+    }
+
+    #[stability::unstable]
+    pub fn rename_flow(&self, old_name: &str, new_name: &str) -> Result<()> {
+        let request = AsiFlowUpdateInfo::new(old_name, new_name);
+        match unsafe { asiUpdateFlow(self.handle, &request) } {
+            AsiResult::ASI_SUCCESS => Ok(()),
+            error => Err(error.try_into().unwrap()),
+        }
+    }
+
+    #[stability::unstable]
+    pub fn clone_flow(&self, old_name: &str, new_name: &str) -> Result<()> {
+        let request = AsiFlowUpdateInfo::new(old_name, new_name);
+        match unsafe { asiCloneFlow(self.handle, &request) } {
+            AsiResult::ASI_SUCCESS => Ok(()),
+            error => Err(error.try_into().unwrap()),
+        }
+    }
+
+    #[stability::unstable]
+    pub fn execute_flow(&self, name: &str) -> Result<()> {
+        let request = AsiFlowExecuteInfo::new(name);
+        match unsafe { asiExecuteFlow(self.handle, &request) } {
+            AsiResult::ASI_SUCCESS => Ok(()),
+            error => Err(error.try_into().unwrap()),
+        }
+    }
+
+    #[stability::unstable]
+    pub fn start_flow_execution(&self, name: &str) -> Result<Box<dyn FlowExecution>> {
+        let request = AsiFlowExecuteInfo::new(name);
+        let mut response = AsiFlowExecution::default();
+        match unsafe { asiStartFlowExecution(self.handle, &request, &mut response) } {
+            AsiResult::ASI_SUCCESS => Ok(Box::new(LocalFlowExecution::from(response))),
+            error => Err(error.try_into().unwrap()),
+        }
+    }
+
+    #[stability::unstable]
+    pub fn poll_flow_execution(&self, name: &str) -> Result<AsiFlowExecutionState> {
+        let request = AsiFlowExecution::named(name);
+        let mut response = AsiFlowExecutionState::default();
+        match unsafe { asiPollFlowExecution(self.handle, &request, &mut response) } {
+            AsiResult::ASI_SUCCESS => Ok(response),
+            error => Err(error.try_into().unwrap()),
+        }
+    }
+
+    #[stability::unstable]
+    pub fn stop_flow_execution(&self, name: &str) -> Result<()> {
+        let request = AsiFlowExecution::named(name);
+        match unsafe { asiStopFlowExecution(self.handle, &request) } {
+            AsiResult::ASI_SUCCESS => Ok(()),
+            error => Err(error.try_into().unwrap()),
+        }
     }
 }
 
