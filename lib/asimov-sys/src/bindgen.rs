@@ -5,6 +5,15 @@ pub type AsiInstance = u64;
 #[doc = " An SDK version number as a packed integer."]
 pub type AsiVersion = u64;
 #[repr(i32)]
+#[doc = " The set of possible flow execution states."]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq, FromPrimitive, ToPrimitive)]
+pub enum AsiFlowExecutionState {
+    ASI_FLOW_EXECUTION_STATE_UNKNOWN = 0,
+    ASI_FLOW_EXECUTION_STATE_STARTED = 1,
+    ASI_FLOW_EXECUTION_STATE_COMPLETED = 2,
+    ASI_FLOW_EXECUTION_STATE_FAILED = 3,
+}
+#[repr(i32)]
 #[doc = " The set of possible port states."]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq, FromPrimitive, ToPrimitive)]
 pub enum AsiPortState {
@@ -213,8 +222,25 @@ pub struct AsiFlowExecution {
     pub header: AsiStructureHeader,
     pub name: [::core::ffi::c_char; 64usize],
     pub pid: u64,
+    pub state: AsiFlowExecutionState,
 }
 impl Default for AsiFlowExecution {
+    fn default() -> Self {
+        let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct AsiFlowUpdateInfo {
+    pub header: AsiStructureHeader,
+    pub name: [::core::ffi::c_char; 64usize],
+    pub new_name: [::core::ffi::c_char; 64usize],
+}
+impl Default for AsiFlowUpdateInfo {
     fn default() -> Self {
         let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
         unsafe {
@@ -255,6 +281,22 @@ impl Default for AsiModelManifest {
         }
     }
 }
+#[doc = " A model tensor."]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct AsiModelTensor {
+    pub header: AsiStructureHeader,
+    pub name: [::core::ffi::c_char; 64usize],
+}
+impl Default for AsiModelTensor {
+    fn default() -> Self {
+        let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct AsiModuleEnableInfo {
@@ -287,6 +329,11 @@ impl Default for AsiModuleRegistration {
             s.assume_init()
         }
     }
+}
+extern "C" {
+    #[must_use]
+    #[doc = " Clones an existing flow definition."]
+    pub fn asiCloneFlow(instance: AsiInstance, clone_info: *const AsiFlowUpdateInfo) -> AsiResult;
 }
 extern "C" {
     #[must_use]
@@ -395,7 +442,17 @@ extern "C" {
 }
 extern "C" {
     #[must_use]
-    #[doc = " Enumerates model manifests."]
+    #[doc = " Enumerates model tensors."]
+    pub fn asiEnumerateModelTensors(
+        instance: AsiInstance,
+        buffer_capacity: u32,
+        actual_count: *mut u32,
+        buffer: *mut AsiModelTensor,
+    ) -> AsiResult;
+}
+extern "C" {
+    #[must_use]
+    #[doc = " Enumerates models."]
     pub fn asiEnumerateModels(
         instance: AsiInstance,
         buffer_capacity: u32,
@@ -443,6 +500,35 @@ extern "C" {
 }
 extern "C" {
     #[must_use]
+    pub fn asiPollFlowExecution(
+        instance: AsiInstance,
+        execution: *const AsiFlowExecution,
+        state: *mut AsiFlowExecutionState,
+    ) -> AsiResult;
+}
+extern "C" {
+    #[must_use]
     #[doc = " Removes an existing flow definition."]
     pub fn asiRemoveFlow(instance: AsiInstance, flow: *const AsiFlowDefinition) -> AsiResult;
+}
+extern "C" {
+    #[must_use]
+    pub fn asiStartFlowExecution(
+        instance: AsiInstance,
+        info: *const AsiFlowExecuteInfo,
+        execution: *mut AsiFlowExecution,
+    ) -> AsiResult;
+}
+extern "C" {
+    #[must_use]
+    pub fn asiStopFlowExecution(
+        instance: AsiInstance,
+        execution: *const AsiFlowExecution,
+    ) -> AsiResult;
+}
+extern "C" {
+    #[must_use]
+    #[doc = " Mutates an existing flow definition."]
+    pub fn asiUpdateFlow(instance: AsiInstance, update_info: *const AsiFlowUpdateInfo)
+        -> AsiResult;
 }
