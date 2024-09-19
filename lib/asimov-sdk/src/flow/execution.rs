@@ -1,5 +1,6 @@
 // This is free and unencumbered software released into the public domain.
 
+use super::FlowExecutionState;
 use crate::{
     prelude::{fmt::Debug, Cow, String},
     Named,
@@ -16,6 +17,14 @@ impl FlowExecution {
         Self {
             inner: AsiFlowExecution::new(name, pid, state),
         }
+    }
+
+    pub fn pid(&self) -> u64 {
+        self.inner.pid
+    }
+
+    pub fn state(&self) -> FlowExecutionState {
+        self.inner.state.into()
     }
 }
 
