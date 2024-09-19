@@ -9,7 +9,7 @@ pub enum FlowExecutionState {
     Unknown,
     Started,
     Completed,
-    Failed,
+    Failed(Option<i32>),
 }
 
 impl FlowExecutionState {
@@ -19,7 +19,7 @@ impl FlowExecutionState {
             Unknown => "unknown",
             Started => "started",
             Completed => "completed",
-            Failed => "failed",
+            Failed(_) => "failed",
         }
     }
 }
@@ -31,7 +31,7 @@ impl From<AsiFlowExecutionState> for FlowExecutionState {
             ASI_FLOW_EXECUTION_STATE_UNKNOWN => FlowExecutionState::Unknown,
             ASI_FLOW_EXECUTION_STATE_STARTED => FlowExecutionState::Started,
             ASI_FLOW_EXECUTION_STATE_COMPLETED => FlowExecutionState::Completed,
-            ASI_FLOW_EXECUTION_STATE_FAILED => FlowExecutionState::Failed,
+            ASI_FLOW_EXECUTION_STATE_FAILED => FlowExecutionState::Failed(None),
         }
     }
 }
@@ -40,7 +40,7 @@ impl From<i32> for FlowExecutionState {
     fn from(state: i32) -> Self {
         match state {
             0 => Self::Completed,
-            _ => Self::Failed,
+            code => Self::Failed(Some(code)),
         }
     }
 }
@@ -64,7 +64,7 @@ impl Into<AsiFlowExecutionState> for FlowExecutionState {
             Unknown => AsiFlowExecutionState::ASI_FLOW_EXECUTION_STATE_UNKNOWN,
             Started => AsiFlowExecutionState::ASI_FLOW_EXECUTION_STATE_STARTED,
             Completed => AsiFlowExecutionState::ASI_FLOW_EXECUTION_STATE_COMPLETED,
-            Failed => AsiFlowExecutionState::ASI_FLOW_EXECUTION_STATE_FAILED,
+            Failed(_) => AsiFlowExecutionState::ASI_FLOW_EXECUTION_STATE_FAILED,
         }
     }
 }
