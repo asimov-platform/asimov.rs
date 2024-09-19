@@ -23,8 +23,11 @@ impl FlowExecution {
         self.inner.timestamp
     }
 
-    pub fn pid(&self) -> u64 {
-        self.inner.pid
+    pub fn pid(&self) -> Option<u64> {
+        match self.inner.pid {
+            0 => None,
+            pid => Some(pid),
+        }
     }
 
     pub fn state(&self) -> FlowExecutionState {

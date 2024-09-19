@@ -36,6 +36,27 @@ impl From<AsiFlowExecutionState> for FlowExecutionState {
     }
 }
 
+impl From<i32> for FlowExecutionState {
+    fn from(state: i32) -> Self {
+        match state {
+            0 => Self::Completed,
+            _ => Self::Failed,
+        }
+    }
+}
+
+#[cfg(feature = "std")]
+impl TryFrom<std::process::ExitStatus> for FlowExecutionState {
+    type Error = Option<i32>;
+
+    fn try_from(status: std::process::ExitStatus) -> Result<Self, Self::Error> {
+        match status.code() {
+            Some(code) => Ok(Self::from(code)),
+            None => Err(None), // TODO: could have been terminated by a signal
+        }
+    }
+}
+
 impl Into<AsiFlowExecutionState> for FlowExecutionState {
     fn into(self) -> AsiFlowExecutionState {
         use FlowExecutionState::*;
