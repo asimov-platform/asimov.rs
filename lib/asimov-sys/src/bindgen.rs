@@ -220,9 +220,10 @@ impl Default for AsiFlowExecuteInfo {
 #[derive(Debug, Copy, Clone)]
 pub struct AsiFlowExecution {
     pub header: AsiStructureHeader,
-    pub name: [::core::ffi::c_char; 64usize],
+    pub timestamp: u64,
     pub pid: u64,
     pub state: AsiFlowExecutionState,
+    pub name: [::core::ffi::c_char; 64usize],
 }
 impl Default for AsiFlowExecution {
     fn default() -> Self {
@@ -333,7 +334,7 @@ impl Default for AsiModuleRegistration {
 extern "C" {
     #[must_use]
     #[doc = " Clones an existing flow definition."]
-    pub fn asiCloneFlow(instance: AsiInstance, clone_info: *const AsiFlowUpdateInfo) -> AsiResult;
+    pub fn asiCloneFlow(instance: AsiInstance, request: *const AsiFlowUpdateInfo) -> AsiResult;
 }
 extern "C" {
     #[must_use]
@@ -476,7 +477,7 @@ extern "C" {
 }
 extern "C" {
     #[must_use]
-    pub fn asiExecuteFlow(instance: AsiInstance, info: *const AsiFlowExecuteInfo) -> AsiResult;
+    pub fn asiExecuteFlow(instance: AsiInstance, request: *const AsiFlowExecuteInfo) -> AsiResult;
 }
 extern "C" {
     #[doc = " Returns the SDK build's licensee string, if any."]
@@ -529,6 +530,5 @@ extern "C" {
 extern "C" {
     #[must_use]
     #[doc = " Mutates an existing flow definition."]
-    pub fn asiUpdateFlow(instance: AsiInstance, update_info: *const AsiFlowUpdateInfo)
-        -> AsiResult;
+    pub fn asiUpdateFlow(instance: AsiInstance, request: *const AsiFlowUpdateInfo) -> AsiResult;
 }

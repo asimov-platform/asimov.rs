@@ -13,10 +13,14 @@ pub struct FlowExecution {
 }
 
 impl FlowExecution {
-    pub fn new(name: &str, pid: u64, state: AsiFlowExecutionState) -> Self {
+    pub fn new(name: &str, timestamp: u64, pid: u64, state: AsiFlowExecutionState) -> Self {
         Self {
-            inner: AsiFlowExecution::new(name, pid, state),
+            inner: AsiFlowExecution::new(name, timestamp, pid, state),
         }
+    }
+
+    pub fn timestamp(&self) -> u64 {
+        self.inner.timestamp
     }
 
     pub fn pid(&self) -> u64 {

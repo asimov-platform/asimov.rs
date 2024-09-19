@@ -237,11 +237,12 @@ impl AsiFlowExecution {
         }
     }
 
-    pub fn new(name: &str, pid: u64, state: AsiFlowExecutionState) -> Self {
+    pub fn new(name: &str, timestamp: u64, pid: u64, state: AsiFlowExecutionState) -> Self {
         Self {
-            name: string_to_static_array(name),
+            timestamp,
             pid,
             state,
+            name: string_to_static_array(name),
             ..Default::default()
         }
     }
