@@ -34,8 +34,8 @@ web = ["protoflow/web"]
 cfg_aliases.workspace = true
 
 [dependencies]
-asimov-core = "24.0.0-dev.16"
-asimov-sys = "24.0.0-dev.16"
+asimov-core = "24.0.0-dev.17"
+asimov-sys = "24.0.0-dev.17"
 protoflow = { version = "=0.3.0", default-features = false, features = [
     "blocks",
     "derive",
