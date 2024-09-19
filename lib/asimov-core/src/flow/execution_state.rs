@@ -22,6 +22,17 @@ impl FlowExecutionState {
             Failed(_) => "failed",
         }
     }
+
+    #[allow(dead_code)]
+    fn as_i32(&self) -> Option<i32> {
+        use FlowExecutionState::*;
+        match self {
+            Unknown => None,
+            Started => None,
+            Completed => Some(0),
+            Failed(code) => *code,
+        }
+    }
 }
 
 impl From<AsiFlowExecutionState> for FlowExecutionState {
