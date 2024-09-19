@@ -1,6 +1,7 @@
 // This is free and unencumbered software released into the public domain.
 
 use asimov_sys::AsiFlowExecutionState;
+use core::fmt;
 
 #[derive(Debug, Default)]
 pub enum FlowExecutionState {
@@ -9,6 +10,18 @@ pub enum FlowExecutionState {
     Started,
     Completed,
     Failed,
+}
+
+impl FlowExecutionState {
+    fn as_str(&self) -> &'static str {
+        use FlowExecutionState::*;
+        match self {
+            Unknown => "unknown",
+            Started => "started",
+            Completed => "completed",
+            Failed => "failed",
+        }
+    }
 }
 
 impl From<AsiFlowExecutionState> for FlowExecutionState {
@@ -32,5 +45,11 @@ impl Into<AsiFlowExecutionState> for FlowExecutionState {
             Completed => AsiFlowExecutionState::ASI_FLOW_EXECUTION_STATE_COMPLETED,
             Failed => AsiFlowExecutionState::ASI_FLOW_EXECUTION_STATE_FAILED,
         }
+    }
+}
+
+impl fmt::Display for FlowExecutionState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.as_str())
     }
 }
