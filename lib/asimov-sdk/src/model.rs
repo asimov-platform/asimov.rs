@@ -6,8 +6,7 @@ use crate::{
 };
 use asimov_sys::AsiModelManifest;
 
-#[stability::unstable]
-pub trait ModelManifest: Named + Debug {}
+pub use asimov_core::model::ModelManifest;
 
 #[derive(Debug)]
 pub(crate) struct LocalModelManifest {

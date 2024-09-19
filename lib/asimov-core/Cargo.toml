@@ -1,0 +1,29 @@
+[package]
+name = "asimov-core"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description.workspace = true
+#documentation.workspace = true
+readme.workspace = true
+homepage.workspace = true
+repository.workspace = true
+license.workspace = true
+keywords = ["ai", "sdk", "peer-to-peer", "fbp"]
+categories = ["api-bindings", "text-processing"]
+publish.workspace = true
+
+[features]
+default = ["all", "std"]
+all = ["tracing"]
+std = ["asimov-sys/std", "dogma/std", "protoflow-core/std"]
+tracing = ["protoflow-core/tracing"]
+unstable = []
+
+[dependencies]
+asimov-sys = "24.0.0-dev.16"
+dogma.workspace = true
+know.workspace = true
+protoflow-core = { version = "=0.3.0", default-features = false }
+stability.workspace = true

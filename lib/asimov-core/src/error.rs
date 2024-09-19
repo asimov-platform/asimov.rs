@@ -1,15 +1,19 @@
 // This is free and unencumbered software released into the public domain.
 
-use crate::prelude::{
-    c_int, fmt, format, FromBytesWithNulError, FromUtf16Error, FromUtf8Error, ParseFloatError,
-    ParseIntError, String, ToString, TryFrom, Utf8Error,
+use alloc::{
+    format,
+    string::{FromUtf16Error, FromUtf8Error, String, ToString},
 };
 use asimov_sys::AsiResult;
+use core::{
+    convert::TryFrom,
+    ffi::{c_int, FromBytesWithNulError},
+    fmt,
+    num::{ParseFloatError, ParseIntError},
+    str::Utf8Error,
+};
 
-#[cfg(feature = "std")]
-extern crate std;
-
-pub type Result<T, E = Error> = crate::prelude::Result<T, E>;
+pub type Result<T, E = Error> = core::result::Result<T, E>;
 
 #[allow(unused)]
 #[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]

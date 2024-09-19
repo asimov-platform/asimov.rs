@@ -21,12 +21,15 @@ categories = []
 publish = true
 
 [workspace.dependencies]
+asimov-core = { path = "lib/asimov-core" }
 asimov-sdk = { path = "lib/asimov-sdk" }
 asimov-sys = { path = "lib/asimov-sys" }
 cfg_aliases = "0.2"
 dogma = { version = "0.1", default-features = false }
+know = { version = "0", default-features = true }
 stability = "0.2"
 
 [patch.crates-io]
+asimov-core = { path = "lib/asimov-core" }
 asimov-sdk = { path = "lib/asimov-sdk" }
 asimov-sys = { path = "lib/asimov-sys" }

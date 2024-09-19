@@ -14,22 +14,21 @@ pub use block_iter::*;
 mod block_usage;
 pub use block_usage::*;
 
-mod error;
-pub use error::*;
+pub use ::asimov_core::error::*;
 
 mod feature;
 pub use feature::*;
 
 pub mod flow {
-    pub use protoflow::*;
+    pub use ::asimov_core::flow::*;
+    pub use ::protoflow::*;
+
     mod definition;
     pub use definition::*;
     mod definition_iter;
     pub use definition_iter::*;
     mod execution;
     pub use execution::*;
-    mod execution_state;
-    pub use execution_state::*;
 }
 
 mod instance;
@@ -50,5 +49,5 @@ pub use module_iter::*;
 mod version;
 pub use version::*;
 
-pub use dogma::traits::{Labeled, Named};
-pub use dogma::traits::{MaybeLabeled, MaybeNamed};
+pub use ::asimov_core::{Labeled, Named};
+pub use ::asimov_core::{MaybeLabeled, MaybeNamed};

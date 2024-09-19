@@ -6,16 +6,7 @@ use crate::{
 };
 use asimov_sys::{AsiInstance, AsiModuleRegistration};
 
-#[stability::unstable]
-pub trait ModuleRegistration: Named + Debug {
-    fn is_enabled(&self) -> bool {
-        true
-    }
-
-    fn enable(&mut self) -> Result<bool, ()>;
-
-    fn disable(&mut self) -> Result<bool, ()>;
-}
+pub use asimov_core::module::ModuleRegistration;
 
 #[derive(Debug)]
 pub(crate) struct StaticModuleRegistration {

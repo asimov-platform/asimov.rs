@@ -9,8 +9,7 @@ use asimov_sys::{
     asiEnumerateBlockPorts, AsiBlockDefinition, AsiBlockPort, AsiInstance, AsiResult,
 };
 
-#[stability::unstable]
-pub trait BlockDefinition: BlockDescriptor + Debug {}
+pub use asimov_core::block::BlockDefinition;
 
 #[derive(Debug)]
 pub(crate) struct LocalBlockDefinition {

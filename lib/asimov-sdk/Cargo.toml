@@ -18,19 +18,24 @@ publish.workspace = true
 default = ["all", "std"]
 all = ["derive", "tracing"]
 derive = ["protoflow/derive"]
-std = ["asimov-sys/std", "protoflow/std", "tokio?/full", "tracing?/std"]
+std = [
+    "asimov-core/std",
+    "asimov-sys/std",
+    "protoflow/std",
+    "tokio?/full",
+    "tracing?/std",
+]
 tokio = ["dep:tokio", "protoflow/tokio"]
 tracing = ["dep:tracing", "protoflow/tracing"]
-unstable = []
+unstable = ["asimov-core/unstable", "asimov-sys/unstable"]
 web = ["protoflow/web"]
 
 [build-dependencies]
 cfg_aliases.workspace = true
 
 [dependencies]
+asimov-core = "24.0.0-dev.16"
 asimov-sys = "24.0.0-dev.16"
-dogma.workspace = true
-know = "0"
 protoflow = { version = "=0.3.0", default-features = false, features = [
     "blocks",
     "derive",
