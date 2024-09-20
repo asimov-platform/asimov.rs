@@ -19,6 +19,16 @@ impl Display for AsiBlockExecuteInfo {
     }
 }
 
+impl Display for AsiBlockExecution {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("AsiBlockExecution")
+            .field("name", &self.name_lossy())
+            .field("pid", &self.pid)
+            .field("state", &self.state)
+            .finish()
+    }
+}
+
 impl Display for AsiBlockParameter {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("AsiBlockParameter")

@@ -58,6 +58,33 @@ impl AsiBlockExecuteInfo {
     }
 }
 
+impl AsiBlockExecution {
+    pub fn named(name: &str) -> Self {
+        Self {
+            name: string_to_static_array(name),
+            ..Default::default()
+        }
+    }
+
+    pub fn new(name: &str, timestamp: u64, pid: u64, state: AsiFlowExecutionState) -> Self {
+        Self {
+            timestamp,
+            pid,
+            state,
+            name: string_to_static_array(name),
+            ..Default::default()
+        }
+    }
+
+    pub fn name(&self) -> Result<&str, Utf8Error> {
+        unsafe { CStr::from_ptr(self.name.as_ptr()) }.to_str()
+    }
+
+    pub fn name_lossy(&self) -> Cow<'_, str> {
+        unsafe { CStr::from_ptr(self.name.as_ptr()) }.to_string_lossy()
+    }
+}
+
 impl AsiBlockParameter {
     pub fn new(name: &str, default_value: &str) -> Self {
         Self {

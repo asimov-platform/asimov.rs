@@ -97,6 +97,25 @@ impl Default for AsiBlockExecuteInfo {
         }
     }
 }
+#[doc = " A block execution."]
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct AsiBlockExecution {
+    pub header: AsiStructureHeader,
+    pub timestamp: u64,
+    pub pid: u64,
+    pub state: AsiFlowExecutionState,
+    pub name: [::core::ffi::c_char; 64usize],
+}
+impl Default for AsiBlockExecution {
+    fn default() -> Self {
+        let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
 #[doc = " A block parameter."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -360,11 +379,15 @@ extern "C" {
 }
 extern "C" {
     #[must_use]
-    pub fn asiDownloadModel(instance: AsiInstance, info: *const AsiModelDownloadInfo) -> AsiResult;
+    pub fn asiDownloadModel(
+        instance: AsiInstance,
+        request: *const AsiModelDownloadInfo,
+    ) -> AsiResult;
 }
 extern "C" {
     #[must_use]
-    pub fn asiEnableModule(instance: AsiInstance, info: *const AsiModuleEnableInfo) -> AsiResult;
+    pub fn asiEnableModule(instance: AsiInstance, request: *const AsiModuleEnableInfo)
+        -> AsiResult;
 }
 extern "C" {
     #[must_use]
@@ -473,11 +496,19 @@ extern "C" {
 }
 extern "C" {
     #[must_use]
-    pub fn asiExecuteBlock(instance: AsiInstance, info: *const AsiBlockExecuteInfo) -> AsiResult;
+    pub fn asiExecuteBlock(
+        instance: AsiInstance,
+        request: *const AsiBlockExecuteInfo,
+        execution: *mut AsiBlockExecution,
+    ) -> AsiResult;
 }
 extern "C" {
     #[must_use]
-    pub fn asiExecuteFlow(instance: AsiInstance, request: *const AsiFlowExecuteInfo) -> AsiResult;
+    pub fn asiExecuteFlow(
+        instance: AsiInstance,
+        request: *const AsiFlowExecuteInfo,
+        execution: *mut AsiFlowExecution,
+    ) -> AsiResult;
 }
 extern "C" {
     #[doc = " Returns the SDK build's licensee string, if any."]
@@ -516,7 +547,7 @@ extern "C" {
     #[must_use]
     pub fn asiStartFlowExecution(
         instance: AsiInstance,
-        info: *const AsiFlowExecuteInfo,
+        request: *const AsiFlowExecuteInfo,
         execution: *mut AsiFlowExecution,
     ) -> AsiResult;
 }

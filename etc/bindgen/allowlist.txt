@@ -1,5 +1,6 @@
 --allowlist-type=AsiBlockDefinition
 --allowlist-type=AsiBlockExecuteInfo
+--allowlist-type=AsiBlockExecution
 --allowlist-type=AsiBlockParameter
 --allowlist-type=AsiBlockPort
 --allowlist-type=AsiBlockUsage
