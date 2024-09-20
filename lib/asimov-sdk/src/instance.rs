@@ -3,14 +3,15 @@
 use crate::{
     flow::{FlowDefinition, FlowDefinitionIter, FlowExecution, LocalFlowDefinition},
     prelude::{format, null, Box},
-    BlockDefinition, BlockDefinitionIter, Error, ModelManifest, ModelManifestIter,
+    BlockDefinition, BlockDefinitionIter, BlockExecution, Error, ModelManifest, ModelManifestIter,
     ModuleRegistration, ModuleRegistrationIter, Result,
 };
 use asimov_sys::{
     asiCloneFlow, asiCreateFlow, asiCreateInstance, asiDestroyInstance, asiDownloadModel,
-    asiEnableModule, asiExecuteFlow, asiPollFlowExecution, asiRemoveFlow, asiStartFlowExecution,
-    asiStopFlowExecution, asiUpdateFlow, AsiFlowCreateInfo, AsiFlowDefinition, AsiFlowExecuteInfo,
-    AsiFlowExecution, AsiFlowExecutionState, AsiFlowUpdateInfo, AsiInstance, AsiModelDownloadInfo,
+    asiEnableModule, asiExecuteBlock, asiExecuteFlow, asiPollFlowExecution, asiRemoveFlow,
+    asiStartFlowExecution, asiStopFlowExecution, asiUpdateFlow, AsiBlockExecuteInfo,
+    AsiBlockExecution, AsiFlowCreateInfo, AsiFlowDefinition, AsiFlowExecuteInfo, AsiFlowExecution,
+    AsiFlowExecutionState, AsiFlowUpdateInfo, AsiInstance, AsiModelDownloadInfo,
     AsiModuleEnableInfo, AsiResult, AsiStructureHeader, ASI_NULL_HANDLE,
 };
 
@@ -104,6 +105,16 @@ impl Instance {
         let request = AsiModelDownloadInfo::new(name);
         match unsafe { asiDownloadModel(self.handle, &request) } {
             AsiResult::ASI_SUCCESS => Ok(()),
+            error => Err(error.try_into().unwrap()),
+        }
+    }
+
+    #[stability::unstable]
+    pub fn execute_block(&self, name: &str) -> Result<BlockExecution> {
+        let request = AsiBlockExecuteInfo::new(name);
+        let mut response = AsiBlockExecution::default();
+        match unsafe { asiExecuteBlock(self.handle, &request, &mut response) } {
+            AsiResult::ASI_SUCCESS => Ok(BlockExecution::from(response)),
             error => Err(error.try_into().unwrap()),
         }
     }

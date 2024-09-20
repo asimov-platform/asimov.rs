@@ -8,6 +8,9 @@ mod prelude;
 mod block;
 pub use block::*;
 
+mod block_execution;
+pub use block_execution::*;
+
 mod block_iter;
 pub use block_iter::*;
 
