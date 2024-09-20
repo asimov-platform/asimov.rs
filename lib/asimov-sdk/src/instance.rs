@@ -151,10 +151,11 @@ impl Instance {
     }
 
     #[stability::unstable]
-    pub fn execute_flow(&self, name: &str) -> Result<()> {
+    pub fn execute_flow(&self, name: &str) -> Result<FlowExecution> {
         let request = AsiFlowExecuteInfo::new(name);
-        match unsafe { asiExecuteFlow(self.handle, &request) } {
-            AsiResult::ASI_SUCCESS => Ok(()),
+        let mut response = AsiFlowExecution::default();
+        match unsafe { asiExecuteFlow(self.handle, &request, &mut response) } {
+            AsiResult::ASI_SUCCESS => Ok(FlowExecution::from(response)),
             error => Err(error.try_into().unwrap()),
         }
     }
