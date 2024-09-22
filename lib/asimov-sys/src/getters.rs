@@ -1,5 +1,7 @@
 // This is free and unencumbered software released into the public domain.
 
+use alloc::{format, string::String, vec::Vec};
+
 impl AsiBlockDefinition {
     pub fn new(
         name: &str,
@@ -42,9 +44,29 @@ impl AsiBlockDefinition {
 }
 
 impl AsiBlockExecuteInfo {
-    pub fn new(name: &str) -> Self {
+    pub fn with_params(name: &str, params: &Vec<(String, String)>) -> Self {
+        let params: String =
+            params
+                .iter()
+                .enumerate()
+                .fold(String::new(), |mut result, (i, (k, v))| {
+                    if i > 0 {
+                        result.push(' ');
+                    }
+                    result.push_str(&format!("{}={}", k, v));
+                    result
+                });
         Self {
             name: string_to_static_array(name),
+            params: string_to_static_array(&params),
+            ..Default::default()
+        }
+    }
+
+    pub fn new(name: &str, params: &str) -> Self {
+        Self {
+            name: string_to_static_array(name),
+            params: string_to_static_array(params),
             ..Default::default()
         }
     }
@@ -55,6 +77,14 @@ impl AsiBlockExecuteInfo {
 
     pub fn name_lossy(&self) -> Cow<'_, str> {
         unsafe { CStr::from_ptr(self.name.as_ptr()) }.to_string_lossy()
+    }
+
+    pub fn params(&self) -> Result<&str, Utf8Error> {
+        unsafe { CStr::from_ptr(self.params.as_ptr()) }.to_str()
+    }
+
+    pub fn params_lossy(&self) -> Cow<'_, str> {
+        unsafe { CStr::from_ptr(self.params.as_ptr()) }.to_string_lossy()
     }
 }
 
@@ -240,9 +270,29 @@ impl AsiFlowDefinition {
 }
 
 impl AsiFlowExecuteInfo {
-    pub fn new(name: &str) -> Self {
+    pub fn with_params(name: &str, params: &Vec<(String, String)>) -> Self {
+        let params: String =
+            params
+                .iter()
+                .enumerate()
+                .fold(String::new(), |mut result, (i, (k, v))| {
+                    if i > 0 {
+                        result.push(' ');
+                    }
+                    result.push_str(&format!("{}={}", k, v));
+                    result
+                });
         Self {
             name: string_to_static_array(name),
+            params: string_to_static_array(&params),
+            ..Default::default()
+        }
+    }
+
+    pub fn new(name: &str, params: &str) -> Self {
+        Self {
+            name: string_to_static_array(name),
+            params: string_to_static_array(params),
             ..Default::default()
         }
     }
@@ -253,6 +303,14 @@ impl AsiFlowExecuteInfo {
 
     pub fn name_lossy(&self) -> Cow<'_, str> {
         unsafe { CStr::from_ptr(self.name.as_ptr()) }.to_string_lossy()
+    }
+
+    pub fn params(&self) -> Result<&str, Utf8Error> {
+        unsafe { CStr::from_ptr(self.params.as_ptr()) }.to_str()
+    }
+
+    pub fn params_lossy(&self) -> Cow<'_, str> {
+        unsafe { CStr::from_ptr(self.params.as_ptr()) }.to_string_lossy()
     }
 }
 

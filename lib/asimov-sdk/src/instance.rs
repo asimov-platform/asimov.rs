@@ -2,7 +2,7 @@
 
 use crate::{
     flow::{FlowDefinition, FlowDefinitionIter, FlowExecution, LocalFlowDefinition},
-    prelude::{format, null, Box},
+    prelude::{format, null, Box, String, Vec},
     BlockDefinition, BlockDefinitionIter, BlockExecution, Error, ModelManifest, ModelManifestIter,
     ModuleRegistration, ModuleRegistrationIter, Result,
 };
@@ -110,8 +110,12 @@ impl Instance {
     }
 
     #[stability::unstable]
-    pub fn execute_block(&self, name: &str) -> Result<BlockExecution> {
-        let request = AsiBlockExecuteInfo::new(name);
+    pub fn execute_block(
+        &self,
+        name: &str,
+        params: &Vec<(String, String)>,
+    ) -> Result<BlockExecution> {
+        let request = AsiBlockExecuteInfo::with_params(name, params);
         let mut response = AsiBlockExecution::default();
         match unsafe { asiExecuteBlock(self.handle, &request, &mut response) } {
             AsiResult::ASI_SUCCESS => Ok(BlockExecution::from(response)),
@@ -162,8 +166,12 @@ impl Instance {
     }
 
     #[stability::unstable]
-    pub fn execute_flow(&self, name: &str) -> Result<FlowExecution> {
-        let request = AsiFlowExecuteInfo::new(name);
+    pub fn execute_flow(
+        &self,
+        name: &str,
+        params: &Vec<(String, String)>,
+    ) -> Result<FlowExecution> {
+        let request = AsiFlowExecuteInfo::with_params(name, params);
         let mut response = AsiFlowExecution::default();
         match unsafe { asiExecuteFlow(self.handle, &request, &mut response) } {
             AsiResult::ASI_SUCCESS => Ok(FlowExecution::from(response)),
@@ -172,8 +180,12 @@ impl Instance {
     }
 
     #[stability::unstable]
-    pub fn start_flow_execution(&self, name: &str) -> Result<FlowExecution> {
-        let request = AsiFlowExecuteInfo::new(name);
+    pub fn start_flow_execution(
+        &self,
+        name: &str,
+        params: &Vec<(String, String)>,
+    ) -> Result<FlowExecution> {
+        let request = AsiFlowExecuteInfo::with_params(name, params);
         let mut response = AsiFlowExecution::default();
         match unsafe { asiStartFlowExecution(self.handle, &request, &mut response) } {
             AsiResult::ASI_SUCCESS => Ok(FlowExecution::from(response)),

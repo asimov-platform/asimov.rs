@@ -15,6 +15,7 @@ impl Display for AsiBlockExecuteInfo {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("AsiBlockExecuteInfo")
             .field("name", &self.name_lossy())
+            .field("params", &self.params_lossy())
             .finish()
     }
 }
@@ -88,6 +89,7 @@ impl Display for AsiFlowExecuteInfo {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("AsiFlowExecuteInfo")
             .field("name", &self.name_lossy())
+            .field("params", &self.params_lossy())
             .finish()
     }
 }
