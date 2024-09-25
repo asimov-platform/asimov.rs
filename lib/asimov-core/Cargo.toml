@@ -25,5 +25,5 @@ unstable = []
 asimov-sys = "24.0.0-dev.18"
 dogma.workspace = true
 know.workspace = true
-protoflow-core = { version = "=0.3.0", default-features = false }
+protoflow-core = { version = "=0.3.1", default-features = false }
 stability.workspace = true
