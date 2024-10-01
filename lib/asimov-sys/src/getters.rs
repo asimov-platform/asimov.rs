@@ -132,12 +132,19 @@ impl AsiBlockParameter {
         unsafe { CStr::from_ptr(self.name.as_ptr()) }.to_string_lossy()
     }
 
-    pub fn default_value(&self) -> Result<&str, Utf8Error> {
-        unsafe { CStr::from_ptr(self.default_value.as_ptr()) }.to_str()
+    pub fn default_value(&self) -> Result<Option<&str>, Utf8Error> {
+        unsafe { CStr::from_ptr(self.default_value.as_ptr()) }
+            .to_str()
+            .map(|str| if str.is_empty() { None } else { Some(str) })
     }
 
-    pub fn default_value_lossy(&self) -> Cow<'_, str> {
-        unsafe { CStr::from_ptr(self.default_value.as_ptr()) }.to_string_lossy()
+    pub fn default_value_lossy(&self) -> Option<Cow<'_, str>> {
+        let str = unsafe { CStr::from_ptr(self.default_value.as_ptr()) }.to_string_lossy();
+        if str.is_empty() {
+            None
+        } else {
+            Some(str)
+        }
     }
 }
 

@@ -1,15 +1,17 @@
 // This is free and unencumbered software released into the public domain.
 
 use crate::{
-    flow::{BlockDescriptor, PortDescriptor},
+    flow::{
+        BlockDescriptor, ParameterDescriptor, PortDescriptor, PortDirection, PortID, PortState,
+    },
     prelude::{fmt::Debug, null_mut, vec, Cow, String, Vec},
     MaybeLabeled, MaybeNamed,
 };
-use asimov_sys::{
-    asiEnumerateBlockPorts, AsiBlockDefinition, AsiBlockPort, AsiInstance, AsiResult,
-};
-
 pub use asimov_core::block::BlockDefinition;
+use asimov_sys::{
+    asiEnumerateBlockParameters, asiEnumerateBlockPorts, AsiBlockDefinition, AsiBlockParameter,
+    AsiBlockPort, AsiInstance, AsiPortType, AsiResult,
+};
 
 #[derive(Debug)]
 pub(crate) struct LocalBlockDefinition {
@@ -49,7 +51,20 @@ impl LocalBlockDefinition {
             _error => unreachable!(), // TODO
         };
 
-        Vec::new() // TODO: Protoflow 0.2.3
+        buffer
+            .into_iter()
+            .map(|ffi| PortDescriptor {
+                direction: match ffi.type_ {
+                    AsiPortType::ASI_PORT_TYPE_INPUT => PortDirection::Input,
+                    AsiPortType::ASI_PORT_TYPE_OUTPUT => PortDirection::Output,
+                },
+                name: Some(String::from(ffi.name_lossy())),
+                label: None,
+                r#type: None,                     // TODO
+                id: PortID::try_from(1).unwrap(), // FIXME
+                state: PortState::default(),
+            })
+            .collect::<_>()
     }
 }
 
@@ -85,6 +100,44 @@ impl BlockDescriptor for LocalBlockDefinition {
             .iter()
             .filter(|port| port.is_output())
             .cloned()
+            .collect::<_>()
+    }
+
+    fn parameters(&self) -> Vec<ParameterDescriptor> {
+        if self.inner.parameter_count == 0 {
+            return vec![]; // no parameters
+        }
+
+        let mut count: u32 = 0;
+        match unsafe {
+            asiEnumerateBlockParameters(self.instance, &self.inner, 0, &mut count, null_mut())
+        } {
+            AsiResult::ASI_SUCCESS => (),
+            _error => unreachable!(), // TODO
+        };
+
+        let mut buffer = vec![AsiBlockParameter::default(); count as _];
+        match unsafe {
+            asiEnumerateBlockParameters(
+                self.instance,
+                &self.inner,
+                count,
+                &mut count,
+                buffer.as_mut_ptr(),
+            )
+        } {
+            AsiResult::ASI_SUCCESS => (),
+            _error => unreachable!(), // TODO
+        };
+
+        buffer
+            .into_iter()
+            .map(|ffi| ParameterDescriptor {
+                name: String::from(ffi.name_lossy()),
+                label: None,
+                r#type: None, // TODO
+                default_value: ffi.default_value_lossy().map(String::from),
+            })
             .collect::<_>()
     }
 }
