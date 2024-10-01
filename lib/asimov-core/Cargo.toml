@@ -22,8 +22,8 @@ tracing = ["protoflow-core/tracing"]
 unstable = []
 
 [dependencies]
-asimov-sys = "24.0.0-dev.19"
+asimov-sys.workspace = true
 dogma.workspace = true
 know.workspace = true
-protoflow-core = { version = "=0.3.1", default-features = false }
+protoflow-core.workspace = true
 stability.workspace = true

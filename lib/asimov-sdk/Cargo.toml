@@ -34,16 +34,10 @@ web = ["protoflow/web"]
 cfg_aliases.workspace = true
 
 [dependencies]
-asimov-core = "24.0.0-dev.19"
-asimov-sys = "24.0.0-dev.19"
-protoflow = { version = "=0.3.1", default-features = false, features = [
-    "blocks",
-    "derive",
-    "sysml",
-] }
-protoflow-blocks = { version = "=0.3.1", default-features = false, features = [
-    "hash",
-] }
+asimov-core.workspace = true
+asimov-sys.workspace = true
+protoflow.workspace = true
+protoflow-blocks.workspace = true
 stability.workspace = true
 tokio = { version = "1.38", default-features = false, optional = true }
 tracing = { version = "0.1", default-features = false, optional = true }
