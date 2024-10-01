@@ -41,6 +41,15 @@ impl Instance {
         Ok(false) // TODO
     }
 
+    pub fn has_block(&self, name: &str) -> Result<bool> {
+        for block in self.blocks()? {
+            if block.name().as_ref().map(|s| s.as_ref()) == Some(name) {
+                return Ok(true);
+            }
+        }
+        Ok(false)
+    }
+
     #[stability::unstable]
     pub fn blocks(&self) -> Result<impl Iterator<Item = Box<dyn BlockDefinition>>> {
         BlockDefinitionIter::try_from(self.handle)
