@@ -10,7 +10,7 @@ readme.workspace = true
 homepage.workspace = true
 repository.workspace = true
 license.workspace = true
-keywords = ["ffi", "sdk"]
+keywords = ["asimov", "ai", "sdk", "ffi"]
 categories = ["external-ffi-bindings"]
 publish.workspace = true
 

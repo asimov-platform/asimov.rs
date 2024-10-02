@@ -10,8 +10,8 @@ readme.workspace = true
 homepage.workspace = true
 repository.workspace = true
 license.workspace = true
-keywords = ["ai", "sdk", "peer-to-peer", "fbp"]
-categories = ["api-bindings", "text-processing"]
+keywords.workspace = true
+categories = ["api-bindings", "data-structures", "text-processing"]
 publish.workspace = true
 
 [features]

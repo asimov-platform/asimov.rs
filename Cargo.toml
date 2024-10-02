@@ -16,7 +16,7 @@ readme = true
 homepage = "https://sdk.asimov.so"
 repository = "https://github.com/AsimovPlatform/asimov.rs"
 license = "Unlicense"
-keywords = []
+keywords = ["asimov", "ai", "sdk"]
 categories = []
 publish = true
 
