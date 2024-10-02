@@ -1,0 +1,27 @@
+[package]
+name = "asimov-protocol"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description.workspace = true
+#documentation.workspace = true
+readme.workspace = true
+homepage.workspace = true
+repository.workspace = true
+license.workspace = true
+keywords.workspace = true
+categories = ["api-bindings", "data-structures", "network-programming"]
+publish.workspace = true
+
+[features]
+default = ["all", "std"]
+all = ["tracing"]
+std = ["dogma/std"]
+tracing = []
+unstable = []
+
+[dependencies]
+dogma.workspace = true
+know.workspace = true
+stability.workspace = true
