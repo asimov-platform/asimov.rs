@@ -15,8 +15,9 @@ categories = ["api-bindings", "data-structures", "text-processing"]
 publish.workspace = true
 
 [features]
-default = ["all", "std"]
+default = ["all", "serde", "std"]
 all = ["tracing"]
+serde = ["protoflow-core/serde", "dep:serde"]
 std = ["asimov-sys/std", "dogma/std", "protoflow-core/std"]
 tracing = ["protoflow-core/tracing"]
 unstable = []
@@ -26,4 +27,5 @@ asimov-sys.workspace = true
 dogma.workspace = true
 know.workspace = true
 protoflow-core.workspace = true
+serde = { version = "1.0", default-features = false, optional = true }
 stability.workspace = true
