@@ -17,6 +17,8 @@ pub use block_iter::*;
 mod block_usage;
 pub use block_usage::*;
 
+pub use ::asimov_core::crates;
+pub use ::asimov_core::env;
 pub use ::asimov_core::error::*;
 
 mod feature;
