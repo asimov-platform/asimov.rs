@@ -164,13 +164,13 @@ impl Display for AsiModuleRegistration {
     }
 }
 
-impl Display for AsiPortState {
+impl Display for AsiPortDirection {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:?}", self)
     }
 }
 
-impl Display for AsiPortType {
+impl Display for AsiPortState {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:?}", self)
     }

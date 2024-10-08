@@ -17,8 +17,8 @@
 --allowlist-type=AsiModelTensor
 --allowlist-type=AsiModuleEnableInfo
 --allowlist-type=AsiModuleRegistration
+--allowlist-type=AsiPortDirection
 --allowlist-type=AsiPortState
---allowlist-type=AsiPortType
 --allowlist-type=AsiResult
 --allowlist-type=AsiStructureHeader
 --allowlist-type=AsiStructureType

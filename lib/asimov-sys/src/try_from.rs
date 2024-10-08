@@ -8,7 +8,7 @@ impl TryFrom<c_int> for AsiFlowExecutionState {
     }
 }
 
-impl TryFrom<c_int> for AsiPortState {
+impl TryFrom<c_int> for AsiPortDirection {
     type Error = ();
 
     fn try_from(code: c_int) -> Result<Self, Self::Error> {
@@ -16,7 +16,7 @@ impl TryFrom<c_int> for AsiPortState {
     }
 }
 
-impl TryFrom<c_int> for AsiPortType {
+impl TryFrom<c_int> for AsiPortState {
     type Error = ();
 
     fn try_from(code: c_int) -> Result<Self, Self::Error> {

@@ -6,8 +6,11 @@ const _: () = assert!(
     size_of::<AsiFlowExecutionState>() == 4,
     "sizeof(AsiFlowExecutionState) == 4"
 );
+const _: () = assert!(
+    size_of::<AsiPortDirection>() == 4,
+    "sizeof(AsiPortDirection) == 4"
+);
 const _: () = assert!(size_of::<AsiPortState>() == 4, "sizeof(AsiPortState) == 4");
-const _: () = assert!(size_of::<AsiPortType>() == 4, "sizeof(AsiPortType) == 4");
 const _: () = assert!(size_of::<AsiResult>() == 4, "sizeof(AsiResult) == 4");
 const _: () = assert!(
     size_of::<AsiStructureType>() == 4,

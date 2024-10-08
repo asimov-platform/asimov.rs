@@ -10,7 +10,7 @@ use crate::{
 pub use asimov_core::block::BlockDefinition;
 use asimov_sys::{
     asiEnumerateBlockParameters, asiEnumerateBlockPorts, AsiBlockDefinition, AsiBlockParameter,
-    AsiBlockPort, AsiInstance, AsiPortType, AsiResult,
+    AsiBlockPort, AsiInstance, AsiPortDirection, AsiResult,
 };
 
 #[derive(Debug)]
@@ -54,13 +54,13 @@ impl LocalBlockDefinition {
         buffer
             .into_iter()
             .map(|ffi| PortDescriptor {
-                direction: match ffi.type_ {
-                    AsiPortType::ASI_PORT_TYPE_INPUT => PortDirection::Input,
-                    AsiPortType::ASI_PORT_TYPE_OUTPUT => PortDirection::Output,
+                direction: match ffi.direction {
+                    AsiPortDirection::ASI_PORT_DIRECTION_INPUT => PortDirection::Input,
+                    AsiPortDirection::ASI_PORT_DIRECTION_OUTPUT => PortDirection::Output,
                 },
-                name: Some(String::from(ffi.name_lossy())),
+                name: Some(ffi.name_lossy().into_owned()),
                 label: None,
-                r#type: None,                     // TODO
+                r#type: ffi.type_lossy().map(Cow::into_owned),
                 id: PortID::try_from(1).unwrap(), // FIXME
                 state: PortState::default(),
             })
@@ -133,10 +133,10 @@ impl BlockDescriptor for LocalBlockDefinition {
         buffer
             .into_iter()
             .map(|ffi| ParameterDescriptor {
-                name: String::from(ffi.name_lossy()),
+                name: ffi.name_lossy().into_owned(),
                 label: None,
-                r#type: None, // TODO
-                default_value: ffi.default_value_lossy().map(String::from),
+                r#type: ffi.type_lossy().map(Cow::into_owned),
+                default_value: ffi.default_value_lossy().map(Cow::into_owned),
             })
             .collect::<_>()
     }

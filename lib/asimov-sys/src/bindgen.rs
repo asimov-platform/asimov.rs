@@ -14,19 +14,19 @@ pub enum AsiFlowExecutionState {
     ASI_FLOW_EXECUTION_STATE_FAILED = 3,
 }
 #[repr(i32)]
+#[doc = " The set of possible port directions."]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq, FromPrimitive, ToPrimitive)]
+pub enum AsiPortDirection {
+    ASI_PORT_DIRECTION_INPUT = 1,
+    ASI_PORT_DIRECTION_OUTPUT = 2,
+}
+#[repr(i32)]
 #[doc = " The set of possible port states."]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq, FromPrimitive, ToPrimitive)]
 pub enum AsiPortState {
     ASI_PORT_STATE_OPEN = 1,
     ASI_PORT_STATE_CONNECTED = 2,
     ASI_PORT_STATE_CLOSED = 3,
-}
-#[repr(i32)]
-#[doc = " The set of possible port types."]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq, FromPrimitive, ToPrimitive)]
-pub enum AsiPortType {
-    ASI_PORT_TYPE_INPUT = 1,
-    ASI_PORT_TYPE_OUTPUT = 2,
 }
 #[repr(i32)]
 #[doc = " Result codes returned by SDK functions."]
@@ -123,6 +123,7 @@ impl Default for AsiBlockExecution {
 pub struct AsiBlockParameter {
     pub header: AsiStructureHeader,
     pub name: [::core::ffi::c_char; 64usize],
+    pub type_: [::core::ffi::c_char; 64usize],
     pub default_value: [::core::ffi::c_char; 64usize],
 }
 impl Default for AsiBlockParameter {
@@ -139,8 +140,9 @@ impl Default for AsiBlockParameter {
 #[derive(Debug, Copy, Clone)]
 pub struct AsiBlockPort {
     pub header: AsiStructureHeader,
+    pub direction: AsiPortDirection,
     pub name: [::core::ffi::c_char; 64usize],
-    pub type_: AsiPortType,
+    pub type_: [::core::ffi::c_char; 64usize],
 }
 impl Default for AsiBlockPort {
     fn default() -> Self {

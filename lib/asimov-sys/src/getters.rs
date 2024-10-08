@@ -116,10 +116,11 @@ impl AsiBlockExecution {
 }
 
 impl AsiBlockParameter {
-    pub fn new(name: &str, default_value: &str) -> Self {
+    pub fn new(name: &str, r#type: &str, default_value: Option<&str>) -> Self {
         Self {
             name: string_to_static_array(name),
-            default_value: string_to_static_array(default_value),
+            type_: string_to_static_array(r#type),
+            default_value: string_to_static_array(default_value.unwrap_or_default()),
             ..Default::default()
         }
     }
@@ -130,6 +131,21 @@ impl AsiBlockParameter {
 
     pub fn name_lossy(&self) -> Cow<'_, str> {
         unsafe { CStr::from_ptr(self.name.as_ptr()) }.to_string_lossy()
+    }
+
+    pub fn r#type(&self) -> Result<Option<&str>, Utf8Error> {
+        unsafe { CStr::from_ptr(self.type_.as_ptr()) }
+            .to_str()
+            .map(|str| if str.is_empty() { None } else { Some(str) })
+    }
+
+    pub fn type_lossy(&self) -> Option<Cow<'_, str>> {
+        let str = unsafe { CStr::from_ptr(self.type_.as_ptr()) }.to_string_lossy();
+        if str.is_empty() {
+            None
+        } else {
+            Some(str)
+        }
     }
 
     pub fn default_value(&self) -> Result<Option<&str>, Utf8Error> {
@@ -149,10 +165,11 @@ impl AsiBlockParameter {
 }
 
 impl AsiBlockPort {
-    pub fn new(name: &str, r#type: AsiPortType) -> Self {
+    pub fn new(direction: AsiPortDirection, name: &str, r#type: &str) -> Self {
         Self {
+            direction,
             name: string_to_static_array(name),
-            type_: r#type,
+            type_: string_to_static_array(r#type),
             ..Default::default()
         }
     }
@@ -163,6 +180,21 @@ impl AsiBlockPort {
 
     pub fn name_lossy(&self) -> Cow<'_, str> {
         unsafe { CStr::from_ptr(self.name.as_ptr()) }.to_string_lossy()
+    }
+
+    pub fn r#type(&self) -> Result<Option<&str>, Utf8Error> {
+        unsafe { CStr::from_ptr(self.type_.as_ptr()) }
+            .to_str()
+            .map(|str| if str.is_empty() { None } else { Some(str) })
+    }
+
+    pub fn type_lossy(&self) -> Option<Cow<'_, str>> {
+        let str = unsafe { CStr::from_ptr(self.type_.as_ptr()) }.to_string_lossy();
+        if str.is_empty() {
+            None
+        } else {
+            Some(str)
+        }
     }
 }
 
@@ -466,9 +498,9 @@ impl AsiModuleRegistration {
     }
 }
 
-impl AsiPortState {}
+impl AsiPortDirection {}
 
-impl AsiPortType {}
+impl AsiPortState {}
 
 impl AsiResult {}
 
