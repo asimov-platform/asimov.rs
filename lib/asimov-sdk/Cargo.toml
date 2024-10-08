@@ -16,8 +16,9 @@ publish.workspace = true
 
 [features]
 default = ["all", "std"]
-all = ["derive", "tracing"]
+all = ["derive", "serde", "tracing"]
 derive = ["protoflow/derive"]
+serde = ["asimov-core/serde", "protoflow/serde"]
 std = [
     "asimov-core/std",
     "asimov-sys/std",
@@ -25,8 +26,8 @@ std = [
     "tokio?/full",
     "tracing?/std",
 ]
-tokio = ["dep:tokio", "protoflow/tokio"]
-tracing = ["dep:tracing", "protoflow/tracing"]
+tokio = ["protoflow/tokio", "dep:tokio"]
+tracing = ["protoflow/tracing", "dep:tracing"]
 unstable = ["asimov-core/unstable", "asimov-sys/unstable"]
 web = ["protoflow/web"]
 
