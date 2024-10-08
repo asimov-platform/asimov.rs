@@ -40,3 +40,14 @@ pub mod system {}
 
 pub use ::dogma::traits::{Labeled, Named};
 pub use ::dogma::traits::{MaybeLabeled, MaybeNamed};
+
+#[doc(hidden)]
+pub mod crates {
+    #[cfg(feature = "std")]
+    pub use ::cap_directories;
+    #[cfg(feature = "std")]
+    pub use ::cap_std;
+    pub use ::dogma;
+    #[cfg(feature = "serde")]
+    pub use ::serde;
+}
