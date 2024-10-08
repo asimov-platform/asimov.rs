@@ -17,7 +17,6 @@ pub use block_iter::*;
 mod block_usage;
 pub use block_usage::*;
 
-pub use ::asimov_core::crates;
 pub use ::asimov_core::env;
 pub use ::asimov_core::error::*;
 
@@ -56,3 +55,11 @@ pub use version::*;
 
 pub use ::asimov_core::{Labeled, Named};
 pub use ::asimov_core::{MaybeLabeled, MaybeNamed};
+
+#[doc(hidden)]
+pub mod crates {
+    pub use ::asimov_core::crates::*;
+    pub use ::protoflow;
+    #[cfg(feature = "tokio")]
+    pub use ::tokio;
+}
