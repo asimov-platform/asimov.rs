@@ -18,12 +18,22 @@ publish.workspace = true
 default = ["all", "serde", "std"]
 all = ["tracing"]
 serde = ["protoflow-core/serde", "dep:serde"]
-std = ["asimov-sys/std", "dogma/std", "protoflow-core/std"]
+std = [
+    "asimov-sys/std",
+    "dogma/std",
+    "protoflow-core/std",
+    "dep:cap-directories",
+    "dep:cap-std",
+]
 tracing = ["protoflow-core/tracing"]
 unstable = []
 
 [dependencies]
 asimov-sys.workspace = true
+cap-directories = { version = "3.2", default-features = false, optional = true }
+cap-std = { version = "3.2", default-features = false, features = [
+    "fs_utf8",
+], optional = true }
 dogma.workspace = true
 know.workspace = true
 protoflow-core.workspace = true
