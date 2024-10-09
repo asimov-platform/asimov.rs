@@ -29,23 +29,23 @@ asimov-sys = "24.0.0-dev.20"
 cfg_aliases = "0.2"
 dogma = { version = "0.1", default-features = false }
 know = { version = "0", default-features = true }
-protoflow = { version = "=0.4.0", default-features = false, features = [
+protoflow = { version = "=0.4.1", default-features = false, features = [
     "blocks",
     "derive",
     "sysml",
 ] }
-protoflow-blocks = { version = "=0.4.0", default-features = false, features = [
+protoflow-blocks = { version = "=0.4.1", default-features = false, features = [
     "hash",
 ] }
-protoflow-core = { version = "=0.4.0", default-features = false }
+protoflow-core = { version = "=0.4.1", default-features = false }
 stability = "0.2"
 
 [patch.crates-io]
-#asimov-core = { path = "lib/asimov-core" }
-#asimov-flow = { path = "lib/asimov-flow" }
-#asimov-protocol = { path = "lib/asimov-protocol" }
-#asimov-sdk = { path = "lib/asimov-sdk" }
-#asimov-sys = { path = "lib/asimov-sys" }
+asimov-core = { path = "lib/asimov-core" }
+asimov-flow = { path = "lib/asimov-flow" }
+asimov-protocol = { path = "lib/asimov-protocol" }
+asimov-sdk = { path = "lib/asimov-sdk" }
+asimov-sys = { path = "lib/asimov-sys" }
 #protoflow = { path = "../../protoflow/lib/protoflow" }
 #protoflow-blocks = { path = "../../protoflow/lib/protoflow-blocks" }
 #protoflow-core = { path = "../../protoflow/lib/protoflow-core" }
