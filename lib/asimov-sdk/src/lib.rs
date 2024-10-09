@@ -24,7 +24,7 @@ mod feature;
 pub use feature::*;
 
 pub mod flow {
-    pub use ::asimov_core::flow::*;
+    pub use ::asimov_core::flow::FlowExecutionState;
     pub use ::protoflow::*;
 
     mod definition;
