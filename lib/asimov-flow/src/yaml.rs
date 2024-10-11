@@ -6,7 +6,7 @@ use alloc::{
     string::{String, ToString},
     vec::Vec,
 };
-use asimov_core::{flow::FlowDefinition, MaybeNamed};
+use asimov_core::{flow::FlowDefinition, MaybeLabeled, MaybeNamed};
 use core::str::FromStr;
 
 #[derive(Clone, Debug)]
@@ -19,6 +19,12 @@ impl YamlFlowDefinition {}
 impl MaybeNamed for YamlFlowDefinition {
     fn name(&self) -> Option<Cow<str>> {
         None // unnamed when parsed from a string
+    }
+}
+
+impl MaybeLabeled for YamlFlowDefinition {
+    fn label(&self) -> Option<Cow<str>> {
+        None // unlabeled when parsed from a string
     }
 }
 

@@ -3,7 +3,7 @@
 use super::FlowExecution;
 use crate::{
     prelude::{fmt::Debug, null_mut, vec, Box, Cow, String, Vec},
-    BlockDefinition, BlockUsage, Named, Result,
+    BlockDefinition, BlockUsage, MaybeLabeled, MaybeNamed, Result,
 };
 use asimov_sys::{
     asiEnumerateFlowBlocks, asiEnumerateFlowExecutions, AsiBlockDefinition, AsiBlockUsage,
@@ -11,7 +11,7 @@ use asimov_sys::{
 };
 
 #[stability::unstable]
-pub trait FlowDefinition: Named + Debug {
+pub trait FlowDefinition: asimov_core::flow::FlowDefinition {
     fn blocks(&self) -> Result<Vec<BlockUsage>>;
     fn history(&self) -> Result<Vec<FlowExecution>>;
 }
@@ -33,9 +33,17 @@ impl LocalFlowDefinition {
     }
 }
 
-impl Named for LocalFlowDefinition {
-    fn name(&self) -> Cow<str> {
-        self.inner.name_lossy()
+impl asimov_core::flow::FlowDefinition for LocalFlowDefinition {}
+
+impl MaybeNamed for LocalFlowDefinition {
+    fn name(&self) -> Option<Cow<str>> {
+        Some(self.inner.name_lossy())
+    }
+}
+
+impl MaybeLabeled for LocalFlowDefinition {
+    fn label(&self) -> Option<Cow<str>> {
+        None
     }
 }
 
