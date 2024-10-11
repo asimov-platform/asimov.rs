@@ -22,9 +22,13 @@ impl serde::Serialize for dyn FlowDefinition {
         S: serde::Serializer,
     {
         use serde::ser::SerializeStruct;
-        let mut state = serializer.serialize_struct("FlowDefinition", 2)?;
+        let field_count = 1 + self.label().is_some() as usize;
+        let mut state = serializer.serialize_struct("FlowDefinition", field_count)?;
         state.serialize_field("name", &self.name())?;
-        state.serialize_field("label", &self.label())?;
+        match self.label() {
+            Some(label) => state.serialize_field("label", &label)?,
+            None => state.skip_field("label")?,
+        };
         state.end()
     }
 }

@@ -2,6 +2,7 @@
 
 use super::FlowExecution;
 use crate::{
+    crates::serde,
     prelude::{fmt::Debug, null_mut, vec, Box, Cow, String, Vec},
     BlockDefinition, BlockUsage, MaybeLabeled, MaybeNamed, Result,
 };
@@ -14,6 +15,26 @@ use asimov_sys::{
 pub trait FlowDefinition: asimov_core::flow::FlowDefinition {
     fn blocks(&self) -> Result<Vec<BlockUsage>>;
     fn history(&self) -> Result<Vec<FlowExecution>>;
+}
+
+#[cfg(feature = "serde")]
+impl serde::Serialize for dyn FlowDefinition {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        //let flow_definition = self.as_flow_definition(); // FIXME
+        //flow_definition.serialize(serializer);
+        use serde::ser::SerializeStruct;
+        let field_count = 1 + self.label().is_some() as usize;
+        let mut state = serializer.serialize_struct("FlowDefinition", field_count)?;
+        state.serialize_field("name", &self.name())?;
+        match self.label() {
+            Some(label) => state.serialize_field("label", &label)?,
+            None => state.skip_field("label")?,
+        };
+        state.end()
+    }
 }
 
 #[derive(Debug, Default)]
