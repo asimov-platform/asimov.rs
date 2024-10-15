@@ -62,11 +62,7 @@ impl MaybeNamed for LocalFlowDefinition {
     }
 }
 
-impl MaybeLabeled for LocalFlowDefinition {
-    fn label(&self) -> Option<Cow<str>> {
-        None
-    }
-}
+impl MaybeLabeled for LocalFlowDefinition {}
 
 impl FlowDefinition for LocalFlowDefinition {
     fn blocks(&self) -> Result<Vec<BlockUsage>> {

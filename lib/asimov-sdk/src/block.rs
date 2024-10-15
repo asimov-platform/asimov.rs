@@ -74,11 +74,7 @@ impl MaybeNamed for LocalBlockDefinition {
     }
 }
 
-impl MaybeLabeled for LocalBlockDefinition {
-    fn label(&self) -> Option<Cow<str>> {
-        None
-    }
-}
+impl MaybeLabeled for LocalBlockDefinition {}
 
 impl BlockDescriptor for LocalBlockDefinition {
     fn inputs(&self) -> Vec<PortDescriptor> {

@@ -1,7 +1,6 @@
 // This is free and unencumbered software released into the public domain.
 
 use alloc::{
-    borrow::Cow,
     format,
     string::{String, ToString},
     vec::Vec,
@@ -16,17 +15,9 @@ pub struct YamlFlowDefinition {
 
 impl YamlFlowDefinition {}
 
-impl MaybeNamed for YamlFlowDefinition {
-    fn name(&self) -> Option<Cow<str>> {
-        None // unnamed when parsed from a string
-    }
-}
+impl MaybeNamed for YamlFlowDefinition {}
 
-impl MaybeLabeled for YamlFlowDefinition {
-    fn label(&self) -> Option<Cow<str>> {
-        None // unlabeled when parsed from a string
-    }
-}
+impl MaybeLabeled for YamlFlowDefinition {}
 
 impl FlowDefinition for YamlFlowDefinition {}
 

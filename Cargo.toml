@@ -27,7 +27,7 @@ asimov-protocol = "24.0.0-dev.21"
 asimov-sdk = "24.0.0-dev.21"
 asimov-sys = "24.0.0-dev.21"
 cfg_aliases = "0.2"
-dogma = { version = "0.1", default-features = false }
+dogma = { version = "0.1.1", default-features = false }
 know = { version = "0", default-features = true }
 protoflow = { version = "=0.4.1", default-features = false, features = [
     "blocks",
