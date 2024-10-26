@@ -19,6 +19,7 @@ pub type Result<T, E = Error> = core::result::Result<T, E>;
 #[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub enum Error {
     TimeoutExpired,
+    ExitRequested,
     #[default]
     NotImplemented,
     PreconditionViolated,
@@ -39,6 +40,7 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Self::TimeoutExpired => write!(f, "Timeout expired"),
+            Self::ExitRequested => write!(f, "Exit requested"),
             Self::NotImplemented => write!(f, "Not implemented"),
             Self::PreconditionViolated => write!(f, "Precondition violated"),
             Self::HostMemoryExhausted => write!(f, "Host memory exhausted"),
@@ -130,6 +132,7 @@ impl TryFrom<AsiResult> for Error {
         Ok(match input {
             ASI_SUCCESS => return Err(()),
             ASI_TIMEOUT_EXPIRED => Self::TimeoutExpired,
+            ASI_EXIT_REQUESTED => Self::ExitRequested,
             ASI_ERROR_NOT_IMPLEMENTED => Self::NotImplemented,
             ASI_ERROR_PRECONDITION_VIOLATED => Self::PreconditionViolated,
             ASI_ERROR_HOST_MEMORY_EXHAUSTED => Self::HostMemoryExhausted,
@@ -157,6 +160,7 @@ impl TryFrom<Error> for c_int {
         use AsiResult::*;
         Ok(match error {
             Error::TimeoutExpired => ASI_TIMEOUT_EXPIRED,
+            Error::ExitRequested => ASI_EXIT_REQUESTED,
             Error::NotImplemented => ASI_ERROR_NOT_IMPLEMENTED,
             Error::PreconditionViolated => ASI_ERROR_PRECONDITION_VIOLATED,
             Error::HostMemoryExhausted => ASI_ERROR_HOST_MEMORY_EXHAUSTED,
