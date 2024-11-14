@@ -203,12 +203,12 @@ impl Instance {
     }
 
     #[stability::unstable]
-    pub fn poll_flow_execution(&self, name: &str, pid: u64) -> Result<AsiFlowExecutionState> {
-        let request = {
-            let mut r = AsiFlowExecution::named(name);
-            r.pid = pid;
-            r
-        };
+    pub fn poll_flow_execution(
+        &self,
+        name: &str,
+        pid: Option<u64>,
+    ) -> Result<AsiFlowExecutionState> {
+        let request = AsiFlowExecution::new(name, 0, pid.unwrap_or_default(), Default::default());
         let mut response = AsiFlowExecutionState::default();
         match unsafe { asiPollFlowExecution(self.handle, &request, &mut response) } {
             AsiResult::ASI_SUCCESS => Ok(response),
@@ -217,12 +217,8 @@ impl Instance {
     }
 
     #[stability::unstable]
-    pub fn stop_flow_execution(&self, name: &str, pid: u64) -> Result<()> {
-        let request = {
-            let mut r = AsiFlowExecution::named(name);
-            r.pid = pid;
-            r
-        };
+    pub fn stop_flow_execution(&self, name: &str, pid: Option<u64>) -> Result<()> {
+        let request = AsiFlowExecution::new(name, 0, pid.unwrap_or_default(), Default::default());
         match unsafe { asiStopFlowExecution(self.handle, &request) } {
             AsiResult::ASI_SUCCESS => Ok(()),
             error => Err(error.try_into().unwrap()),
