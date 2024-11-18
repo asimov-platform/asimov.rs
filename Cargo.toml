@@ -43,10 +43,13 @@ stability = "0.2"
 [patch.crates-io]
 asimov-core = { path = "lib/asimov-core" }
 asimov-flow = { path = "lib/asimov-flow" }
+asimov-ledger = { path = "lib/asimov-ledger" }
+asimov-module = { path = "lib/asimov-module" }
 asimov-protocol = { path = "lib/asimov-protocol" }
 asimov-sdk = { path = "lib/asimov-sdk" }
 asimov-sys = { path = "lib/asimov-sys" }
-#protoflow = { path = "../../protoflow/lib/protoflow" }
-#protoflow-blocks = { path = "../../protoflow/lib/protoflow-blocks" }
-#protoflow-core = { path = "../../protoflow/lib/protoflow-core" }
-#protoflow-derive = { path = "../../protoflow/lib/protoflow-derive" }
+asimov-vault = { path = "lib/asimov-vault" }
+#protoflow = { path = "../../vnd/protoflow/lib/protoflow" }
+#protoflow-blocks = { path = "../../vnd/protoflow/lib/protoflow-blocks" }
+#protoflow-core = { path = "../../vnd/protoflow/lib/protoflow-core" }
+#protoflow-derive = { path = "../../vnd/protoflow/lib/protoflow-derive" }
