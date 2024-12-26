@@ -19,15 +19,9 @@ default = ["all", "std"]
 all = ["derive", "serde", "tracing"]
 derive = ["protoflow/derive"]
 serde = ["asimov-core/serde", "protoflow/serde"]
-std = [
-    "asimov-core/std",
-    "asimov-sys/std",
-    "protoflow/std",
-    "tokio?/full",
-    "tracing?/std",
-]
+std = ["asimov-core/std", "asimov-sys/std", "protoflow/std", "tokio?/full"]
 tokio = ["protoflow/tokio", "dep:tokio"]
-tracing = ["protoflow/tracing", "dep:tracing"]
+tracing = ["protoflow/tracing", "protoflow-blocks/tracing"]
 unstable = ["asimov-core/unstable", "asimov-sys/unstable"]
 web = ["protoflow/web"]
 
@@ -41,7 +35,6 @@ protoflow.workspace = true
 protoflow-blocks.workspace = true
 stability.workspace = true
 tokio = { version = "1.38", default-features = false, optional = true }
-tracing = { version = "0.1", default-features = false, optional = true }
 
 [target.'cfg(not(wasm))'.dependencies]
 
