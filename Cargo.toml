@@ -2,7 +2,7 @@
 
 [workspace]
 members = ["lib/*"]
-default-members = ["lib/asimov-sdk"]
+default-members = ["lib/asimov-env"]
 resolver = "2"
 
 [workspace.package]
@@ -22,10 +22,14 @@ publish = true
 
 [workspace.dependencies]
 asimov-core = "25.0.0-dev.0"
+asimov-env = "25.0.0-dev.0"
 asimov-flow = "25.0.0-dev.0"
+asimov-ledger = "25.0.0-dev.0"
+asimov-module = "25.0.0-dev.0"
 asimov-protocol = "25.0.0-dev.0"
 asimov-sdk = "25.0.0-dev.0"
 asimov-sys = "25.0.0-dev.0"
+asimov-vault = "25.0.0-dev.0"
 cfg_aliases = "0.2"
 dogma = { version = "0.1.1", default-features = false }
 know = { version = "0", default-features = true }
@@ -42,6 +46,7 @@ stability = "0.2"
 
 [patch.crates-io]
 asimov-core = { path = "lib/asimov-core" }
+asimov-env = { path = "lib/asimov-env" }
 asimov-flow = { path = "lib/asimov-flow" }
 asimov-ledger = { path = "lib/asimov-ledger" }
 asimov-module = { path = "lib/asimov-module" }
