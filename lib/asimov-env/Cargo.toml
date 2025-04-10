@@ -17,10 +17,14 @@ publish.workspace = true
 [features]
 default = ["all", "std"]
 all = ["tracing"]
-std = ["dogma/std"]
+std = ["dogma/std", "dep:cap-directories", "dep:cap-std"]
 tracing = []
 unstable = []
 
 [dependencies]
+cap-directories = { version = "3.4", default-features = false, optional = true }
+cap-std = { version = "3.4", default-features = false, features = [
+    "fs_utf8",
+], optional = true }
 dogma.workspace = true
 stability.workspace = true
