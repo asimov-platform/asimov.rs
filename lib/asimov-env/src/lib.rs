@@ -1,6 +1,9 @@
 // This is free and unencumbered software released into the public domain.
 
 #[cfg(feature = "std")]
+pub mod envs;
+
+#[cfg(feature = "std")]
 pub mod paths;
 
 #[cfg(feature = "std")]
