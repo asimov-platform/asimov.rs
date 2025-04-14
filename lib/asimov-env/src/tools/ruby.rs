@@ -63,7 +63,14 @@ impl RubyEnv {
     pub fn ruby(&self) -> Command {
         match self.venv {
             None => Command::new(ruby().unwrap().as_ref()),
-            Some(ref path) => Command::new(path.join("bin/ruby")),
+            Some(ref path) => {
+                let venv_ruby = path.join("bin/ruby");
+                Command::new(if venv_ruby.is_file() {
+                    venv_ruby
+                } else {
+                    PathBuf::from(ruby().unwrap().as_ref()) // TODO: remove the allocation
+                })
+            }
         }
     }
 
@@ -85,9 +92,10 @@ impl RubyEnv {
     /// Returns the verbosity flags for `gem` from a normalized level.
     pub fn gem_verbosity(verbosity: u8) -> Vec<&'static str> {
         match verbosity {
-            0 => vec!["-q"],
-            1 => vec![],
-            _ => vec!["-v"],
+            0 => vec!["--silent"],
+            1 => vec!["--quiet"], // -q
+            2 => vec![],
+            _ => vec!["--verbose"], // -V
         }
     }
 }
