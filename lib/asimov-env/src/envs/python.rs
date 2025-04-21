@@ -183,11 +183,29 @@ impl PythonEnv {
         let Some(ref path) = self.venv else {
             return None;
         };
-        let path = path.join("lib/python3.13"); // FIXME
-        if !path.is_dir() {
-            return None; // no packages installed
+        // TODO: Improve the check for the Python version
+        // See: https://devguide.python.org/versions/#supported-versions
+        let path = path.join("lib/python3.13");
+        if path.is_dir() {
+            return Some(path);
         }
-        Some(path)
+        let path = path.join("lib/python3.12");
+        if path.is_dir() {
+            return Some(path);
+        }
+        let path = path.join("lib/python3.11");
+        if path.is_dir() {
+            return Some(path);
+        }
+        let path = path.join("lib/python3.10");
+        if path.is_dir() {
+            return Some(path);
+        }
+        let path = path.join("lib/python3.9");
+        if path.is_dir() {
+            return Some(path);
+        }
+        None // no packages installed
     }
 }
 
