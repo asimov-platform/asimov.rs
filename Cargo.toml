@@ -6,7 +6,7 @@ default-members = ["lib/asimov-env"]
 resolver = "2"
 
 [workspace.package]
-version = "25.0.0-dev.1"
+version = "25.0.0-dev.2"
 authors = ["ASIMOV by Haltia.AI <support@asimov.so>"]
 edition = "2021"
 rust-version = "1.81"
@@ -21,15 +21,15 @@ categories = []
 publish = true
 
 [workspace.dependencies]
-asimov-core = "25.0.0-dev.1"
-asimov-env = "25.0.0-dev.1"
-asimov-flow = "25.0.0-dev.1"
-asimov-ledger = "25.0.0-dev.1"
-asimov-module = "25.0.0-dev.1"
-asimov-protocol = "25.0.0-dev.1"
-asimov-sdk = "25.0.0-dev.1"
-asimov-sys = "25.0.0-dev.1"
-asimov-vault = "25.0.0-dev.1"
+asimov-core = "25.0.0-dev.2"
+asimov-env = "25.0.0-dev.2"
+asimov-flow = "25.0.0-dev.2"
+asimov-ledger = "25.0.0-dev.2"
+asimov-module = "25.0.0-dev.2"
+asimov-protocol = "25.0.0-dev.2"
+asimov-sdk = "25.0.0-dev.2"
+asimov-sys = "25.0.0-dev.2"
+asimov-vault = "25.0.0-dev.2"
 cfg_aliases = "0.2"
 dogma = { version = "0.1.1", default-features = false }
 know = { version = "0", default-features = true }
