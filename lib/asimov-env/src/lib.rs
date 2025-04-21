@@ -1,13 +1,13 @@
 // This is free and unencumbered software released into the public domain.
 
-#[cfg(feature = "std")]
+pub mod env;
 pub mod envs;
 
 #[cfg(feature = "std")]
 pub mod paths;
 
 #[cfg(feature = "std")]
-pub mod tools;
+pub mod vars;
 
 #[cfg(feature = "std")]
 use cap_std::fs_utf8::Dir;

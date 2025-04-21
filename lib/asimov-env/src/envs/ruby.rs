@@ -1,19 +1,13 @@
 // This is free and unencumbered software released into the public domain.
 
-use crate::paths::ruby_env;
-use std::{borrow::Cow, fs::ReadDir, path::PathBuf, process::Command};
-
-pub fn ruby() -> Option<Cow<'static, str>> {
-    getenv::ruby()
-        .map(Cow::from)
-        .or_else(|| Some(Cow::from("ruby")))
-}
-
-pub fn gem() -> Option<Cow<'static, str>> {
-    getenv::gem()
-        .map(Cow::from)
-        .or_else(|| Some(Cow::from("gem")))
-}
+use crate::{env::Env, paths::ruby_env};
+use std::{
+    borrow::Cow,
+    fs::ReadDir,
+    io::Result,
+    path::PathBuf,
+    process::{Command, ExitStatus},
+};
 
 pub struct RubyEnv {
     venv: Option<PathBuf>,
@@ -25,28 +19,20 @@ impl Default for RubyEnv {
     }
 }
 
-impl RubyEnv {
-    pub fn system() -> Self {
-        Self { venv: None }
-    }
-
-    pub fn at(path: PathBuf) -> Self {
-        Self { venv: Some(path) }
-    }
-
-    pub fn path(&self) -> Option<&PathBuf> {
+impl Env for RubyEnv {
+    fn path(&self) -> Option<&std::path::PathBuf> {
         self.venv.as_ref()
     }
 
-    pub fn exists(&self) -> bool {
+    fn is_initialized(&self) -> bool {
         match self.venv {
             None => ruby().is_some(),
             Some(ref path) => path.is_dir(),
         }
     }
 
-    pub fn create(&self) -> std::io::Result<()> {
-        if self.exists() {
+    fn initialize(&self) -> Result<()> {
+        if self.is_initialized() {
             return Ok(());
         }
 
@@ -60,9 +46,13 @@ impl RubyEnv {
         Ok(())
     }
 
-    pub fn installed_modules(&self) -> Vec<String> {
+    fn available_modules(&self) -> std::io::Result<Vec<String>> {
+        Ok(vec![]) // TODO
+    }
+
+    fn installed_modules(&self) -> std::io::Result<Vec<String>> {
         let mut result = vec![];
-        for entry in self.gems_dir().unwrap() {
+        for entry in self.gems_dir()? {
             let Ok(entry) = entry else {
                 continue; // skip invalid entries
             };
@@ -81,7 +71,49 @@ impl RubyEnv {
             };
             result.push(name[..pos].to_string());
         }
-        result
+        Ok(result)
+    }
+
+    fn install_module(
+        &self,
+        module_name: impl ToString,
+        verbosity: Option<u8>,
+    ) -> Result<ExitStatus> {
+        if !self.is_initialized() {
+            self.initialize()?;
+        }
+
+        let package_name = format!("asimov-{}-module", module_name.to_string());
+
+        self.gem_command("install", verbosity.unwrap_or(0))
+            .args(["--prerelease", "--no-document", &package_name])
+            .status()
+    }
+
+    fn uninstall_module(
+        &self,
+        module_name: impl ToString,
+        verbosity: Option<u8>,
+    ) -> Result<ExitStatus> {
+        if !self.is_initialized() {
+            return Ok(ExitStatus::default());
+        }
+
+        let package_name = format!("asimov-{}-module", module_name.to_string());
+
+        self.gem_command("uninstall", verbosity.unwrap_or(0))
+            .args(["--all", "--executables", &package_name])
+            .status()
+    }
+}
+
+impl RubyEnv {
+    pub fn system() -> Self {
+        Self { venv: None }
+    }
+
+    pub fn at(path: PathBuf) -> Self {
+        Self { venv: Some(path) }
     }
 
     pub fn ruby(&self) -> Command {
@@ -127,7 +159,7 @@ impl RubyEnv {
         let Some(ref path) = self.gems_path() else {
             return Err(std::io::Error::new(
                 std::io::ErrorKind::NotFound,
-                "Gems directory not found",
+                "`gems` directory not found",
             ));
         };
         std::fs::read_dir(path)
@@ -143,4 +175,16 @@ impl RubyEnv {
         }
         Some(path)
     }
+}
+
+pub fn ruby() -> Option<Cow<'static, str>> {
+    getenv::ruby()
+        .map(Cow::from)
+        .or_else(|| Some(Cow::from("ruby")))
+}
+
+pub fn gem() -> Option<Cow<'static, str>> {
+    getenv::gem()
+        .map(Cow::from)
+        .or_else(|| Some(Cow::from("gem")))
 }
