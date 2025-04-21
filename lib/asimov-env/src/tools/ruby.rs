@@ -1,7 +1,7 @@
 // This is free and unencumbered software released into the public domain.
 
 use crate::paths::ruby_env;
-use std::{borrow::Cow, path::PathBuf, process::Command};
+use std::{borrow::Cow, fs::ReadDir, path::PathBuf, process::Command};
 
 pub fn ruby() -> Option<Cow<'static, str>> {
     getenv::ruby()
@@ -60,6 +60,30 @@ impl RubyEnv {
         Ok(())
     }
 
+    pub fn installed_modules(&self) -> Vec<String> {
+        let mut result = vec![];
+        for entry in self.gems_dir().unwrap() {
+            let Ok(entry) = entry else {
+                continue; // skip invalid entries
+            };
+            if !entry.path().is_dir() {
+                continue; // skip non-directory entries
+            }
+            let name = entry.file_name();
+            let Some(name) = name.to_str() else {
+                continue; // skip non-UTF-8 entries
+            };
+            let Some(name) = name.strip_prefix("asimov-") else {
+                continue;
+            };
+            let Some(pos) = name.find("-module-") else {
+                continue;
+            };
+            result.push(name[..pos].to_string());
+        }
+        result
+    }
+
     pub fn ruby(&self) -> Command {
         match self.venv {
             None => Command::new(ruby().unwrap().as_ref()),
@@ -97,5 +121,26 @@ impl RubyEnv {
             2 => vec![],
             _ => vec!["--verbose"], // -V
         }
+    }
+
+    pub fn gems_dir(&self) -> std::io::Result<ReadDir> {
+        let Some(ref path) = self.gems_path() else {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::NotFound,
+                "Gems directory not found",
+            ));
+        };
+        std::fs::read_dir(path)
+    }
+
+    pub fn gems_path(&self) -> Option<PathBuf> {
+        let Some(ref path) = self.venv else {
+            return None;
+        };
+        let path = path.join("gems");
+        if !path.is_dir() {
+            return None; // no gems installed
+        }
+        Some(path)
     }
 }
