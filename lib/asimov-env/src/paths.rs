@@ -1,12 +1,11 @@
 // This is free and unencumbered software released into the public domain.
 
 use super::envs;
-use clientele::envs::home;
 use std::path::PathBuf;
 
 pub fn asimov_root() -> PathBuf {
     envs::asimov_root()
-        .or_else(|| home().map(|p| PathBuf::from(p).join(".asimov")))
+        .or_else(|| getenv::home().map(|p| PathBuf::from(p).join(".asimov")))
         .expect("ASIMOV_ROOT or HOME environment variable is set")
 }
 

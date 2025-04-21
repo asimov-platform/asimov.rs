@@ -3,7 +3,7 @@
 use std::borrow::Cow;
 
 pub fn cargo() -> Option<Cow<'static, str>> {
-    clientele::envs::cargo()
+    getenv::cargo()
         .map(Cow::from)
         .or_else(|| Some(Cow::from("cargo")))
 }

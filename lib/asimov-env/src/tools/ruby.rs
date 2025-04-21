@@ -4,13 +4,13 @@ use crate::paths::ruby_env;
 use std::{borrow::Cow, path::PathBuf, process::Command};
 
 pub fn ruby() -> Option<Cow<'static, str>> {
-    clientele::envs::ruby()
+    getenv::ruby()
         .map(Cow::from)
         .or_else(|| Some(Cow::from("ruby")))
 }
 
 pub fn gem() -> Option<Cow<'static, str>> {
-    clientele::envs::gem()
+    getenv::gem()
         .map(Cow::from)
         .or_else(|| Some(Cow::from("gem")))
 }

@@ -4,7 +4,7 @@ use crate::paths::python_env;
 use std::{borrow::Cow, path::PathBuf, process::Command};
 
 pub fn python() -> Option<Cow<'static, str>> {
-    clientele::envs::python()
+    getenv::python()
         .map(Cow::from)
         .or_else(|| Some(Cow::from("python3")))
         .or_else(|| Some(Cow::from("python")))

@@ -17,7 +17,7 @@ publish.workspace = true
 [features]
 default = ["all", "std"]
 all = ["tracing"]
-std = ["clientele/std", "dogma/std", "dep:cap-directories", "dep:cap-std"]
+std = ["dogma/std", "getenv/std", "dep:cap-directories", "dep:cap-std"]
 tracing = []
 unstable = []
 
@@ -26,6 +26,11 @@ cap-directories = { version = "3.4", default-features = false, optional = true }
 cap-std = { version = "3.4", default-features = false, features = [
     "fs_utf8",
 ], optional = true }
-clientele = { version = "0.2.9", default-features = false }
 dogma.workspace = true
+getenv = { version = "0.1", default-features = false, features = [
+    "cargo",
+    "posix",
+    "python",
+    "ruby",
+] }
 stability.workspace = true
