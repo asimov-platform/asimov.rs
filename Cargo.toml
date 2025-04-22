@@ -23,6 +23,7 @@ publish = true
 [workspace.dependencies]
 asimov-account = "25.0.0-dev.3"
 asimov-agent = "25.0.0-dev.3"
+asimov-cache = "25.0.0-dev.3"
 asimov-config = "25.0.0-dev.3"
 asimov-construct = "25.0.0-dev.3"
 asimov-core = "25.0.0-dev.3"
@@ -36,6 +37,7 @@ asimov-module = "25.0.0-dev.3"
 asimov-ontology = "25.0.0-dev.3"
 asimov-platform = "25.0.0-dev.3"
 asimov-protocol = "25.0.0-dev.3"
+asimov-proxy = "25.0.0-dev.3"
 asimov-repository = "25.0.0-dev.3"
 asimov-runtime = "25.0.0-dev.3"
 asimov-sdk = "25.0.0-dev.3"
@@ -60,6 +62,7 @@ stability = "0.2"
 [patch.crates-io]
 asimov-account = { path = "lib/asimov-account" }
 asimov-agent = { path = "lib/asimov-agent" }
+asimov-cache = { path = "lib/asimov-cache" }
 asimov-config = { path = "lib/asimov-config" }
 asimov-construct = { path = "lib/asimov-construct" }
 asimov-core = { path = "lib/asimov-core" }
@@ -73,6 +76,7 @@ asimov-module = { path = "lib/asimov-module" }
 asimov-ontology = { path = "lib/asimov-ontology" }
 asimov-platform = { path = "lib/asimov-platform" }
 asimov-protocol = { path = "lib/asimov-protocol" }
+asimov-proxy = { path = "lib/asimov-proxy" }
 asimov-repository = { path = "lib/asimov-repository" }
 asimov-runtime = { path = "lib/asimov-runtime" }
 asimov-sdk = { path = "lib/asimov-sdk" }
