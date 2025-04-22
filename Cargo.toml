@@ -7,7 +7,7 @@ resolver = "2"
 
 [workspace.package]
 version = "25.0.0-dev.3"
-authors = ["ASIMOV by Haltia.AI <support@asimov.so>"]
+authors = ["ASIMOV Protocol <support@asimov.so>"]
 edition = "2021"
 rust-version = "1.81"
 description = "ASIMOV Software Development Kit (SDK) for Rust"
@@ -21,14 +21,27 @@ categories = []
 publish = true
 
 [workspace.dependencies]
+asimov-account = "25.0.0-dev.3"
+asimov-agent = "25.0.0-dev.3"
+asimov-config = "25.0.0-dev.3"
+asimov-construct = "25.0.0-dev.3"
 asimov-core = "25.0.0-dev.3"
+asimov-dataset = "25.0.0-dev.3"
+asimov-directory = "25.0.0-dev.3"
 asimov-env = "25.0.0-dev.3"
 asimov-flow = "25.0.0-dev.3"
+asimov-graph = "25.0.0-dev.3"
 asimov-ledger = "25.0.0-dev.3"
 asimov-module = "25.0.0-dev.3"
+asimov-ontology = "25.0.0-dev.3"
+asimov-platform = "25.0.0-dev.3"
 asimov-protocol = "25.0.0-dev.3"
+asimov-repository = "25.0.0-dev.3"
+asimov-runtime = "25.0.0-dev.3"
 asimov-sdk = "25.0.0-dev.3"
 asimov-sys = "25.0.0-dev.3"
+asimov-token = "25.0.0-dev.3"
+asimov-universe = "25.0.0-dev.3"
 asimov-vault = "25.0.0-dev.3"
 cfg_aliases = "0.2"
 dogma = { version = "0.1.1", default-features = false }
@@ -45,14 +58,27 @@ protoflow-core = { version = "=0.4.1", default-features = false }
 stability = "0.2"
 
 [patch.crates-io]
+asimov-account = { path = "lib/asimov-account" }
+asimov-agent = { path = "lib/asimov-agent" }
+asimov-config = { path = "lib/asimov-config" }
+asimov-construct = { path = "lib/asimov-construct" }
 asimov-core = { path = "lib/asimov-core" }
+asimov-dataset = { path = "lib/asimov-dataset" }
+asimov-directory = { path = "lib/asimov-directory" }
 asimov-env = { path = "lib/asimov-env" }
 asimov-flow = { path = "lib/asimov-flow" }
+asimov-graph = { path = "lib/asimov-graph" }
 asimov-ledger = { path = "lib/asimov-ledger" }
 asimov-module = { path = "lib/asimov-module" }
+asimov-ontology = { path = "lib/asimov-ontology" }
+asimov-platform = { path = "lib/asimov-platform" }
 asimov-protocol = { path = "lib/asimov-protocol" }
+asimov-repository = { path = "lib/asimov-repository" }
+asimov-runtime = { path = "lib/asimov-runtime" }
 asimov-sdk = { path = "lib/asimov-sdk" }
 asimov-sys = { path = "lib/asimov-sys" }
+asimov-token = { path = "lib/asimov-token" }
+asimov-universe = { path = "lib/asimov-universe" }
 asimov-vault = { path = "lib/asimov-vault" }
 #protoflow = { path = "../../vnd/protoflow/lib/protoflow" }
 #protoflow-blocks = { path = "../../vnd/protoflow/lib/protoflow-blocks" }
