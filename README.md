@@ -41,13 +41,13 @@ use asimov_sdk::*;
 ## 👨‍💻 Development
 
 ```console
-$ git clone https://github.com/AsimovPlatform/asimov.rs.git
+$ git clone https://github.com/asimov-platform/asimov.rs.git
 ```
 
 - - -
 
-[![Share on Twitter](https://img.shields.io/badge/share%20on-twitter-03A9F4?logo=twitter)](https://twitter.com/share?url=https://github.com/AsimovPlatform/asimov.rs&text=Asimov%20Software%20Development%20Kit%20%28SDK%29%20for%20Rust)
-[![Share on Reddit](https://img.shields.io/badge/share%20on-reddit-red?logo=reddit)](https://reddit.com/submit?url=https://github.com/AsimovPlatform/asimov.rs&title=Asimov%20Software%20Development%20Kit%20%28SDK%29%20for%20Rust)
-[![Share on Hacker News](https://img.shields.io/badge/share%20on-hacker%20news-orange?logo=ycombinator)](https://news.ycombinator.com/submitlink?u=https://github.com/AsimovPlatform/asimov.rs&t=Asimov%20Software%20Development%20Kit%20%28SDK%29%20for%20Rust)
-[![Share on Facebook](https://img.shields.io/badge/share%20on-facebook-1976D2?logo=facebook)](https://www.facebook.com/sharer/sharer.php?u=https://github.com/AsimovPlatform/asimov.rs)
-[![Share on LinkedIn](https://img.shields.io/badge/share%20on-linkedin-3949AB?logo=linkedin)](https://www.linkedin.com/sharing/share-offsite/?url=https://github.com/AsimovPlatform/asimov.rs)
+[![Share on Twitter](https://img.shields.io/badge/share%20on-twitter-03A9F4?logo=twitter)](https://twitter.com/share?url=https://github.com/asimov-platform/asimov.rs&text=ASIMOV%20Software%20Development%20Kit%20%28SDK%29%20for%20Rust)
+[![Share on Reddit](https://img.shields.io/badge/share%20on-reddit-red?logo=reddit)](https://reddit.com/submit?url=https://github.com/asimov-platform/asimov.rs&title=ASIMOV%20Software%20Development%20Kit%20%28SDK%29%20for%20Rust)
+[![Share on Hacker News](https://img.shields.io/badge/share%20on-hacker%20news-orange?logo=ycombinator)](https://news.ycombinator.com/submitlink?u=https://github.com/asimov-platform/asimov.rs&t=ASIMOV%20Software%20Development%20Kit%20%28SDK%29%20for%20Rust)
+[![Share on Facebook](https://img.shields.io/badge/share%20on-facebook-1976D2?logo=facebook)](https://www.facebook.com/sharer/sharer.php?u=https://github.com/asimov-platform/asimov.rs)
+[![Share on LinkedIn](https://img.shields.io/badge/share%20on-linkedin-3949AB?logo=linkedin)](https://www.linkedin.com/sharing/share-offsite/?url=https://github.com/asimov-platform/asimov.rs)
