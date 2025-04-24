@@ -47,6 +47,7 @@ asimov-universe = "25.0.0-dev.3"
 asimov-vault = "25.0.0-dev.3"
 cfg_aliases = "0.2"
 dogma = { version = "0.1.1", default-features = false }
+gofer = { version = "0.1", default-features = false, features = ["all"] }
 know = { version = "0", default-features = true }
 protoflow = { version = "=0.4.1", default-features = false, features = [
     "blocks",

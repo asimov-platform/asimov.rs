@@ -17,10 +17,11 @@ publish.workspace = true
 [features]
 default = ["all", "std"]
 all = ["tracing"]
-std = ["dogma/std"]
+std = ["dogma/std", "gofer/std"]
 tracing = []
 unstable = []
 
 [dependencies]
 dogma.workspace = true
+gofer.workspace = true
 stability.workspace = true
