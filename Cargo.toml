@@ -2,7 +2,7 @@
 
 [workspace]
 members = ["lib/*"]
-default-members = ["lib/asimov-env", "lib/asimov-patterns"]
+default-members = ["lib/asimov-env", "lib/asimov-patterns", "lib/asimov-runner"]
 resolver = "2"
 
 [workspace.package]
@@ -40,6 +40,7 @@ asimov-platform = "25.0.0-dev.5"
 asimov-protocol = "25.0.0-dev.5"
 asimov-proxy = "25.0.0-dev.5"
 asimov-repository = "25.0.0-dev.5"
+asimov-runner = "25.0.0-dev.5"
 asimov-runtime = "25.0.0-dev.5"
 asimov-sdk = "25.0.0-dev.5"
 asimov-sys = "25.0.0-dev.5"
@@ -87,6 +88,7 @@ asimov-platform = { path = "lib/asimov-platform" }
 asimov-protocol = { path = "lib/asimov-protocol" }
 asimov-proxy = { path = "lib/asimov-proxy" }
 asimov-repository = { path = "lib/asimov-repository" }
+asimov-runner = { path = "lib/asimov-runner" }
 asimov-runtime = { path = "lib/asimov-runtime" }
 asimov-sdk = { path = "lib/asimov-sdk" }
 asimov-sys = { path = "lib/asimov-sys" }
