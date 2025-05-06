@@ -35,6 +35,7 @@ asimov-graph = "25.0.0-dev.5"
 asimov-ledger = "25.0.0-dev.5"
 asimov-module = "25.0.0-dev.5"
 asimov-ontology = "25.0.0-dev.5"
+asimov-patterns = "25.0.0-dev.5"
 asimov-platform = "25.0.0-dev.5"
 asimov-protocol = "25.0.0-dev.5"
 asimov-proxy = "25.0.0-dev.5"
@@ -80,6 +81,7 @@ asimov-graph = { path = "lib/asimov-graph" }
 asimov-ledger = { path = "lib/asimov-ledger" }
 asimov-module = { path = "lib/asimov-module" }
 asimov-ontology = { path = "lib/asimov-ontology" }
+asimov-patterns = { path = "lib/asimov-patterns" }
 asimov-platform = { path = "lib/asimov-platform" }
 asimov-protocol = { path = "lib/asimov-protocol" }
 asimov-proxy = { path = "lib/asimov-proxy" }
