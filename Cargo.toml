@@ -2,7 +2,7 @@
 
 [workspace]
 members = ["lib/*"]
-default-members = ["lib/asimov-env"]
+default-members = ["lib/asimov-env", "lib/asimov-patterns"]
 resolver = "2"
 
 [workspace.package]
@@ -63,6 +63,7 @@ protoflow-blocks = { version = "=0.4.1", default-features = false, features = [
     "hash",
 ] }
 protoflow-core = { version = "=0.4.1", default-features = false }
+rdf-model = { version = "0.2.2", default-features = false }
 stability = "0.2"
 thiserror = "2"
 

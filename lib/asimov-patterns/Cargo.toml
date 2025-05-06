@@ -23,4 +23,5 @@ unstable = []
 
 [dependencies]
 dogma.workspace = true
+rdf-model.workspace = true
 stability.workspace = true
