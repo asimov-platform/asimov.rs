@@ -14,5 +14,5 @@ pub trait Provider {}
 ///
 /// let options = ProviderOptions::builder().build();
 /// ```
-#[derive(Clone, Debug, TypedBuilder)]
+#[derive(Clone, Debug, Default, TypedBuilder)]
 pub struct ProviderOptions {}

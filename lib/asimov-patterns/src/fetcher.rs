@@ -14,5 +14,5 @@ pub trait Fetcher {}
 ///
 /// let options = FetcherOptions::builder().build();
 /// ```
-#[derive(Clone, Debug, TypedBuilder)]
+#[derive(Clone, Debug, Default, TypedBuilder)]
 pub struct FetcherOptions {}

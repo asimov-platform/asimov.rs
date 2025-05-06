@@ -22,5 +22,6 @@ tracing = []
 unstable = []
 
 [dependencies]
+asimov-patterns.workspace = true
 dogma.workspace = true
 stability.workspace = true

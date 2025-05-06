@@ -14,5 +14,5 @@ pub trait Importer {}
 ///
 /// let options = ImporterOptions::builder().build();
 /// ```
-#[derive(Clone, Debug, TypedBuilder)]
+#[derive(Clone, Debug, Default, TypedBuilder)]
 pub struct ImporterOptions {}

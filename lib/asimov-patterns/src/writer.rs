@@ -14,5 +14,5 @@ pub trait Writer {}
 ///
 /// let options = WriterOptions::builder().build();
 /// ```
-#[derive(Clone, Debug, TypedBuilder)]
+#[derive(Clone, Debug, Default, TypedBuilder)]
 pub struct WriterOptions {}

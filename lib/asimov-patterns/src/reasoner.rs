@@ -14,5 +14,5 @@ pub trait Reasoner {}
 ///
 /// let options = ReasonerOptions::builder().build();
 /// ```
-#[derive(Clone, Debug, TypedBuilder)]
+#[derive(Clone, Debug, Default, TypedBuilder)]
 pub struct ReasonerOptions {}

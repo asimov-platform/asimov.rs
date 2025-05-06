@@ -14,5 +14,5 @@ pub trait Adapter {}
 ///
 /// let options = AdapterOptions::builder().build();
 /// ```
-#[derive(Clone, Debug, TypedBuilder)]
+#[derive(Clone, Debug, Default, TypedBuilder)]
 pub struct AdapterOptions {}
