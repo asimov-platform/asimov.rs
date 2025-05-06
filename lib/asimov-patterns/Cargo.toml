@@ -25,3 +25,4 @@ unstable = []
 dogma.workspace = true
 rdf-model.workspace = true
 stability.workspace = true
+typed-builder = "0.21"
