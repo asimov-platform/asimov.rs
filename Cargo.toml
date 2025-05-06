@@ -46,13 +46,13 @@ asimov-token = "25.0.0-dev.5"
 asimov-universe = "25.0.0-dev.5"
 asimov-vault = "25.0.0-dev.5"
 cfg_aliases = "0.2"
-dogma = { version = "0.1.1", default-features = false }
-gofer = { version = "0.1.2", default-features = false, features = [
+dogma = { version = "0.1.6", default-features = false }
+gofer = { version = "0.1.4", default-features = false, features = [
     "all",
     "miette",
 ] }
 know = { version = "0", default-features = true }
-miette = { version = "7.5", default-features = false }
+miette = { version = "7.5", default-features = false, features = ["derive"] }
 protoflow = { version = "=0.4.1", default-features = false, features = [
     "blocks",
     "derive",
