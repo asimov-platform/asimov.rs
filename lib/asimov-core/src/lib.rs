@@ -65,6 +65,8 @@ mod tracing {
 #[doc(hidden)]
 #[rustfmt::skip]
 mod tracing {
+    // These macros are fallback implementations used when the `tracing` feature is disabled.
+    // They are no-op definitions to ensure that code using these macros compiles without errors.
     #[macro_export] macro_rules! debug { ($($arg:tt)+) => (); }
     #[macro_export] macro_rules! error { ($($arg:tt)+) => (); }
     #[macro_export] macro_rules! info { ($($arg:tt)+) => (); }
