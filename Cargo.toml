@@ -43,6 +43,7 @@ asimov-repository = "25.0.0-dev.5"
 asimov-runner = "25.0.0-dev.5"
 asimov-runtime = "25.0.0-dev.5"
 asimov-sdk = "25.0.0-dev.5"
+asimov-server = "25.0.0-dev.5"
 asimov-sys = "25.0.0-dev.5"
 asimov-token = "25.0.0-dev.5"
 asimov-universe = "25.0.0-dev.5"
@@ -94,6 +95,7 @@ asimov-repository = { path = "lib/asimov-repository" }
 asimov-runner = { path = "lib/asimov-runner" }
 asimov-runtime = { path = "lib/asimov-runtime" }
 asimov-sdk = { path = "lib/asimov-sdk" }
+asimov-server = { path = "lib/asimov-server" }
 asimov-sys = { path = "lib/asimov-sys" }
 asimov-token = { path = "lib/asimov-token" }
 asimov-universe = { path = "lib/asimov-universe" }

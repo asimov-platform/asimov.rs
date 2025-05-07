@@ -28,11 +28,6 @@ impl Importer {
 
         Self { runner, options }
     }
-
-    pub async fn execute(&mut self) -> ImporterResult {
-        let stdout = self.runner.execute().await?;
-        Ok(stdout)
-    }
 }
 
 impl asimov_patterns::Importer<Cursor<Vec<u8>>, RunnerError> for Importer {}
