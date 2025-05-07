@@ -22,10 +22,11 @@ std = [
     "asimov-sys/std",
     "dogma/std",
     "protoflow-core/std",
+    "tracing?/std",
     "dep:cap-directories",
     "dep:cap-std",
 ]
-tracing = ["protoflow-core/tracing"]
+tracing = ["dep:tracing", "protoflow-core/tracing"]
 unstable = []
 
 [dependencies]
@@ -39,3 +40,4 @@ know.workspace = true
 protoflow-core.workspace = true
 serde = { version = "1.0", default-features = false, optional = true }
 stability.workspace = true
+tracing = { version = "0.1", default-features = false, optional = true }
