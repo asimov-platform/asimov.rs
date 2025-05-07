@@ -14,5 +14,5 @@ pub trait Registrar {}
 ///
 /// let options = RegistrarOptions::builder().build();
 /// ```
-#[derive(Clone, Debug, Default, TypedBuilder)]
+#[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd, TypedBuilder)]
 pub struct RegistrarOptions {}

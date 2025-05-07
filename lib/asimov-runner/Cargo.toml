@@ -17,11 +17,13 @@ publish.workspace = true
 [features]
 default = ["all", "std"]
 all = ["tracing"]
-std = ["dogma/std"]
-tracing = []
+std = ["dogma/std", "tracing?/std"]
+tracing = ["dep:tracing"]
 unstable = []
 
 [dependencies]
 asimov-patterns.workspace = true
 dogma.workspace = true
 stability.workspace = true
+tokio = { version = "1", default-features = false, features = ["process"] }
+tracing = { version = "0.1", optional = true }

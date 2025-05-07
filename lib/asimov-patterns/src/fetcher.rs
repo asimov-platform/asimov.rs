@@ -1,5 +1,6 @@
 // This is free and unencumbered software released into the public domain.
 
+use dogma::prelude::String;
 use typed_builder::TypedBuilder;
 
 /// Network protocol fetcher. Consumes a URL input, produces some output.
@@ -14,5 +15,7 @@ pub trait Fetcher {}
 ///
 /// let options = FetcherOptions::builder().build();
 /// ```
-#[derive(Clone, Debug, Default, TypedBuilder)]
-pub struct FetcherOptions {}
+#[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd, TypedBuilder)]
+pub struct FetcherOptions {
+    pub input_url: String,
+}
