@@ -1,9 +1,10 @@
 // This is free and unencumbered software released into the public domain.
 
+use crate::Execute;
 use typed_builder::TypedBuilder;
 
 /// LLM inference provider. Consumes text input, produces text output.
-pub trait Provider {}
+pub trait Provider<T, E>: Execute<T, E> {}
 
 /// Configuration options for [`Provider`].
 ///

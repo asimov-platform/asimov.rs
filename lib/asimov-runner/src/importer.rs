@@ -1,41 +1,64 @@
 // This is free and unencumbered software released into the public domain.
 
+use crate::{Runner, RunnerError};
 use asimov_patterns::ImporterOptions;
-use std::{
-    io::Result,
-    path::{Path, PathBuf},
-    process::{Output, Stdio},
-};
-use tokio::process::Command;
+use async_trait::async_trait;
+use std::{ffi::OsStr, io::Cursor, process::Stdio};
+
+pub type ImporterResult = std::result::Result<Cursor<Vec<u8>>, RunnerError>; // TODO
 
 /// RDF dataset importer. Consumes a URL input, produces RDF output.
-#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[derive(Debug)]
+#[allow(unused)]
 pub struct Importer {
-    program: PathBuf,
+    runner: Runner,
     options: ImporterOptions,
 }
 
-impl asimov_patterns::Importer for Importer {}
-
 impl Importer {
-    pub fn new(program: impl AsRef<Path>, options: ImporterOptions) -> Self {
-        Self {
-            program: program.as_ref().into(),
-            options,
-        }
-    }
+    pub fn new(program: impl AsRef<OsStr>, options: ImporterOptions) -> Self {
+        let mut runner = Runner::new(program);
 
-    pub async fn execute(&self) -> Result<Output> {
-        let process = Command::new(&self.program)
-            .arg(&self.options.input_url)
+        runner
+            .command()
+            .arg(&options.input_url)
             .stdin(Stdio::null())
             .stdout(Stdio::piped())
-            .stderr(Stdio::piped())
-            .spawn()?;
+            .stderr(Stdio::piped());
 
-        let output = process.wait_with_output().await?;
-        tracing::trace!("The command exited with: {}", output.status);
+        Self { runner, options }
+    }
 
-        Ok(output)
+    pub async fn execute(&mut self) -> ImporterResult {
+        let stdout = self.runner.execute().await?;
+        Ok(stdout)
+    }
+}
+
+impl asimov_patterns::Importer<Cursor<Vec<u8>>, RunnerError> for Importer {}
+
+#[async_trait]
+impl asimov_patterns::Execute<Cursor<Vec<u8>>, RunnerError> for Importer {
+    async fn execute(&mut self) -> ImporterResult {
+        let stdout = self.runner.execute().await?;
+        Ok(stdout)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use asimov_patterns::Execute;
+
+    #[tokio::test]
+    async fn test_success() {
+        let mut runner = Importer::new(
+            "curl",
+            ImporterOptions {
+                input_url: "https://www.google.com/robots.txt".to_string(),
+            },
+        );
+        let result = runner.execute().await;
+        assert!(result.is_ok());
     }
 }

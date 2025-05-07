@@ -47,8 +47,10 @@ asimov-sys = "25.0.0-dev.5"
 asimov-token = "25.0.0-dev.5"
 asimov-universe = "25.0.0-dev.5"
 asimov-vault = "25.0.0-dev.5"
+async-trait = "0.1"
 cfg_aliases = "0.2"
-dogma = { version = "0.1.6", default-features = false }
+clientele = { version = "0.3", default-features = false }
+dogma = { version = "0.1.7", default-features = false }
 gofer = { version = "0.1.4", default-features = false, features = [
     "all",
     "miette",
@@ -67,6 +69,7 @@ protoflow-core = { version = "=0.4.1", default-features = false }
 rdf-model = { version = "0.2.2", default-features = false }
 stability = "0.2"
 thiserror = "2"
+typed-builder = "0.21"
 
 [patch.crates-io]
 asimov-account = { path = "lib/asimov-account" }

@@ -1,41 +1,59 @@
 // This is free and unencumbered software released into the public domain.
 
+use crate::{Runner, RunnerError};
 use asimov_patterns::FetcherOptions;
-use std::{
-    io::Result,
-    path::{Path, PathBuf},
-    process::{Output, Stdio},
-};
-use tokio::process::Command;
+use async_trait::async_trait;
+use std::{ffi::OsStr, io::Cursor, process::Stdio};
+
+pub type FetcherResult = std::result::Result<Cursor<Vec<u8>>, RunnerError>;
 
 /// Network protocol fetcher. Consumes a URL input, produces some output.
-#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[derive(Debug)]
+#[allow(unused)]
 pub struct Fetcher {
-    program: PathBuf,
+    runner: Runner,
     options: FetcherOptions,
 }
 
-impl asimov_patterns::Fetcher for Fetcher {}
-
 impl Fetcher {
-    pub fn new(program: impl AsRef<Path>, options: FetcherOptions) -> Self {
-        Self {
-            program: program.as_ref().into(),
-            options,
-        }
-    }
+    pub fn new(program: impl AsRef<OsStr>, options: FetcherOptions) -> Self {
+        let mut runner = Runner::new(program);
 
-    pub async fn execute(&self) -> Result<Output> {
-        let process = Command::new(&self.program)
-            .arg(&self.options.input_url)
+        runner
+            .command()
+            .arg(&options.input_url)
             .stdin(Stdio::null())
             .stdout(Stdio::piped())
-            .stderr(Stdio::piped())
-            .spawn()?;
+            .stderr(Stdio::piped());
 
-        let output = process.wait_with_output().await?;
-        tracing::trace!("The command exited with: {}", output.status);
+        Self { runner, options }
+    }
+}
 
-        Ok(output)
+impl asimov_patterns::Fetcher<Cursor<Vec<u8>>, RunnerError> for Fetcher {}
+
+#[async_trait]
+impl asimov_patterns::Execute<Cursor<Vec<u8>>, RunnerError> for Fetcher {
+    async fn execute(&mut self) -> FetcherResult {
+        let stdout = self.runner.execute().await?;
+        Ok(stdout)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use asimov_patterns::Execute;
+
+    #[tokio::test]
+    async fn test_success() {
+        let mut runner = Fetcher::new(
+            "curl",
+            FetcherOptions {
+                input_url: "https://www.google.com/robots.txt".to_string(),
+            },
+        );
+        let result = runner.execute().await;
+        assert!(result.is_ok());
     }
 }

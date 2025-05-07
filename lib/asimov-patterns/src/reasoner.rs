@@ -1,9 +1,10 @@
 // This is free and unencumbered software released into the public domain.
 
+use crate::Execute;
 use typed_builder::TypedBuilder;
 
 /// RDF dataset reasoner. Consumes RDF input, produces entailed RDF output.
-pub trait Reasoner {}
+pub trait Reasoner<T, E>: Execute<T, E> {}
 
 /// Configuration options for [`Reasoner`].
 ///

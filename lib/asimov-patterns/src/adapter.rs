@@ -1,9 +1,10 @@
 // This is free and unencumbered software released into the public domain.
 
+use crate::Execute;
 use typed_builder::TypedBuilder;
 
 /// RDF dataset adapter. Consumes SPARQL input, produces RDF output.
-pub trait Adapter {}
+pub trait Adapter<T, E>: Execute<T, E> {}
 
 /// Configuration options for [`Adapter`].
 ///

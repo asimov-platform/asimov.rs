@@ -4,6 +4,9 @@
 //! # use asimov_runner::*;
 //! ```
 
+pub use clientele::SysexitsError;
+pub use tokio::process::Command;
+
 mod adapter;
 pub use adapter::*;
 
@@ -24,6 +27,9 @@ pub use reasoner::*;
 
 mod registrar;
 pub use registrar::*;
+
+mod runner;
+pub use runner::*;
 
 mod writer;
 pub use writer::*;

@@ -6,6 +6,9 @@
 
 #![no_std]
 
+mod execute;
+pub use execute::*;
+
 mod adapter;
 pub use adapter::*;
 
