@@ -19,15 +19,22 @@ default = ["all", "std"]
 all = ["http", "tracing"]
 std = ["dogma/std", "tracing?/std"]
 tracing = ["dep:tracing"]
-unstable = ["http", "mdns", "ssdp"]
+unstable = ["https", "mdns", "ssdp"]
 
-# Network protocols:
-http = ["dep:axum", "dep:tower-http"]
+# Protocols:
+http = ["dep:axum", "dep:axum-prometheus", "dep:tower-http"]
+https = ["http"]
 mdns = []
 ssdp = []
 
+# Protocols on top of HTTP:
+graphql = ["http"]
+gsp = ["http"]
+sparql = ["http"]
+
 [dependencies]
 axum = { version = "0.8", optional = true }
+axum-prometheus = { version = "0.8", optional = true }
 dogma.workspace = true
 stability.workspace = true
 tokio = { version = "1", default-features = false, features = [] }

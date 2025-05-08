@@ -1,18 +1,12 @@
 // This is free and unencumbered software released into the public domain.
 
 use axum::{response::Json, routing::get, Router};
-use std::io::Error;
-use tokio::{
-    net::{TcpListener, ToSocketAddrs},
-    task::JoinHandle,
-};
+use tokio::net::{TcpListener, ToSocketAddrs};
 use tokio_util::sync::CancellationToken;
 use tower_http::cors::CorsLayer;
 use tracing::info;
 
-pub async fn start(
-    addr: impl ToSocketAddrs,
-) -> std::io::Result<(JoinHandle<Result<(), Error>>, CancellationToken)> {
+pub async fn start(addr: impl ToSocketAddrs, cancel: CancellationToken) -> std::io::Result<()> {
     let app = Router::new()
         .route("/", get(http_handler))
         .layer(CorsLayer::permissive());
@@ -24,16 +18,9 @@ pub async fn start(
         listener.local_addr().unwrap()
     );
 
-    let token = CancellationToken::new();
-    let token_copy = token.clone();
-
-    let handle = tokio::spawn(async move {
-        axum::serve(listener, app)
-            .with_graceful_shutdown(token_copy.cancelled_owned())
-            .await
-    });
-
-    Ok((handle, token))
+    axum::serve(listener, app)
+        .with_graceful_shutdown(cancel.cancelled_owned())
+        .await
 }
 
 async fn http_handler() -> Json<&'static str> {
