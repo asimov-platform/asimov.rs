@@ -19,13 +19,24 @@ default = ["all", "std"]
 all = ["tracing"]
 std = ["clientele/std", "dogma/std", "tracing?/std"]
 tracing = ["dep:tracing"]
-unstable = []
+unstable = ["http", "mdns", "ssdp"]
+
+# Network protocols:
+http = ["dep:axum", "dep:tower-http"]
+mdns = []
+ssdp = []
 
 [dependencies]
+axum = { version = "0.8", optional = true }
 clientele.workspace = true
 dogma.workspace = true
+getenv = "0.1"
 stability.workspace = true
 tokio = { version = "1", default-features = false, features = [] }
+tokio-util = { version = "0.7", default-features = false }
+tower-http = { version = "0.6", default-features = false, features = [
+    "cors",
+], optional = true }
 tracing = { version = "0.1", optional = true }
 
 [dev-dependencies]
