@@ -2,7 +2,12 @@
 
 [workspace]
 members = ["lib/*"]
-default-members = ["lib/asimov-env", "lib/asimov-patterns", "lib/asimov-runner"]
+default-members = [
+    "lib/asimov-env",
+    "lib/asimov-patterns",
+    "lib/asimov-runner",
+    "lib/asimov-server",
+]
 resolver = "2"
 
 [workspace.package]
