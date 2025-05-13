@@ -6,6 +6,7 @@ mod openai;
 mod openai_v1;
 mod prometheus;
 mod sparql;
+mod well_known;
 
 use axum::{Router, response::Json, routing::get};
 use tokio::net::{TcpListener, ToSocketAddrs};
@@ -20,6 +21,7 @@ pub fn routes() -> Router {
         .merge(openai::routes())
         .merge(prometheus::routes())
         .merge(sparql::routes())
+        .merge(well_known::routes())
         .layer(CorsLayer::permissive())
         .route("/", get(http_handler))
 }

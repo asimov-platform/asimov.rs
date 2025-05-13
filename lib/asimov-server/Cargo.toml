@@ -17,7 +17,7 @@ publish.workspace = true
 [features]
 default = ["all", "std"]
 all = ["http", "tracing"]
-std = ["dogma/std", "openai/std", "tracing?/std"]
+std = ["dogma/std", "jiff/std", "openai/std", "tracing?/std"]
 tracing = ["dep:tracing"]
 unstable = ["https", "mdns", "ssdp"]
 
@@ -36,6 +36,7 @@ sparql = ["http"]
 axum = { workspace = true, optional = true }
 axum-prometheus = { workspace = true, optional = true }
 dogma.workspace = true
+jiff.workspace = true
 openai = { workspace = true, features = ["serde"] }
 stability.workspace = true
 tokio = { version = "1", default-features = false, features = [] }

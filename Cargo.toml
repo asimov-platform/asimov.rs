@@ -63,6 +63,7 @@ gofer = { version = "0.1.4", default-features = false, features = [
     "all",
     "miette",
 ] }
+jiff = { version = "0.2", default-features = false }
 know = { version = "0", default-features = true }
 openai = { package = "known-types-openai", version = "0.0.3", default-features = false, features = [
     "alloc",

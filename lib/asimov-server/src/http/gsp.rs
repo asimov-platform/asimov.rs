@@ -2,6 +2,7 @@
 
 use axum::Router;
 
+/// See: https://www.w3.org/TR/sparql11-http-rdf-update/
 pub fn routes() -> Router {
     Router::new() // TODO
 }

@@ -11,6 +11,7 @@ pub mod responses;
 
 use axum::Router;
 
+/// See: https://platform.openai.com/docs/api-reference/introduction
 pub fn routes() -> Router {
     Router::new()
         .nest("/audio", audio::routes())

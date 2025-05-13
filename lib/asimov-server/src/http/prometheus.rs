@@ -1,9 +1,10 @@
 // This is free and unencumbered software released into the public domain.
 
-use axum::{routing::get, Router};
+use axum::{Router, routing::get};
 use axum_prometheus::PrometheusMetricLayer;
 use std::time::Duration;
 
+/// See: https://prometheus.io/docs/instrumenting/exposition_formats/
 pub fn routes() -> Router {
     let (prometheus_layer, metric_handle) = PrometheusMetricLayer::pair();
     Router::new()
