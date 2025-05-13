@@ -2,6 +2,7 @@
 
 mod graphql;
 mod gsp;
+mod openai;
 mod prometheus;
 mod sparql;
 
@@ -15,6 +16,7 @@ pub fn routes() -> Router {
     Router::new()
         .merge(graphql::routes())
         .merge(gsp::routes())
+        .merge(openai::routes())
         .merge(prometheus::routes())
         .merge(sparql::routes())
         .layer(CorsLayer::permissive())
