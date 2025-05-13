@@ -14,7 +14,7 @@ use axum::Router;
 pub fn routes() -> Router {
     Router::new()
         .nest("/audio", audio::routes())
-        .nest("/chat", chat::routes())
+        .nest("/chat/completions", chat::routes())
         .nest("/completions", completions::routes())
         .nest("/embeddings", embeddings::routes())
         .nest("/images", images::routes())
