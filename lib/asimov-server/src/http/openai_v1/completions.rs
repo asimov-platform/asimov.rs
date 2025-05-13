@@ -1,6 +1,9 @@
 // This is free and unencumbered software released into the public domain.
 
-use axum::{Json, Router, routing::post};
+#![allow(unused_imports)]
+
+use axum::{Json, Router, extract, routing::post};
+use openai::components::{CreateCompletionRequest, CreateCompletionResponse};
 
 /// See: https://platform.openai.com/docs/api-reference/completions
 pub fn routes() -> Router {
@@ -9,6 +12,6 @@ pub fn routes() -> Router {
 
 /// See: https://platform.openai.com/docs/api-reference/completions/create
 #[axum::debug_handler]
-async fn create() -> Json<bool> {
+async fn create(extract::Json(_): extract::Json<CreateCompletionRequest>) -> Json<bool> {
     Json(false) // TODO
 }

@@ -1,7 +1,9 @@
 // This is free and unencumbered software released into the public domain.
 
+#![allow(unused_imports)]
+
 use axum::{Json, Router, extract, routing::get};
-use openai::components::Model;
+use openai::components::{DeleteModelResponse, ListModelsResponse, Model};
 
 /// See: https://platform.openai.com/docs/api-reference/models
 pub fn routes() -> Router {
@@ -12,8 +14,11 @@ pub fn routes() -> Router {
 
 /// See: https://platform.openai.com/docs/api-reference/models/list
 #[axum::debug_handler]
-async fn list() -> Json<Vec<Model>> {
-    Json(vec![]) // TODO
+async fn list() -> Json<ListModelsResponse> {
+    Json(ListModelsResponse {
+        object: "list".to_string(),
+        data: vec![], // TODO
+    })
 }
 
 /// See: https://platform.openai.com/docs/api-reference/models/retrieve

@@ -1,8 +1,15 @@
 // This is free and unencumbered software released into the public domain.
 
+#![allow(unused_imports)]
+
 use axum::{
     Json, Router, extract,
     routing::{delete, get, post},
+};
+use openai::components::{
+    ChatCompletionDeleted, ChatCompletionList, ChatCompletionMessageList,
+    CreateChatCompletionRequest, CreateChatCompletionResponse, CreateCompletionRequest,
+    CreateCompletionResponse, Metadata,
 };
 
 /// See: https://platform.openai.com/docs/api-reference/chat
@@ -18,8 +25,14 @@ pub fn routes() -> Router {
 
 /// See: https://platform.openai.com/docs/api-reference/chat/list
 #[axum::debug_handler]
-async fn list() -> Json<Vec<bool>> {
-    Json(vec![]) // TODO
+async fn list() -> Json<ChatCompletionList> {
+    Json(ChatCompletionList {
+        object: "list".to_string(),
+        data: vec![], // TODO
+        first_id: String::from(""),
+        last_id: String::from(""),
+        has_more: false,
+    })
 }
 
 /// See: https://platform.openai.com/docs/api-reference/chat/get
@@ -36,13 +49,16 @@ async fn get_messages(extract::Path(_): extract::Path<String>) -> Json<bool> {
 
 /// See: https://platform.openai.com/docs/api-reference/chat/create
 #[axum::debug_handler]
-async fn create() -> Json<bool> {
+async fn create(extract::Json(_): extract::Json<CreateChatCompletionRequest>) -> Json<bool> {
     Json(false) // TODO
 }
 
 /// See: https://platform.openai.com/docs/api-reference/chat/update
 #[axum::debug_handler]
-async fn update(extract::Path(_): extract::Path<String>) -> Json<bool> {
+async fn update(
+    extract::Path(_): extract::Path<String>,
+    extract::Json(_): extract::Json<Metadata>,
+) -> Json<bool> {
     Json(false) // TODO
 }
 

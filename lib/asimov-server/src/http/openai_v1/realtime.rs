@@ -1,5 +1,7 @@
 // This is free and unencumbered software released into the public domain.
 
+#![allow(unused_imports)]
+
 use axum::Router;
 
 /// See: https://platform.openai.com/docs/api-reference/realtime
