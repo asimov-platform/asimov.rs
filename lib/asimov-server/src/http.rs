@@ -3,10 +3,11 @@
 mod graphql;
 mod gsp;
 mod openai;
+mod openai_v1;
 mod prometheus;
 mod sparql;
 
-use axum::{response::Json, routing::get, Router};
+use axum::{Router, response::Json, routing::get};
 use tokio::net::{TcpListener, ToSocketAddrs};
 use tokio_util::sync::CancellationToken;
 use tower_http::cors::CorsLayer;
