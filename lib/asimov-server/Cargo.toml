@@ -24,7 +24,7 @@ unstable = ["https", "mdns", "ssdp"]
 # Protocols:
 http = ["dep:axum", "dep:axum-prometheus", "dep:tower-http"]
 https = ["http"]
-mdns = []
+mdns = ["dep:mdns-sd", "dep:lazy_static", "dep:local-ip-address"]
 ssdp = []
 
 # Protocols on top of HTTP:
@@ -45,6 +45,19 @@ tower-http = { version = "0.6", default-features = false, features = [
     "cors",
 ], optional = true }
 tracing = { version = "0.1", optional = true }
+mdns-sd = { version = "0.13", optional = true }
+lazy_static = { version = "1.5", optional = true }
+local-ip-address = { version = "0.6", optional = true }
 
 [dev-dependencies]
 tokio = { version = "1", features = ["full"] }
+
+[[example]]
+name = "mdns-client"
+path = "examples/mdns-client.rs"
+required-features = ["mdns"]
+
+[[example]]
+name = "mdns-server"
+path = "examples/mdns-server.rs"
+required-features = ["mdns"]
