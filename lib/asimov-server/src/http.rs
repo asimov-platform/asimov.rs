@@ -2,6 +2,7 @@
 
 mod graphql;
 mod gsp;
+mod mcp;
 mod openai;
 mod openai_v1;
 mod prometheus;
@@ -18,6 +19,7 @@ pub fn routes() -> Router {
     Router::new()
         .merge(graphql::routes())
         .merge(gsp::routes())
+        .merge(mcp::routes())
         .merge(openai::routes())
         .merge(prometheus::routes())
         .merge(sparql::routes())
