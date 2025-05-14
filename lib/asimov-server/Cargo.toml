@@ -31,6 +31,7 @@ ssdp = []
 graphql = ["http"]
 gsp = ["http"]
 sparql = ["http"]
+mcp = ["http"]
 
 [dependencies]
 axum = { workspace = true, optional = true }
@@ -38,13 +39,23 @@ axum-prometheus = { workspace = true, optional = true }
 dogma.workspace = true
 jiff.workspace = true
 openai = { workspace = true, features = ["serde"] }
+rmcp = { workspace = true, features = [
+	"base64",
+	"macros",
+	"server",
+	"transport-sse-server",
+] }
+serde = { version = "1.0", default-features = false, features = ["alloc", "derive", "rc", "std"] }
+serde_json = { version = "1.0", default-features = false, features = ["alloc", "std"] }
 stability.workspace = true
 tokio = { version = "1", default-features = false, features = [] }
 tokio-util = { version = "0.7", default-features = false }
 tower-http = { version = "0.6", default-features = false, features = [
-    "cors",
+	"cors",
 ], optional = true }
 tracing = { version = "0.1", optional = true }
 
 [dev-dependencies]
 tokio = { version = "1", features = ["full"] }
+axum-test = { version = "17.3.0" }
+tracing-subscriber = "0.3"
