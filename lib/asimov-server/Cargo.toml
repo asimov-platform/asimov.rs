@@ -66,6 +66,8 @@ uuid.workspace = true
 
 [dev-dependencies]
 tokio = { version = "1", features = ["full"] }
+axum-test = { version = "17.3.0" }
+tracing-subscriber = "0.3"
 
 [[example]]
 name = "mdns-client"
@@ -76,5 +78,3 @@ required-features = ["mdns"]
 name = "mdns-server"
 path = "examples/mdns-server.rs"
 required-features = ["mdns"]
-axum-test = { version = "17.3.0" }
-tracing-subscriber = "0.3"
