@@ -4,8 +4,8 @@
 
 use axum::{Json, Router, extract, routing::post};
 use openai::components::{
-    CreateSpeechRequest, CreateTranscriptionRequest, CreateTranslationRequest,
-    CreateTranslationResponseJson, CreateTranslationResponseVerboseJson,
+    CreateSpeechRequest, CreateTranscriptionRequest, CreateTranscriptionResponseJson,
+    CreateTranslationRequest, CreateTranslationResponseJson,
 };
 
 /// See: https://platform.openai.com/docs/api-reference/audio
@@ -18,22 +18,25 @@ pub fn routes() -> Router {
 
 /// See: https://platform.openai.com/docs/api-reference/audio/createSpeech
 #[axum::debug_handler]
-async fn create_speech(extract::Json(_): extract::Json<CreateSpeechRequest>) -> Json<bool> {
-    Json(false) // TODO
+async fn create_speech(extract::Json(_): extract::Json<CreateSpeechRequest>) -> Vec<u8> {
+    Vec::new() // TODO
 }
 
 /// See: https://platform.openai.com/docs/api-reference/audio/createTranscription
 #[axum::debug_handler]
 async fn create_transcription(
     extract::Json(_): extract::Json<CreateTranscriptionRequest>,
-) -> Json<bool> {
-    Json(false) // TODO
+) -> Json<CreateTranscriptionResponseJson> {
+    Json(CreateTranscriptionResponseJson {
+        text: String::new(), // TODO
+        logprobs: vec![],
+    })
 }
 
 /// See: https://platform.openai.com/docs/api-reference/audio/createTranslation
 #[axum::debug_handler]
 async fn create_translation(
     extract::Json(_): extract::Json<CreateTranslationRequest>,
-) -> Json<bool> {
-    Json(false) // TODO
+) -> Json<CreateTranslationResponseJson> {
+    Json(CreateTranslationResponseJson::default()) // TODO
 }

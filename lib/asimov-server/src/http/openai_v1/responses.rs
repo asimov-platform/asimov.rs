@@ -6,7 +6,7 @@ use axum::{
     Json, Router, extract,
     routing::{delete, get, post},
 };
-use openai::components::{CreateResponse, Response, ResponseItemList, ResponseStreamEvent};
+use openai::components::{CreateResponse, Error, Response, ResponseItemList, ResponseStreamEvent};
 
 /// See: https://platform.openai.com/docs/api-reference/responses
 pub fn routes() -> Router {
@@ -19,20 +19,20 @@ pub fn routes() -> Router {
 
 /// See: https://platform.openai.com/docs/api-reference/responses/create
 #[axum::debug_handler]
-async fn create(extract::Json(_): extract::Json<CreateResponse>) -> Json<bool> {
-    Json(false) // TODO
+async fn create(extract::Json(_): extract::Json<CreateResponse>) -> Json<Response> {
+    Json(Response::default()) // TODO
 }
 
 /// See: https://platform.openai.com/docs/api-reference/responses/get
 #[axum::debug_handler]
-async fn get_(extract::Path(_): extract::Path<String>) -> Json<bool> {
-    Json(false) // TODO
+async fn get_(extract::Path(_): extract::Path<String>) -> Json<Response> {
+    Json(Response::default()) // TODO
 }
 
 /// See: https://platform.openai.com/docs/api-reference/responses/delete
 #[axum::debug_handler]
-async fn delete_(extract::Path(_): extract::Path<String>) -> Json<bool> {
-    Json(false) // TODO
+async fn delete_(extract::Path(_): extract::Path<String>) -> Json<Error> {
+    Json(Error::default()) // TODO
 }
 
 /// See: https://platform.openai.com/docs/api-reference/responses/input-items

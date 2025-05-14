@@ -3,6 +3,7 @@
 #![allow(unused_imports)]
 
 use axum::{Json, Router, extract, routing::get};
+use jiff::Timestamp;
 use openai::components::{DeleteModelResponse, ListModelsResponse, Model};
 
 /// See: https://platform.openai.com/docs/api-reference/models
@@ -24,11 +25,10 @@ async fn list() -> Json<ListModelsResponse> {
 /// See: https://platform.openai.com/docs/api-reference/models/retrieve
 #[axum::debug_handler]
 async fn retrieve(extract::Path(model): extract::Path<String>) -> Json<Model> {
-    // TODO
     Json(Model {
         id: model,
         object: "model".to_string(),
-        created: 1686935002,
+        created: Timestamp::now().as_second(), // TODO
         owned_by: "openai".to_string(),
     })
 }

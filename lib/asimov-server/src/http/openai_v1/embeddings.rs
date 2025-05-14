@@ -12,6 +12,13 @@ pub fn routes() -> Router {
 
 /// See: https://platform.openai.com/docs/api-reference/embeddings/create
 #[axum::debug_handler]
-async fn create(extract::Json(_): extract::Json<CreateEmbeddingRequest>) -> Json<bool> {
-    Json(false) // TODO
+async fn create(
+    extract::Json(_): extract::Json<CreateEmbeddingRequest>,
+) -> Json<CreateEmbeddingResponse> {
+    Json(CreateEmbeddingResponse {
+        object: "list".to_string(),
+        model: "text-embedding-ada-002".to_string(),
+        data: vec![],
+        usage: Default::default(),
+    }) // TODO
 }
