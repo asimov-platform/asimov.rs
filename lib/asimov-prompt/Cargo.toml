@@ -1,0 +1,33 @@
+[package]
+name = "asimov-prompt"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description.workspace = true
+#documentation.workspace = true
+readme.workspace = true
+homepage.workspace = true
+repository.workspace = true
+license.workspace = true
+keywords.workspace = true
+categories = [
+    "text-processing",
+    "data-structures",
+    "value-formatting",
+    "encoding",
+    "parsing",
+]
+publish.workspace = true
+
+[features]
+default = ["all", "std"]
+all = ["tracing"]
+std = ["derive_more/std", "dogma/std"]
+tracing = []
+unstable = []
+
+[dependencies]
+derive_more = { workspace = true, features = ["display", "from", "from_str"] }
+dogma.workspace = true
+typed-builder.workspace = true

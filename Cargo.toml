@@ -5,6 +5,7 @@ members = ["lib/*"]
 default-members = [
     "lib/asimov-env",
     "lib/asimov-patterns",
+    "lib/asimov-prompt",
     "lib/asimov-runner",
     "lib/asimov-server",
 ]
@@ -42,6 +43,7 @@ asimov-module = "25.0.0-dev.6"
 asimov-ontology = "25.0.0-dev.6"
 asimov-patterns = "25.0.0-dev.6"
 asimov-platform = "25.0.0-dev.6"
+asimov-prompt = "25.0.0-dev.6"
 asimov-protocol = "25.0.0-dev.6"
 asimov-proxy = "25.0.0-dev.6"
 asimov-repository = "25.0.0-dev.6"
@@ -59,7 +61,8 @@ axum-prometheus = { version = "0.8" }
 bs58 = "0.5"
 cfg_aliases = "0.2"
 clientele = { version = "0.3", default-features = false }
-dogma = { version = "0.1.7", default-features = false }
+derive_more = { version = "2", default-features = false }
+dogma = { version = "0.1.7", default-features = false, features = ["traits"] }
 gofer = { version = "0.1.4", default-features = false, features = [
     "all",
     "miette",
@@ -108,6 +111,7 @@ asimov-module = { path = "lib/asimov-module" }
 asimov-ontology = { path = "lib/asimov-ontology" }
 asimov-patterns = { path = "lib/asimov-patterns" }
 asimov-platform = { path = "lib/asimov-platform" }
+asimov-prompt = { path = "lib/asimov-prompt" }
 asimov-protocol = { path = "lib/asimov-protocol" }
 asimov-proxy = { path = "lib/asimov-proxy" }
 asimov-repository = { path = "lib/asimov-repository" }
