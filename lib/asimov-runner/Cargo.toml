@@ -27,7 +27,7 @@ async-trait.workspace = true
 clientele.workspace = true
 dogma.workspace = true
 stability.workspace = true
-tokio = { version = "1", default-features = false, features = ["process"] }
+tokio = { workspace = true, features = ["process"] }
 tracing = { version = "0.1", optional = true }
 
 [dev-dependencies]
