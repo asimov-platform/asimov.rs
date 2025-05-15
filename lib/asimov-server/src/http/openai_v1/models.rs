@@ -24,7 +24,7 @@ pub fn routes() -> Router {
 #[axum::debug_handler]
 async fn list() -> Json<ListModelsResponse> {
     Json(ListModelsResponse {
-        object: "list".to_string(),
+        object: "list".into(),
         data: vec![], // TODO
     })
 }
@@ -40,9 +40,9 @@ async fn retrieve(
 
     Ok(Json(Model {
         id: model,
-        object: "model".to_string(),
+        object: "model".into(),
         created: Timestamp::now().as_second(), // TODO
-        owned_by: "openai".to_string(),
+        owned_by: "openai".into(),
     }))
 }
 

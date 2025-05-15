@@ -7,6 +7,7 @@ use std::{
     io::{Cursor, ErrorKind},
     process::{ExitStatus, Output, Stdio},
 };
+use tokio::process::Child;
 
 #[derive(Debug)]
 pub struct Runner(Command);
@@ -18,6 +19,7 @@ impl Runner {
         command.stdin(Stdio::null());
         command.stdout(Stdio::null());
         command.stderr(Stdio::null());
+        command.kill_on_drop(true);
         Self(command)
     }
 
@@ -45,16 +47,18 @@ impl Runner {
         self.0.stderr(Stdio::piped());
     }
 
-    pub async fn execute(&mut self) -> RunnerResult {
-        let process = match self.0.spawn() {
-            Ok(process) => process,
+    pub async fn spawn(&mut self) -> Result<Child, RunnerError> {
+        match self.0.spawn() {
+            Ok(process) => Ok(process),
             Err(err) if err.kind() == ErrorKind::NotFound => {
                 let program = self.0.as_std().get_program().to_owned();
                 return Err(RunnerError::MissingProgram(program));
             }
             Err(err) => return Err(RunnerError::SpawnFailure(err)),
-        };
+        }
+    }
 
+    pub async fn wait(&mut self, process: Child) -> RunnerResult {
         let output = process.wait_with_output().await?;
         tracing::trace!("The command exited with: {}", output.status);
 
@@ -63,6 +67,11 @@ impl Runner {
         }
 
         Ok(Cursor::new(output.stdout))
+    }
+
+    pub async fn execute(&mut self) -> RunnerResult {
+        let process = self.spawn().await?;
+        self.wait(process).await
     }
 }
 

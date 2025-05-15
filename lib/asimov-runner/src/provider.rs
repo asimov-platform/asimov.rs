@@ -22,8 +22,7 @@ impl Provider {
 
         runner
             .command()
-            //.arg(&options.input_url)
-            .stdin(Stdio::null())
+            .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::piped());
 
@@ -36,9 +35,22 @@ impl asimov_patterns::Provider<String, RunnerError> for Provider {}
 #[async_trait]
 impl asimov_patterns::Execute<String, RunnerError> for Provider {
     async fn execute(&mut self) -> ProviderResult {
-        let mut stdout = self.runner.execute().await?;
+        let mut process = self.runner.spawn().await?;
+
+        let prompt = self.options.prompt.clone();
+        let mut stdin = process.stdin.take().expect("Failed to capture stdin");
+        tokio::spawn(async move {
+            use tokio::io::AsyncWriteExt;
+            stdin
+                .write_all(prompt.as_bytes())
+                .await
+                .expect("Failed to write to stdin");
+        });
+
+        let mut stdout = self.runner.wait(process).await?;
         let mut result = String::new();
         stdout.read_to_string(&mut result)?;
+
         Ok(result)
     }
 }
@@ -49,14 +61,15 @@ mod tests {
     use asimov_patterns::Execute;
 
     #[tokio::test]
-    async fn test_success() {
+    async fn test_execute() {
         let mut runner = Provider::new(
             "cat",
             ProviderOptions {
-                prompt: String::new(),
+                prompt: "Hello, world!".into(),
             },
         );
         let result = runner.execute().await;
         assert!(result.is_ok());
+        assert_eq!(result.unwrap(), String::from("Hello, world!"));
     }
 }

@@ -16,8 +16,8 @@ async fn create(
     extract::Json(_): extract::Json<CreateEmbeddingRequest>,
 ) -> Json<CreateEmbeddingResponse> {
     Json(CreateEmbeddingResponse {
-        object: "list".to_string(),
-        model: "text-embedding-ada-002".to_string(),
+        object: "list".into(),
+        model: "text-embedding-ada-002".into(),
         data: vec![],
         usage: Default::default(),
     }) // TODO

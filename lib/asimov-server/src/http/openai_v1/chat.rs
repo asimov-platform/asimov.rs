@@ -27,10 +27,10 @@ pub fn routes() -> Router {
 #[axum::debug_handler]
 async fn list() -> Json<ChatCompletionList> {
     Json(ChatCompletionList {
-        object: "list".to_string(),
+        object: "list".into(),
         data: vec![], // TODO
-        first_id: "".to_string(),
-        last_id: "".to_string(),
+        first_id: "".into(),
+        last_id: "".into(),
         has_more: false,
     })
 }
@@ -45,10 +45,10 @@ async fn get_(extract::Path(_): extract::Path<String>) -> Json<CreateChatComplet
 #[axum::debug_handler]
 async fn get_messages(extract::Path(_): extract::Path<String>) -> Json<ChatCompletionMessageList> {
     Json(ChatCompletionMessageList {
-        object: "list".to_string(),
+        object: "list".into(),
         data: vec![], // TODO
-        first_id: "".to_string(),
-        last_id: "".to_string(),
+        first_id: "".into(),
+        last_id: "".into(),
         has_more: false,
     })
 }
@@ -78,13 +78,13 @@ async fn delete_(extract::Path(_): extract::Path<String>) -> Json<ChatCompletion
 
 fn dummy_response() -> CreateChatCompletionResponse {
     CreateChatCompletionResponse {
-        id: String::from("chatcmpl-B9MBs8CjcvOU2jLn4n570S5qMJKcT"),
-        object: "chat.completion".to_string(),
+        id: super::util::generate_openai_id("chatcmpl"),
+        object: "chat.completion".into(),
         created: Timestamp::now().as_second(),
-        model: String::from("gpt-4.1-2025-04-14"),
+        model: "gpt-4.1-2025-04-14".into(),
         choices: vec![],
         service_tier: None,
-        system_fingerprint: String::from(""),
+        system_fingerprint: "".into(),
         usage: CompletionUsage {
             completion_tokens: 0,
             prompt_tokens: 0,

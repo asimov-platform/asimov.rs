@@ -39,10 +39,10 @@ async fn delete_(extract::Path(_): extract::Path<String>) -> Json<Error> {
 #[axum::debug_handler]
 async fn input_items(extract::Path(_): extract::Path<String>) -> Json<ResponseItemList> {
     Json(ResponseItemList {
-        object: "list".to_string(),
+        object: "list".into(),
         data: vec![], // TODO
-        first_id: "".to_string(),
-        last_id: "".to_string(),
+        first_id: "".into(),
+        last_id: "".into(),
         has_more: false,
     })
 }

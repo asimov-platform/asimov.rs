@@ -47,7 +47,7 @@ mod tests {
     use asimov_patterns::Execute;
 
     #[tokio::test]
-    async fn test_success() {
+    async fn test_execute() {
         let mut runner = Importer::new(
             "curl",
             ImporterOptions {
