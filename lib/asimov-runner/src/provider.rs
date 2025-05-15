@@ -4,7 +4,7 @@ use crate::{Runner, RunnerError};
 use async_trait::async_trait;
 use std::{ffi::OsStr, io::Read, process::Stdio};
 
-pub use asimov_patterns::ProviderOptions;
+pub use asimov_patterns::{Prompt, PromptMessage, PromptRole, ProviderOptions};
 
 pub type ProviderResult = std::result::Result<String, RunnerError>;
 
@@ -42,7 +42,7 @@ impl asimov_patterns::Execute<String, RunnerError> for Provider {
         tokio::spawn(async move {
             use tokio::io::AsyncWriteExt;
             stdin
-                .write_all(prompt.as_bytes())
+                .write_all(prompt.to_string().as_bytes())
                 .await
                 .expect("Failed to write to stdin");
         });

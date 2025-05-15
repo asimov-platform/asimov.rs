@@ -38,8 +38,8 @@ async fn create(
         "asimov-default-provider",
         ProviderOptions {
             prompt: match request.prompt.unwrap() {
-                Prompt::String(prompt) => prompt,
-                Prompt::ArrayOfStrings(prompts) => prompts.join(""),
+                Prompt::String(prompt) => prompt.into(),
+                Prompt::ArrayOfStrings(prompts) => prompts.join("").into(),
                 Prompt::ArrayOfIntegers(_) => {
                     return Err(CreateCompletionError::UnimplementedFeature(
                         "prompt from an array of tokens".into(),

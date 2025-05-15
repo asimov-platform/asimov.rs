@@ -2,7 +2,7 @@
 
 use super::{prompt_message::PromptMessage, prompt_role::PromptRole};
 use dogma::{
-    prelude::{FromStr, Vec, fmt},
+    prelude::{FromStr, String, Vec, fmt},
     traits::Collection,
 };
 use typed_builder::TypedBuilder;
@@ -24,8 +24,26 @@ impl FromStr for Prompt {
     type Err = ();
 
     fn from_str(input: &str) -> Result<Self, Self::Err> {
-        let messages = Vec::from([(PromptRole::User, input.into())]);
-        Ok(Prompt { messages })
+        Ok(input.into())
+    }
+}
+
+impl From<(PromptRole, &str)> for Prompt {
+    fn from((role, message): (PromptRole, &str)) -> Self {
+        let messages = Vec::from([(role, message.into())]);
+        Prompt { messages }
+    }
+}
+
+impl From<&str> for Prompt {
+    fn from(input: &str) -> Self {
+        (PromptRole::User, input).into()
+    }
+}
+
+impl From<String> for Prompt {
+    fn from(input: String) -> Self {
+        (PromptRole::User, input.as_str()).into()
     }
 }
 
