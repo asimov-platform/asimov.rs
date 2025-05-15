@@ -23,11 +23,12 @@ publish.workspace = true
 [features]
 default = ["all", "std"]
 all = ["tracing"]
-std = ["derive_more/std", "dogma/std"]
+std = ["derive_more/std", "dogma/std", "openai?/std"]
 tracing = []
 unstable = []
 
 [dependencies]
 derive_more = { workspace = true, features = ["display", "from", "from_str"] }
 dogma.workspace = true
+openai = { workspace = true, optional = true }
 typed-builder.workspace = true

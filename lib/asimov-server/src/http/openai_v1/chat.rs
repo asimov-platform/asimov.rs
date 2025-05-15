@@ -2,14 +2,17 @@
 
 #![allow(unused_imports)]
 
+use super::error::CompletionError;
 use axum::{
     Json, Router, extract,
     routing::{delete, get, post},
 };
 use jiff::Timestamp;
 use openai::components::{
-    ChatCompletionDeleted, ChatCompletionList, ChatCompletionMessageList, CompletionUsage,
-    CreateChatCompletionRequest, CreateChatCompletionResponse, Metadata,
+    ChatCompletionDeleted, ChatCompletionList, ChatCompletionMessageList,
+    ChatCompletionMessageToolCalls, ChatCompletionResponseMessage, CompletionUsage,
+    CreateChatCompletionRequest_Variant2 as CreateChatCompletionRequest,
+    CreateChatCompletionResponse, CreateChatCompletionResponse_Choices, Metadata,
 };
 
 /// See: https://platform.openai.com/docs/api-reference/chat

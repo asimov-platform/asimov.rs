@@ -55,3 +55,20 @@ impl fmt::Display for Prompt {
         Ok(())
     }
 }
+
+#[cfg(feature = "openai")]
+impl TryFrom<openai::components::CreateCompletionRequest_Prompt> for Prompt {
+    type Error = ();
+
+    fn try_from(
+        input: openai::components::CreateCompletionRequest_Prompt,
+    ) -> Result<Self, Self::Error> {
+        use openai::components::CreateCompletionRequest_Prompt::*;
+        match input {
+            String(prompt) => Ok(prompt.into()),
+            ArrayOfStrings(prompts) => Ok(prompts.join("").into()),
+            ArrayOfIntegers(_) => Err(()),
+            Array(_) => Err(()),
+        }
+    }
+}

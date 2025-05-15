@@ -34,6 +34,7 @@ sparql = ["http"]
 
 [dependencies]
 asimov-runner.workspace = true
+asimov-prompt = { workspace = true, features = ["openai"] }
 axum = { workspace = true, optional = true }
 axum-prometheus = { workspace = true, optional = true }
 bs58.workspace = true
