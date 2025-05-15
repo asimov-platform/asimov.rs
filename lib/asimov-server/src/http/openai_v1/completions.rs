@@ -2,9 +2,16 @@
 
 #![allow(unused_imports)]
 
-use axum::{Json, Router, extract, routing::post};
+use axum::{
+    Json, Router, extract,
+    http::StatusCode,
+    response::{IntoResponse, Response},
+    routing::post,
+};
 use jiff::Timestamp;
-use openai::components::{CompletionUsage, CreateCompletionRequest, CreateCompletionResponse};
+use openai::components::{
+    CompletionUsage, CreateCompletionRequest, CreateCompletionResponse, Error,
+};
 
 /// See: https://platform.openai.com/docs/api-reference/completions
 pub fn routes() -> Router {
@@ -14,10 +21,17 @@ pub fn routes() -> Router {
 /// See: https://platform.openai.com/docs/api-reference/completions/create
 #[axum::debug_handler]
 async fn create(
-    extract::Json(_): extract::Json<CreateCompletionRequest>,
-) -> Json<CreateCompletionResponse> {
+    extract::Json(request): extract::Json<CreateCompletionRequest>,
+) -> Result<Json<CreateCompletionResponse>, CreateCompletionError> {
+    if request.model.is_empty() {
+        return Err(CreateCompletionError::EmptyModel);
+    }
+    if request.prompt.is_none() {
+        return Err(CreateCompletionError::EmptyPrompt);
+    }
+
     // See: https://platform.openai.com/docs/api-reference/completions/object
-    Json(CreateCompletionResponse {
+    Ok(Json(CreateCompletionResponse {
         id: String::from("cmpl-uqkvlQyYK7bGYrRHQ0eXlWi7"), // TODO
         choices: vec![],
         created: Timestamp::now().as_second(),
@@ -31,5 +45,26 @@ async fn create(
             completion_tokens_details: Default::default(),
             prompt_tokens_details: Default::default(),
         },
-    }) // TODO
+    })) // TODO
+}
+
+#[derive(Debug, thiserror::Error)]
+enum CreateCompletionError {
+    #[error("no model specified")]
+    EmptyModel,
+    #[error("no prompt specified")]
+    EmptyPrompt,
+}
+
+impl IntoResponse for CreateCompletionError {
+    fn into_response(self) -> Response {
+        (
+            StatusCode::BAD_REQUEST,
+            Json(Error {
+                message: self.to_string(),
+                ..Default::default()
+            }),
+        )
+            .into_response()
+    }
 }

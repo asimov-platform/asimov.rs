@@ -2,7 +2,14 @@
 
 #![allow(unused_imports)]
 
-use axum::{Json, Router, extract, routing::get};
+use axum::{
+    Json, Router,
+    body::Body,
+    extract,
+    http::StatusCode,
+    response::{IntoResponse, Response},
+    routing::get,
+};
 use jiff::Timestamp;
 use openai::components::{DeleteModelResponse, ListModelsResponse, Model};
 
@@ -24,11 +31,32 @@ async fn list() -> Json<ListModelsResponse> {
 
 /// See: https://platform.openai.com/docs/api-reference/models/retrieve
 #[axum::debug_handler]
-async fn retrieve(extract::Path(model): extract::Path<String>) -> Json<Model> {
-    Json(Model {
+async fn retrieve(
+    extract::Path(model): extract::Path<String>,
+) -> Result<Json<Model>, RetrieveError> {
+    if model.is_empty() {
+        return Err(RetrieveError::NotFound);
+    }
+
+    Ok(Json(Model {
         id: model,
         object: "model".to_string(),
         created: Timestamp::now().as_second(), // TODO
         owned_by: "openai".to_string(),
-    })
+    }))
+}
+
+#[derive(Debug, thiserror::Error)]
+enum RetrieveError {
+    #[error("no model specified")]
+    NotFound,
+}
+
+impl IntoResponse for RetrieveError {
+    fn into_response(self) -> Response {
+        Response::builder()
+            .status(StatusCode::NOT_FOUND)
+            .body(Body::empty())
+            .unwrap()
+    }
 }

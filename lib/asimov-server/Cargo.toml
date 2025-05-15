@@ -33,12 +33,14 @@ gsp = ["http"]
 sparql = ["http"]
 
 [dependencies]
+asimov-runner.workspace = true
 axum = { workspace = true, optional = true }
 axum-prometheus = { workspace = true, optional = true }
 dogma.workspace = true
 jiff.workspace = true
 openai = { workspace = true, features = ["serde"] }
 stability.workspace = true
+thiserror.workspace = true
 tokio = { version = "1", default-features = false, features = [] }
 tokio-util = { version = "0.7", default-features = false }
 tower-http = { version = "0.6", default-features = false, features = [
