@@ -2,6 +2,7 @@
 
 #![allow(unused_imports)]
 
+use asimov_runner::{Execute, Provider, ProviderOptions, RunnerError};
 use axum::{
     Json, Router, extract,
     http::StatusCode,
@@ -10,7 +11,8 @@ use axum::{
 };
 use jiff::Timestamp;
 use openai::components::{
-    CompletionUsage, CreateCompletionRequest, CreateCompletionResponse, Error,
+    CompletionUsage, CreateCompletionRequest, CreateCompletionRequest_Prompt,
+    CreateCompletionResponse, CreateCompletionResponse_Choices, Error,
 };
 
 /// See: https://platform.openai.com/docs/api-reference/completions
@@ -23,6 +25,8 @@ pub fn routes() -> Router {
 async fn create(
     extract::Json(request): extract::Json<CreateCompletionRequest>,
 ) -> Result<Json<CreateCompletionResponse>, CreateCompletionError> {
+    use CreateCompletionRequest_Prompt as Prompt;
+
     if request.model.is_empty() {
         return Err(CreateCompletionError::EmptyModel);
     }
@@ -30,20 +34,50 @@ async fn create(
         return Err(CreateCompletionError::EmptyPrompt);
     }
 
+    let mut provider = Provider::new(
+        "asimov-default-provider",
+        ProviderOptions {
+            prompt: match request.prompt.unwrap() {
+                Prompt::String(prompt) => prompt,
+                Prompt::ArrayOfStrings(prompts) => prompts.join(""),
+                Prompt::ArrayOfIntegers(_) => {
+                    return Err(CreateCompletionError::UnimplementedFeature(
+                        "prompt from an array of tokens".into(),
+                    ));
+                }
+                Prompt::Array(_) => {
+                    return Err(CreateCompletionError::UnimplementedFeature(
+                        "prompt from an array of token arrays".into(),
+                    ));
+                }
+            },
+        },
+    );
+
+    let provider_output = provider
+        .execute()
+        .await
+        .map_err(|e| CreateCompletionError::FailedExecute(e))?;
+
     // See: https://platform.openai.com/docs/api-reference/completions/object
     Ok(Json(CreateCompletionResponse {
-        id: String::from("cmpl-uqkvlQyYK7bGYrRHQ0eXlWi7"), // TODO
-        choices: vec![],
+        id: super::util::generate_openai_id("cmpl"),
+        object: "text_completion".into(),
         created: Timestamp::now().as_second(),
-        model: String::new(),
-        system_fingerprint: String::new(),
-        object: "text_completion".to_string(),
+        model: request.model,
+        choices: vec![CreateCompletionResponse_Choices {
+            text: provider_output,
+            index: 0,
+            logprobs: None,
+            finish_reason: "stop".into(),
+        }],
+        system_fingerprint: String::new(), // TODO: module name
         usage: CompletionUsage {
-            completion_tokens: 0,
-            prompt_tokens: 0,
-            total_tokens: 0,
-            completion_tokens_details: Default::default(),
+            prompt_tokens: 0,     // TODO
+            completion_tokens: 0, // TODO
+            total_tokens: 0,      // TODO
             prompt_tokens_details: Default::default(),
+            completion_tokens_details: Default::default(),
         },
     })) // TODO
 }
@@ -52,8 +86,15 @@ async fn create(
 enum CreateCompletionError {
     #[error("no model specified")]
     EmptyModel,
+
     #[error("no prompt specified")]
     EmptyPrompt,
+
+    #[error("feature not implemented: {0}")]
+    UnimplementedFeature(String),
+
+    #[error("execution failed: {0}")]
+    FailedExecute(#[from] RunnerError),
 }
 
 impl IntoResponse for CreateCompletionError {

@@ -1,7 +1,8 @@
 // This is free and unencumbered software released into the public domain.
 
-use asimov_patterns::AdapterOptions;
 use std::ffi::OsStr;
+
+pub use asimov_patterns::AdapterOptions;
 
 /// RDF dataset adapter. Consumes SPARQL input, produces RDF output.
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]

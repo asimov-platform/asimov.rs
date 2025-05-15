@@ -1,9 +1,10 @@
 // This is free and unencumbered software released into the public domain.
 
 use crate::{Runner, RunnerError};
-use asimov_patterns::FetcherOptions;
 use async_trait::async_trait;
 use std::{ffi::OsStr, io::Cursor, process::Stdio};
+
+pub use asimov_patterns::FetcherOptions;
 
 pub type FetcherResult = std::result::Result<Cursor<Vec<u8>>, RunnerError>;
 

@@ -56,6 +56,7 @@ asimov-vault = "25.0.0-dev.5"
 async-trait = "0.1"
 axum = { version = "0.8", features = ["macros"] }
 axum-prometheus = { version = "0.8" }
+bs58 = "0.5"
 cfg_aliases = "0.2"
 clientele = { version = "0.3", default-features = false }
 dogma = { version = "0.1.7", default-features = false }
@@ -81,7 +82,11 @@ protoflow-core = { version = "=0.4.1", default-features = false }
 rdf-model = { version = "0.2.2", default-features = false }
 stability = "0.2"
 thiserror = "2"
+tokio = { version = "1", default-features = false, features = [] }
+tokio-util = { version = "0.7", default-features = false }
+tracing = { version = "0.1" }
 typed-builder = "0.21"
+uuid = { version = "1.16", features = ["v4"] }
 
 [patch.crates-io]
 asimov-account = { path = "lib/asimov-account" }

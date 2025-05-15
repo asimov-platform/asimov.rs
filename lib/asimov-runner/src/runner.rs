@@ -1,6 +1,7 @@
 // This is free and unencumbered software released into the public domain.
 
 use crate::{Command, SysexitsError};
+use core::fmt;
 use std::{
     ffi::{OsStr, OsString},
     io::{Cursor, ErrorKind},
@@ -74,6 +75,42 @@ pub enum RunnerError {
     Failure(SysexitsError, Option<String>),
     UnexpectedFailure(Option<i32>, Option<String>),
     UnexpectedOther(std::io::Error),
+}
+
+impl core::error::Error for RunnerError {}
+
+impl fmt::Display for RunnerError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::MissingProgram(program) => {
+                write!(f, "Missing program: {}", program.to_string_lossy())
+            }
+            Self::SpawnFailure(err) => write!(f, "Failed to spawn process: {}", err),
+            Self::Failure(error, stderr) => {
+                write!(
+                    f,
+                    "Command failed with exit code {}",
+                    error.code().unwrap_or(-1),
+                )?;
+                if let Some(stderr) = stderr {
+                    write!(f, "\n{}", stderr)?;
+                }
+                Ok(())
+            }
+            Self::UnexpectedFailure(code, stderr) => {
+                write!(
+                    f,
+                    "Command failed with unexpected exit code: {}",
+                    code.unwrap_or(-1)
+                )?;
+                if let Some(stderr) = stderr {
+                    write!(f, "\n{}", stderr)?;
+                }
+                Ok(())
+            }
+            Self::UnexpectedOther(err) => write!(f, "Unexpected error: {}", err),
+        }
+    }
 }
 
 impl From<Output> for RunnerError {

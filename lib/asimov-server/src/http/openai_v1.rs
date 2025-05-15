@@ -8,6 +8,7 @@ pub mod images;
 pub mod models;
 pub mod realtime;
 pub mod responses;
+mod util;
 
 use axum::Router;
 
