@@ -9,11 +9,11 @@ use typed_builder::TypedBuilder;
 
 #[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd, TypedBuilder)]
 pub struct Prompt {
-    pub messages: Vec<(PromptRole, PromptMessage)>,
+    pub messages: Vec<PromptMessage>,
 }
 
 impl Collection for Prompt {
-    type Item = (PromptRole, PromptMessage);
+    type Item = PromptMessage;
 
     fn len(&self) -> usize {
         self.messages.len()
@@ -28,13 +28,6 @@ impl FromStr for Prompt {
     }
 }
 
-impl From<(PromptRole, &str)> for Prompt {
-    fn from((role, message): (PromptRole, &str)) -> Self {
-        let messages = Vec::from([(role, message.into())]);
-        Prompt { messages }
-    }
-}
-
 impl From<&str> for Prompt {
     fn from(input: &str) -> Self {
         (PromptRole::User, input).into()
@@ -43,13 +36,27 @@ impl From<&str> for Prompt {
 
 impl From<String> for Prompt {
     fn from(input: String) -> Self {
-        (PromptRole::User, input.as_str()).into()
+        (PromptRole::User, input).into()
+    }
+}
+
+impl From<(PromptRole, &str)> for Prompt {
+    fn from((role, message): (PromptRole, &str)) -> Self {
+        (role, String::from(message)).into()
+    }
+}
+
+impl From<(PromptRole, String)> for Prompt {
+    fn from((role, message): (PromptRole, String)) -> Self {
+        Prompt {
+            messages: Vec::from([(role, message).into()]),
+        }
     }
 }
 
 impl fmt::Display for Prompt {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        for (role, message) in &self.messages {
+        for PromptMessage(role, message) in &self.messages {
             writeln!(f, "{}: {}", role, message)?;
         }
         Ok(())
