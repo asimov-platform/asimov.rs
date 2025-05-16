@@ -6,7 +6,7 @@ use axum::{
     Json, Router, extract,
     routing::{delete, get, post},
 };
-use openai::components::{CreateResponse, Error, Response, ResponseItemList, ResponseStreamEvent};
+use openai::schemas::{CreateResponse, Error, Response, ResponseItemList, ResponseStreamEvent};
 
 /// See: https://platform.openai.com/docs/api-reference/responses
 pub fn routes() -> Router {

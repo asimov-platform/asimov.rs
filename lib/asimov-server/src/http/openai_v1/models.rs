@@ -11,7 +11,7 @@ use axum::{
     routing::get,
 };
 use jiff::Timestamp;
-use openai::components::{DeleteModelResponse, ListModelsResponse, Model};
+use openai::schemas::{DeleteModelResponse, ListModelsResponse, Model};
 
 /// See: https://platform.openai.com/docs/api-reference/models
 pub fn routes() -> Router {

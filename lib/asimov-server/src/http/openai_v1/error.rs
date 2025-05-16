@@ -8,7 +8,7 @@ use axum::{
     http::StatusCode,
     response::{IntoResponse, Response},
 };
-use openai::components::Error;
+use openai::schemas::Error;
 
 #[derive(Debug, thiserror::Error)]
 pub enum CompletionError {

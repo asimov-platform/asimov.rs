@@ -3,7 +3,7 @@
 #![allow(unused_imports)]
 
 use axum::{Json, Router, extract, routing::post};
-use openai::components::{
+use openai::schemas::{
     CreateSpeechRequest, CreateTranscriptionRequest, CreateTranscriptionResponseJson,
     CreateTranslationRequest, CreateTranslationResponseJson,
 };

@@ -64,13 +64,13 @@ impl fmt::Display for Prompt {
 }
 
 #[cfg(feature = "openai")]
-impl TryFrom<openai::components::CreateCompletionRequest_Prompt> for Prompt {
+impl TryFrom<openai::schemas::CreateCompletionRequest_Prompt> for Prompt {
     type Error = ();
 
     fn try_from(
-        input: openai::components::CreateCompletionRequest_Prompt,
+        input: openai::schemas::CreateCompletionRequest_Prompt,
     ) -> Result<Self, Self::Error> {
-        use openai::components::CreateCompletionRequest_Prompt::*;
+        use openai::schemas::CreateCompletionRequest_Prompt::*;
         match input {
             String(prompt) => Ok(prompt.into()),
             ArrayOfStrings(prompts) => Ok(prompts.join("").into()),

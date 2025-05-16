@@ -4,7 +4,7 @@
 
 use axum::{Json, Router, extract, routing::post};
 use jiff::Timestamp;
-use openai::components::{
+use openai::schemas::{
     CreateImageEditRequest, CreateImageRequest, CreateImageVariationRequest, ImagesResponse,
     ImagesResponse_Usage,
 };

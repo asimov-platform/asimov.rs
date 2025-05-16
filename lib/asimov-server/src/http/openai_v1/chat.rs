@@ -8,7 +8,7 @@ use axum::{
     routing::{delete, get, post},
 };
 use jiff::Timestamp;
-use openai::components::{
+use openai::schemas::{
     ChatCompletionDeleted, ChatCompletionList, ChatCompletionMessageList,
     ChatCompletionMessageToolCalls, ChatCompletionResponseMessage, CompletionUsage,
     CreateChatCompletionRequest_Variant2 as CreateChatCompletionRequest,

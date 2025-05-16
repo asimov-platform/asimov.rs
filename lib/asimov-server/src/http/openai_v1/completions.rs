@@ -6,7 +6,7 @@ use super::error::CompletionError;
 use asimov_runner::{Execute, Prompt, Provider, ProviderOptions};
 use axum::{Json, Router, extract, routing::post};
 use jiff::Timestamp;
-use openai::components::{
+use openai::schemas::{
     CompletionUsage, CreateCompletionRequest, CreateCompletionResponse,
     CreateCompletionResponse_Choices,
 };

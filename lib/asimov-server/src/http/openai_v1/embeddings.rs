@@ -3,7 +3,7 @@
 #![allow(unused_imports)]
 
 use axum::{Json, Router, extract, routing::post};
-use openai::components::{CreateEmbeddingRequest, CreateEmbeddingResponse};
+use openai::schemas::{CreateEmbeddingRequest, CreateEmbeddingResponse};
 
 /// See: https://platform.openai.com/docs/api-reference/embeddings
 pub fn routes() -> Router {
