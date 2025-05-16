@@ -34,6 +34,7 @@ sparql = ["http"]
 mcp = ["http"]
 
 [dependencies]
+async-trait.workspace = true
 axum = { workspace = true, optional = true }
 axum-prometheus = { workspace = true, optional = true }
 dogma.workspace = true

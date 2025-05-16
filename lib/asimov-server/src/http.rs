@@ -16,10 +16,13 @@ use tower_http::cors::CorsLayer;
 use tracing::info;
 
 pub fn routes() -> Router {
+    let mcp_app = mcp::App {
+        provider: std::sync::Arc::new(mcp::StubProvider {}),
+    };
     Router::new()
         .merge(graphql::routes())
         .merge(gsp::routes())
-        .merge(mcp::routes())
+        .merge(mcp::routes().with_state(mcp_app))
         .merge(openai::routes())
         .merge(prometheus::routes())
         .merge(sparql::routes())

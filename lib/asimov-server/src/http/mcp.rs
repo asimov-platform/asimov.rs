@@ -1,5 +1,7 @@
 // This is free and unencumbered software released into the public domain.
 
+use std::sync::Arc;
+
 use axum::{
     extract::State,
     http::request::Parts,
@@ -11,86 +13,73 @@ use rmcp::model::{
     Annotated, CallToolRequestParam, CallToolResult, ClientJsonRpcMessage, Content,
     GetPromptRequestParam, GetPromptResult, Implementation, JsonRpcResponse, JsonRpcVersion2_0,
     ListPromptsResult, ListResourceTemplatesResult, ListResourcesResult, ListToolsResult, Prompt,
-    PromptMessage, ProtocolVersion, RawResource, ReadResourceRequestParam, ReadResourceResult,
-    ResourceContents, ResourceTemplate, ServerCapabilities, ServerInfo, Tool,
+    PromptMessage, ProtocolVersion, RawResource, ReadResourceResult, ResourceContents,
+    ResourceTemplate, ServerCapabilities, ServerInfo, Tool,
 };
-use serde_json::{json, Map, Value};
+use serde_json::{Map, Value};
 
 /// See: https://modelcontextprotocol.io/specification/2025-03-26/basic/transports#streamable-http
-pub fn routes() -> Router {
-    // TODO: return Router<impl Provider> or something like that so that the state can be provided
-    // externally?
-    let app = App {
-        provider: StubProvider {},
-    };
-    Router::new().nest(
-        "/mcp",
-        Router::new().route("/", post(post_handler).get(get_handler).with_state(app)),
-    )
+pub fn routes<P: Clone>() -> Router<App<P>> {
+    Router::new().route("/mcp", post(post_handler).get(get_handler))
 }
 
-pub trait Provider {
+#[derive(Clone)]
+pub struct App<P> {
+    pub provider: Arc<P + Send + Sync>,
+}
+
+// impl App {
+//     pub fn new(provider: P) -> Self {
+//         Self { provider }
+//     }
+// }
+
+#[async_trait::async_trait]
+pub trait Provider: Send + Sync {
     type Error;
 
     fn protocol_version(&self) -> ProtocolVersion;
     fn capabilities(&self) -> ServerCapabilities;
     fn implementation(&self) -> Implementation;
 
-    fn list_prompts(
+    async fn list_prompts(
         &self,
         page: Option<String>,
-    ) -> impl Future<Output = Result<(Vec<Prompt>, Option<String>), Self::Error>>;
-    fn get_prompt(
+    ) -> Result<(Vec<Prompt>, Option<String>), Self::Error>;
+    async fn get_prompt(
         &self,
         name: String,
         arguments: Option<Map<String, Value>>,
-    ) -> impl Future<Output = Result<(Vec<PromptMessage>, Option<String>), Self::Error>>;
+    ) -> Result<(Vec<PromptMessage>, Option<String>), Self::Error>;
 
-    fn list_resources(
+    async fn list_resources(
         &self,
         page: Option<String>,
-    ) -> impl Future<Output = Result<(Vec<Annotated<RawResource>>, Option<String>), Self::Error>>;
-    fn list_resource_templates(
+    ) -> Result<(Vec<Annotated<RawResource>>, Option<String>), Self::Error>;
+    async fn list_resource_templates(
         &self,
         page: Option<String>,
-    ) -> impl Future<Output = Result<(Vec<ResourceTemplate>, Option<String>), Self::Error>>;
-    fn read_resource(
-        &self,
-        uri: &str,
-    ) -> impl Future<Output = Result<(Vec<ResourceContents>), Self::Error>>;
+    ) -> Result<(Vec<ResourceTemplate>, Option<String>), Self::Error>;
+    async fn read_resource(&self, uri: &str) -> Result<Vec<ResourceContents>, Self::Error>;
 
-    fn list_tools(
+    async fn list_tools(
         &self,
         page: Option<String>,
-    ) -> impl Future<Output = Result<(Vec<Tool>, Option<String>), Self::Error>>;
-    fn call_tool(
+    ) -> Result<(Vec<Tool>, Option<String>), Self::Error>;
+    async fn call_tool(
         &self,
         name: &str,
         arguments: Option<Map<String, Value>>,
-    ) -> impl Future<Output = Result<(Vec<Content>, Option<bool>), Self::Error>>;
+    ) -> Result<(Vec<Content>, Option<bool>), Self::Error>;
 }
 
-#[derive(Clone)]
-pub struct App<P: Provider> {
-    provider: P,
-}
-
-impl<P: Provider> App<P> {
-    pub fn new(provider: P) -> Self {
-        Self { provider }
-    }
-}
-
-async fn get_handler(
-    State(app): State<App<impl Provider>>,
-    parts: Parts,
-) -> Result<Response, Response> {
+async fn get_handler<P>(State(_app): State<App<P>>, _parts: Parts) -> Result<Response, Response> {
     Ok(Json(false).into_response())
 }
 
-async fn post_handler(
-    State(app): State<App<impl Provider>>,
-    parts: Parts,
+async fn post_handler<P>(
+    State(app): State<App<P>>,
+    _parts: Parts,
     Json(message): Json<ClientJsonRpcMessage>,
 ) -> Result<Response, Response> {
     use rmcp::model::{ClientRequest::*, JsonRpcMessage::*};
@@ -229,22 +218,23 @@ async fn post_handler(
                 .into_response())
             }
 
-            CompleteRequest(req) => todo!(),
-            SetLevelRequest(req) => todo!(),
-            SubscribeRequest(req) => todo!(),
-            UnsubscribeRequest(req) => todo!(),
+            CompleteRequest(_req) => todo!(),
+            SetLevelRequest(_req) => todo!(),
+            SubscribeRequest(_req) => todo!(),
+            UnsubscribeRequest(_req) => todo!(),
         },
-        Response(resp) => todo!(),
-        Notification(not) => todo!(),
-        Error(err) => todo!(),
-        BatchRequest(items) => todo!(),
-        BatchResponse(items) => todo!(),
+        Response(_resp) => todo!(),
+        Notification(_not) => todo!(),
+        Error(_err) => todo!(),
+        BatchRequest(_items) => todo!(),
+        BatchResponse(_items) => todo!(),
     }
 }
 
 #[derive(Clone)]
 pub struct StubProvider;
 
+#[async_trait::async_trait]
 impl Provider for StubProvider {
     type Error = ();
 
@@ -265,48 +255,48 @@ impl Provider for StubProvider {
 
     async fn list_prompts(
         &self,
-        page: Option<String>,
+        _page: Option<String>,
     ) -> Result<(Vec<Prompt>, Option<String>), Self::Error> {
         todo!()
     }
 
     async fn get_prompt(
         &self,
-        name: String,
-        arguments: Option<Map<String, Value>>,
+        _name: String,
+        _arguments: Option<Map<String, Value>>,
     ) -> Result<(Vec<PromptMessage>, Option<String>), Self::Error> {
         todo!()
     }
 
     async fn list_resources(
         &self,
-        page: Option<String>,
+        _page: Option<String>,
     ) -> Result<(Vec<Annotated<RawResource>>, Option<String>), Self::Error> {
         todo!()
     }
 
     async fn list_resource_templates(
         &self,
-        page: Option<String>,
+        _page: Option<String>,
     ) -> Result<(Vec<ResourceTemplate>, Option<String>), Self::Error> {
         todo!()
     }
 
-    async fn read_resource(&self, uri: &str) -> Result<(Vec<ResourceContents>), Self::Error> {
+    async fn read_resource(&self, _uri: &str) -> Result<Vec<ResourceContents>, Self::Error> {
         todo!()
     }
 
     async fn list_tools(
         &self,
-        page: Option<String>,
+        _page: Option<String>,
     ) -> Result<(Vec<Tool>, Option<String>), Self::Error> {
         todo!()
     }
 
     async fn call_tool(
         &self,
-        name: &str,
-        arguments: Option<Map<String, Value>>,
+        _name: &str,
+        _arguments: Option<Map<String, Value>>,
     ) -> Result<(Vec<Content>, Option<bool>), Self::Error> {
         todo!()
     }
