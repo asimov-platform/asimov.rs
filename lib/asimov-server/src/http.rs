@@ -16,9 +16,7 @@ use tower_http::cors::CorsLayer;
 use tracing::info;
 
 pub fn routes() -> Router {
-    let mcp_app = mcp::App {
-        provider: std::sync::Arc::new(mcp::StubProvider {}),
-    };
+    let mcp_app = mcp::StubProvider {};
     Router::new()
         .merge(graphql::routes())
         .merge(gsp::routes())
