@@ -1,7 +1,10 @@
 // This is free and unencumbered software released into the public domain.
 
 use serde::{Deserialize, Serialize};
-use std::sync::{Arc, LazyLock, RwLock};
+use std::{
+    path::PathBuf,
+    sync::{Arc, LazyLock, RwLock},
+};
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -30,18 +33,24 @@ impl Default for PersistentState {
     }
 }
 
-static FILE_NAME: &str = "persistence.json";
+/// Get the path to persistence file.
+fn get_file_path() -> Result<PathBuf> {
+    let current_dir = std::env::current_exe()?;
+    Ok(current_dir.with_file_name("persistence.json"))
+}
 
 /// Read the persistent state from the file.
 fn read() -> Result<PersistentState> {
-    let file = std::fs::File::open(FILE_NAME)?;
+    let path = get_file_path()?;
+    let file = std::fs::File::open(path)?;
     let reader = std::io::BufReader::new(file);
     Ok(serde_json::from_reader(reader)?)
 }
 
 /// Write the persistent state to the file.
 fn write(state: &PersistentState) -> Result<()> {
-    let file = std::fs::File::create(FILE_NAME)?;
+    let path = get_file_path()?;
+    let file = std::fs::File::create(path)?;
     let writer = std::io::BufWriter::new(file);
     serde_json::to_writer(writer, state)?;
     Ok(())
