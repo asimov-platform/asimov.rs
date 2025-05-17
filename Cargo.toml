@@ -64,22 +64,23 @@ clientele = { version = "0.3", default-features = false }
 derive_more = { version = "2", default-features = false }
 dogma = { version = "0.1.7", default-features = false, features = ["traits"] }
 gofer = { version = "0.1.4", default-features = false, features = [
-    "all",
-    "miette",
+	"all",
+	"miette",
 ] }
 jiff = { version = "0.2", default-features = false }
 know = { version = "0", default-features = true }
 openai = { package = "known-types-openai", version = "0.0.5", default-features = false, features = [
     "alloc",
 ] }
+rmcp = { version = "0.1.5", default-features = false }
 miette = { version = "7.5", default-features = false, features = ["derive"] }
 protoflow = { version = "=0.4.1", default-features = false, features = [
-    "blocks",
-    "derive",
-    "sysml",
+	"blocks",
+	"derive",
+	"sysml",
 ] }
 protoflow-blocks = { version = "=0.4.1", default-features = false, features = [
-    "hash",
+	"hash",
 ] }
 protoflow-core = { version = "=0.4.1", default-features = false }
 rdf-model = { version = "0.2.2", default-features = false }
@@ -95,6 +96,7 @@ typed-builder = "0.21"
 uuid = { version = "1.16", features = ["v4"] }
 
 [patch.crates-io]
+rmcp = { path = "../mcp-rust-sdk/crates/rmcp/" }
 asimov-account = { path = "lib/asimov-account" }
 asimov-agent = { path = "lib/asimov-agent" }
 asimov-cache = { path = "lib/asimov-cache" }

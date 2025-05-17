@@ -2,24 +2,25 @@
 
 mod graphql;
 mod gsp;
-mod mcp;
+pub mod mcp;
 mod openai;
 mod openai_v1;
 mod prometheus;
 mod sparql;
 mod well_known;
 
-use axum::{Router, response::Json, routing::get};
+use axum::{response::Json, routing::get, Router};
 use tokio::net::{TcpListener, ToSocketAddrs};
 use tokio_util::sync::CancellationToken;
 use tower_http::cors::CorsLayer;
 use tracing::info;
 
 pub fn routes() -> Router {
+    let mcp_app = mcp::StubProvider {};
     Router::new()
         .merge(graphql::routes())
         .merge(gsp::routes())
-        .merge(mcp::routes())
+        .merge(mcp::routes().with_state(mcp_app))
         .merge(openai::routes())
         .merge(prometheus::routes())
         .merge(sparql::routes())
