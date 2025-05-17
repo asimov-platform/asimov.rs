@@ -17,6 +17,9 @@ use rmcp::model::{
 mod provider;
 pub use provider::*;
 
+mod server;
+pub use server::*;
+
 /// See: https://modelcontextprotocol.io/specification/2025-03-26/basic/transports#streamable-http
 pub fn routes<P>() -> Router<P>
 where
