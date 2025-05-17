@@ -9,6 +9,9 @@ pub mod models;
 pub mod realtime;
 pub mod responses;
 
+mod error;
+mod util;
+
 use axum::Router;
 
 /// See: https://platform.openai.com/docs/api-reference/introduction

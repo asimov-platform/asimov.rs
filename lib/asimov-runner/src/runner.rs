@@ -1,11 +1,13 @@
 // This is free and unencumbered software released into the public domain.
 
 use crate::{Command, SysexitsError};
+use core::fmt;
 use std::{
     ffi::{OsStr, OsString},
     io::{Cursor, ErrorKind},
     process::{ExitStatus, Output, Stdio},
 };
+use tokio::process::Child;
 
 #[derive(Debug)]
 pub struct Runner(Command);
@@ -17,6 +19,7 @@ impl Runner {
         command.stdin(Stdio::null());
         command.stdout(Stdio::null());
         command.stderr(Stdio::null());
+        command.kill_on_drop(true);
         Self(command)
     }
 
@@ -44,16 +47,18 @@ impl Runner {
         self.0.stderr(Stdio::piped());
     }
 
-    pub async fn execute(&mut self) -> RunnerResult {
-        let process = match self.0.spawn() {
-            Ok(process) => process,
+    pub async fn spawn(&mut self) -> Result<Child, RunnerError> {
+        match self.0.spawn() {
+            Ok(process) => Ok(process),
             Err(err) if err.kind() == ErrorKind::NotFound => {
                 let program = self.0.as_std().get_program().to_owned();
                 return Err(RunnerError::MissingProgram(program));
             }
             Err(err) => return Err(RunnerError::SpawnFailure(err)),
-        };
+        }
+    }
 
+    pub async fn wait(&mut self, process: Child) -> RunnerResult {
         let output = process.wait_with_output().await?;
         tracing::trace!("The command exited with: {}", output.status);
 
@@ -62,6 +67,11 @@ impl Runner {
         }
 
         Ok(Cursor::new(output.stdout))
+    }
+
+    pub async fn execute(&mut self) -> RunnerResult {
+        let process = self.spawn().await?;
+        self.wait(process).await
     }
 }
 
@@ -74,6 +84,42 @@ pub enum RunnerError {
     Failure(SysexitsError, Option<String>),
     UnexpectedFailure(Option<i32>, Option<String>),
     UnexpectedOther(std::io::Error),
+}
+
+impl core::error::Error for RunnerError {}
+
+impl fmt::Display for RunnerError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::MissingProgram(program) => {
+                write!(f, "Missing program: {}", program.to_string_lossy())
+            }
+            Self::SpawnFailure(err) => write!(f, "Failed to spawn process: {}", err),
+            Self::Failure(error, stderr) => {
+                write!(
+                    f,
+                    "Command failed with exit code {}",
+                    error.code().unwrap_or(-1),
+                )?;
+                if let Some(stderr) = stderr {
+                    write!(f, "\n{}", stderr)?;
+                }
+                Ok(())
+            }
+            Self::UnexpectedFailure(code, stderr) => {
+                write!(
+                    f,
+                    "Command failed with unexpected exit code: {}",
+                    code.unwrap_or(-1)
+                )?;
+                if let Some(stderr) = stderr {
+                    write!(f, "\n{}", stderr)?;
+                }
+                Ok(())
+            }
+            Self::UnexpectedOther(err) => write!(f, "Unexpected error: {}", err),
+        }
+    }
 }
 
 impl From<Output> for RunnerError {

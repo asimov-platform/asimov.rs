@@ -1,9 +1,10 @@
 // This is free and unencumbered software released into the public domain.
 
 use crate::{Runner, RunnerError};
-use asimov_patterns::ImporterOptions;
 use async_trait::async_trait;
 use std::{ffi::OsStr, io::Cursor, process::Stdio};
+
+pub use asimov_patterns::ImporterOptions;
 
 pub type ImporterResult = std::result::Result<Cursor<Vec<u8>>, RunnerError>; // TODO
 
@@ -46,7 +47,7 @@ mod tests {
     use asimov_patterns::Execute;
 
     #[tokio::test]
-    async fn test_success() {
+    async fn test_execute() {
         let mut runner = Importer::new(
             "curl",
             ImporterOptions {

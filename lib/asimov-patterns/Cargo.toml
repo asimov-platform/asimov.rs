@@ -22,6 +22,7 @@ tracing = []
 unstable = []
 
 [dependencies]
+asimov-prompt.workspace = true
 async-trait.workspace = true
 dogma.workspace = true
 rdf-model.workspace = true

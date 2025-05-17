@@ -2,14 +2,17 @@
 
 #![allow(unused_imports)]
 
+use super::error::CompletionError;
 use axum::{
     Json, Router, extract,
     routing::{delete, get, post},
 };
-use openai::components::{
+use jiff::Timestamp;
+use openai::schemas::{
     ChatCompletionDeleted, ChatCompletionList, ChatCompletionMessageList,
-    CreateChatCompletionRequest, CreateChatCompletionResponse, CreateCompletionRequest,
-    CreateCompletionResponse, Metadata,
+    ChatCompletionMessageToolCalls, ChatCompletionResponseMessage, CompletionUsage,
+    CreateChatCompletionRequest_Variant2 as CreateChatCompletionRequest,
+    CreateChatCompletionResponse, CreateChatCompletionResponse_Choices, Metadata,
 };
 
 /// See: https://platform.openai.com/docs/api-reference/chat
@@ -27,30 +30,38 @@ pub fn routes() -> Router {
 #[axum::debug_handler]
 async fn list() -> Json<ChatCompletionList> {
     Json(ChatCompletionList {
-        object: "list".to_string(),
+        object: "list".into(),
         data: vec![], // TODO
-        first_id: String::from(""),
-        last_id: String::from(""),
+        first_id: "".into(),
+        last_id: "".into(),
         has_more: false,
     })
 }
 
 /// See: https://platform.openai.com/docs/api-reference/chat/get
 #[axum::debug_handler]
-async fn get_(extract::Path(_): extract::Path<String>) -> Json<bool> {
-    Json(false) // TODO
+async fn get_(extract::Path(_): extract::Path<String>) -> Json<CreateChatCompletionResponse> {
+    Json(dummy_response()) // TODO
 }
 
 /// See: https://platform.openai.com/docs/api-reference/chat/getMessages
 #[axum::debug_handler]
-async fn get_messages(extract::Path(_): extract::Path<String>) -> Json<bool> {
-    Json(false) // TODO
+async fn get_messages(extract::Path(_): extract::Path<String>) -> Json<ChatCompletionMessageList> {
+    Json(ChatCompletionMessageList {
+        object: "list".into(),
+        data: vec![], // TODO
+        first_id: "".into(),
+        last_id: "".into(),
+        has_more: false,
+    })
 }
 
 /// See: https://platform.openai.com/docs/api-reference/chat/create
 #[axum::debug_handler]
-async fn create(extract::Json(_): extract::Json<CreateChatCompletionRequest>) -> Json<bool> {
-    Json(false) // TODO
+async fn create(
+    extract::Json(_): extract::Json<CreateChatCompletionRequest>,
+) -> Json<CreateChatCompletionResponse> {
+    Json(dummy_response()) // TODO
 }
 
 /// See: https://platform.openai.com/docs/api-reference/chat/update
@@ -58,12 +69,31 @@ async fn create(extract::Json(_): extract::Json<CreateChatCompletionRequest>) ->
 async fn update(
     extract::Path(_): extract::Path<String>,
     extract::Json(_): extract::Json<Metadata>,
-) -> Json<bool> {
-    Json(false) // TODO
+) -> Json<CreateChatCompletionResponse> {
+    Json(dummy_response()) // TODO
 }
 
 /// See: https://platform.openai.com/docs/api-reference/chat/delete
 #[axum::debug_handler]
-async fn delete_(extract::Path(_): extract::Path<String>) -> Json<bool> {
-    Json(false) // TODO
+async fn delete_(extract::Path(_): extract::Path<String>) -> Json<ChatCompletionDeleted> {
+    Json(ChatCompletionDeleted::default()) // TODO
+}
+
+fn dummy_response() -> CreateChatCompletionResponse {
+    CreateChatCompletionResponse {
+        id: super::util::generate_openai_id("chatcmpl"),
+        object: "chat.completion".into(),
+        created: Timestamp::now().as_second(),
+        model: "gpt-4.1-2025-04-14".into(),
+        choices: vec![],
+        service_tier: None,
+        system_fingerprint: "".into(),
+        usage: CompletionUsage {
+            completion_tokens: 0,
+            prompt_tokens: 0,
+            total_tokens: 0,
+            completion_tokens_details: Default::default(),
+            prompt_tokens_details: Default::default(),
+        },
+    }
 }

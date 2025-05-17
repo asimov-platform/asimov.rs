@@ -1,7 +1,8 @@
 // This is free and unencumbered software released into the public domain.
 
-use asimov_patterns::RegistrarOptions;
 use std::ffi::OsStr;
+
+pub use asimov_patterns::RegistrarOptions;
 
 /// Namespace registrar. Consumes a URL input, produces RDF output.
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]

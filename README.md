@@ -23,14 +23,14 @@ cargo add asimov-sdk
 
 ```toml
 [dependencies]
-asimov-sdk = "25.0.0-dev.5"
+asimov = { package = "asimov-sdk", "version" = "25.0.0-dev.6" }
 ```
 
 ### Installation in `Cargo.toml` (with only specific features enabled)
 
 ```toml
 [dependencies]
-asimov-sdk = { version = "25.0.0-dev.5", default-features = false, features = ["tracing"] }
+asimov = { package = "asimov-sdk", "version" = "25.0.0-dev.6", default-features = false, features = ["tracing"] }
 ```
 
 ## 👉 Examples
@@ -38,7 +38,7 @@ asimov-sdk = { version = "25.0.0-dev.5", default-features = false, features = ["
 ### Importing the SDK
 
 ```rust
-use asimov_sdk::*;
+use asimov::*;
 ```
 
 ## 📚 Reference

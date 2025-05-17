@@ -4,6 +4,7 @@
 //! # use asimov_runner::*;
 //! ```
 
+pub use asimov_patterns::Execute;
 pub use clientele::SysexitsError;
 pub use tokio::process::Command;
 

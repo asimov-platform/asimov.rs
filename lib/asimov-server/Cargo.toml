@@ -24,7 +24,7 @@ unstable = ["https", "mdns", "ssdp"]
 # Protocols:
 http = ["dep:axum", "dep:axum-prometheus", "dep:tower-http"]
 https = ["http"]
-mdns = []
+mdns = ["dep:mdns-sd", "dep:lazy_static", "dep:local-ip-address"]
 ssdp = []
 
 # Protocols on top of HTTP:
@@ -34,11 +34,17 @@ sparql = ["http"]
 mcp = ["http"]
 
 [dependencies]
+asimov-runner.workspace = true
+asimov-prompt = { workspace = true, features = ["openai"] }
 async-trait.workspace = true
 axum = { workspace = true, optional = true }
 axum-prometheus = { workspace = true, optional = true }
+bs58.workspace = true
 dogma.workspace = true
 jiff.workspace = true
+lazy_static = { version = "1.5", optional = true }
+local-ip-address = { version = "0.6", optional = true }
+mdns-sd = { version = "0.13", optional = true }
 openai = { workspace = true, features = ["serde"] }
 rmcp = { workspace = true, features = [
 	"base64",
@@ -49,14 +55,26 @@ rmcp = { workspace = true, features = [
 serde = { version = "1.0", default-features = false, features = ["alloc", "derive", "rc", "std"] }
 serde_json = { version = "1.0", default-features = false, features = ["alloc", "std"] }
 stability.workspace = true
-tokio = { version = "1", default-features = false, features = [] }
-tokio-util = { version = "0.7", default-features = false }
+thiserror.workspace = true
+tokio.workspace = true
+tokio-util.workspace = true
 tower-http = { version = "0.6", default-features = false, features = [
 	"cors",
 ], optional = true }
-tracing = { version = "0.1", optional = true }
+tracing = { workspace = true, optional = true }
+uuid.workspace = true
 
 [dev-dependencies]
 tokio = { version = "1", features = ["full"] }
+
+[[example]]
+name = "mdns-client"
+path = "examples/mdns-client.rs"
+required-features = ["mdns"]
+
+[[example]]
+name = "mdns-server"
+path = "examples/mdns-server.rs"
+required-features = ["mdns"]
 axum-test = { version = "17.3.0" }
 tracing-subscriber = "0.3"

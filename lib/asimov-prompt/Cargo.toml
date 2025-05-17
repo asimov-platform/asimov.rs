@@ -1,5 +1,5 @@
 [package]
-name = "asimov-runner"
+name = "asimov-prompt"
 version.workspace = true
 authors.workspace = true
 edition.workspace = true
@@ -11,24 +11,24 @@ homepage.workspace = true
 repository.workspace = true
 license.workspace = true
 keywords.workspace = true
-categories.workspace = true
+categories = [
+    "text-processing",
+    "data-structures",
+    "value-formatting",
+    "encoding",
+    "parsing",
+]
 publish.workspace = true
 
 [features]
 default = ["all", "std"]
 all = ["tracing"]
-std = ["clientele/std", "dogma/std", "tracing?/std"]
-tracing = ["dep:tracing"]
+std = ["derive_more/std", "dogma/std", "openai?/std"]
+tracing = []
 unstable = []
 
 [dependencies]
-asimov-patterns.workspace = true
-async-trait.workspace = true
-clientele.workspace = true
+derive_more = { workspace = true, features = ["display", "from", "from_str"] }
 dogma.workspace = true
-stability.workspace = true
-tokio = { workspace = true, features = ["process"] }
-tracing = { version = "0.1", optional = true }
-
-[dev-dependencies]
-tokio = { version = "1", features = ["full"] }
+openai = { workspace = true, optional = true }
+typed-builder.workspace = true

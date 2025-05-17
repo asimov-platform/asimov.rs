@@ -3,15 +3,16 @@
 [workspace]
 members = ["lib/*"]
 default-members = [
-	"lib/asimov-env",
-	"lib/asimov-patterns",
-	"lib/asimov-runner",
-	"lib/asimov-server",
+    "lib/asimov-env",
+    "lib/asimov-patterns",
+    "lib/asimov-prompt",
+    "lib/asimov-runner",
+    "lib/asimov-server",
 ]
 resolver = "2"
 
 [workspace.package]
-version = "25.0.0-dev.5"
+version = "25.0.0-dev.6"
 authors = ["ASIMOV Protocol <support@asimov.so>"]
 edition = "2024"
 rust-version = "1.85"
@@ -26,47 +27,50 @@ categories = []
 publish = true
 
 [workspace.dependencies]
-asimov-account = "25.0.0-dev.5"
-asimov-agent = "25.0.0-dev.5"
-asimov-cache = "25.0.0-dev.5"
-asimov-config = "25.0.0-dev.5"
-asimov-construct = "25.0.0-dev.5"
-asimov-core = "25.0.0-dev.5"
-asimov-dataset = "25.0.0-dev.5"
-asimov-directory = "25.0.0-dev.5"
-asimov-env = "25.0.0-dev.5"
-asimov-flow = "25.0.0-dev.5"
-asimov-graph = "25.0.0-dev.5"
-asimov-ledger = "25.0.0-dev.5"
-asimov-module = "25.0.0-dev.5"
-asimov-ontology = "25.0.0-dev.5"
-asimov-patterns = "25.0.0-dev.5"
-asimov-platform = "25.0.0-dev.5"
-asimov-protocol = "25.0.0-dev.5"
-asimov-proxy = "25.0.0-dev.5"
-asimov-repository = "25.0.0-dev.5"
-asimov-runner = "25.0.0-dev.5"
-asimov-runtime = "25.0.0-dev.5"
-asimov-sdk = "25.0.0-dev.5"
-asimov-server = "25.0.0-dev.5"
-asimov-sys = "25.0.0-dev.5"
-asimov-token = "25.0.0-dev.5"
-asimov-universe = "25.0.0-dev.5"
-asimov-vault = "25.0.0-dev.5"
+asimov-account = "25.0.0-dev.6"
+asimov-agent = "25.0.0-dev.6"
+asimov-cache = "25.0.0-dev.6"
+asimov-config = "25.0.0-dev.6"
+asimov-construct = "25.0.0-dev.6"
+asimov-core = "25.0.0-dev.6"
+asimov-dataset = "25.0.0-dev.6"
+asimov-directory = "25.0.0-dev.6"
+asimov-env = "25.0.0-dev.6"
+asimov-flow = "25.0.0-dev.6"
+asimov-graph = "25.0.0-dev.6"
+asimov-ledger = "25.0.0-dev.6"
+asimov-module = "25.0.0-dev.6"
+asimov-ontology = "25.0.0-dev.6"
+asimov-patterns = "25.0.0-dev.6"
+asimov-platform = "25.0.0-dev.6"
+asimov-prompt = "25.0.0-dev.6"
+asimov-protocol = "25.0.0-dev.6"
+asimov-proxy = "25.0.0-dev.6"
+asimov-repository = "25.0.0-dev.6"
+asimov-runner = "25.0.0-dev.6"
+asimov-runtime = "25.0.0-dev.6"
+asimov-sdk = "25.0.0-dev.6"
+asimov-server = "25.0.0-dev.6"
+asimov-sys = "25.0.0-dev.6"
+asimov-token = "25.0.0-dev.6"
+asimov-universe = "25.0.0-dev.6"
+asimov-vault = "25.0.0-dev.6"
 async-trait = "0.1"
 axum = { version = "0.8", features = ["macros"] }
 axum-prometheus = { version = "0.8" }
+bs58 = "0.5"
 cfg_aliases = "0.2"
 clientele = { version = "0.3", default-features = false }
-dogma = { version = "0.1.7", default-features = false }
+derive_more = { version = "2", default-features = false }
+dogma = { version = "0.1.7", default-features = false, features = ["traits"] }
 gofer = { version = "0.1.4", default-features = false, features = [
 	"all",
 	"miette",
 ] }
 jiff = { version = "0.2", default-features = false }
 know = { version = "0", default-features = true }
-openai = { package = "known-types-openai", version = "0.0.3", default-features = false, features = [
-	"alloc",
+openai = { package = "known-types-openai", version = "0.0.5", default-features = false, features = [
+    "alloc",
 ] }
 rmcp = { version = "0.1.5", default-features = false }
 miette = { version = "7.5", default-features = false, features = ["derive"] }
@@ -82,7 +86,14 @@ protoflow-core = { version = "=0.4.1", default-features = false }
 rdf-model = { version = "0.2.2", default-features = false }
 stability = "0.2"
 thiserror = "2"
+tokio = { version = "1", default-features = false, features = [
+    "io-util",
+    "rt",
+] }
+tokio-util = { version = "0.7", default-features = false }
+tracing = { version = "0.1" }
 typed-builder = "0.21"
+uuid = { version = "1.16", features = ["v4"] }
 
 [patch.crates-io]
 rmcp = { path = "../mcp-rust-sdk/crates/rmcp/" }
@@ -102,6 +113,7 @@ asimov-module = { path = "lib/asimov-module" }
 asimov-ontology = { path = "lib/asimov-ontology" }
 asimov-patterns = { path = "lib/asimov-patterns" }
 asimov-platform = { path = "lib/asimov-platform" }
+asimov-prompt = { path = "lib/asimov-prompt" }
 asimov-protocol = { path = "lib/asimov-protocol" }
 asimov-proxy = { path = "lib/asimov-proxy" }
 asimov-repository = { path = "lib/asimov-repository" }
