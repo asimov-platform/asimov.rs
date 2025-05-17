@@ -2,6 +2,10 @@
 
 #![allow(unused_imports)]
 
+use std::sync::{Arc, RwLock};
+
+use crate::persistence::{self, PersistentState};
+
 use super::error::CompletionError;
 use asimov_runner::{Execute, Prompt, Provider, ProviderOptions};
 use axum::{Json, Router, extract, routing::post};
@@ -13,12 +17,15 @@ use openai::schemas::{
 
 /// See: https://platform.openai.com/docs/api-reference/completions
 pub fn routes() -> Router {
-    Router::new().route("/", post(create))
+    Router::new()
+        .route("/", post(create))
+        .with_state(persistence::get_ref())
 }
 
 /// See: https://platform.openai.com/docs/api-reference/completions/create
 #[axum::debug_handler]
 async fn create(
+    extract::State(state): extract::State<Arc<RwLock<PersistentState>>>,
     extract::Json(request): extract::Json<CreateCompletionRequest>,
 ) -> Result<Json<CreateCompletionResponse>, CompletionError> {
     if request.model.is_empty() {
@@ -28,8 +35,9 @@ async fn create(
         return Err(CompletionError::EmptyPrompt);
     }
 
+    let provider_name = state.read().unwrap().provider.clone();
     let mut provider = Provider::new(
-        "asimov-default-provider",
+        provider_name,
         ProviderOptions {
             prompt: Prompt::try_from(request.prompt.unwrap()).map_err(|_| {
                 CompletionError::UnimplementedFeature("prompt from an array of tokens".into())
