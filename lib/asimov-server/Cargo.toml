@@ -33,7 +33,7 @@ gsp = ["http"]
 sparql = ["http"]
 
 # Other:
-persistence = ["dep:serde", "dep:serde_json", "dep:lazy_static"]
+persistence = ["dep:serde", "dep:serde_json"]
 
 [dependencies]
 asimov-runner.workspace = true
