@@ -9,6 +9,9 @@ mod prometheus;
 mod sparql;
 mod well_known;
 
+#[cfg(feature = "app")]
+mod app;
+
 use axum::{Router, response::Json, routing::get};
 use tokio::net::{TcpListener, ToSocketAddrs};
 use tokio_util::sync::CancellationToken;
@@ -22,8 +25,10 @@ pub fn routes() -> Router {
         .merge(openai::routes())
         .merge(prometheus::routes())
         .merge(sparql::routes())
-        .merge(well_known::routes())
-        .layer(CorsLayer::permissive());
+        .merge(well_known::routes());
+
+    #[cfg(feature = "app")]
+    let router = router.merge(app::routes());
 
     #[cfg(feature = "tracing")]
     let router = router.layer(
@@ -40,7 +45,9 @@ pub fn routes() -> Router {
             ),
     );
 
-    router.route("/", get(http_handler))
+    router
+        .layer(CorsLayer::permissive())
+        .route("/", get(http_handler))
 }
 
 pub async fn start(addr: impl ToSocketAddrs, cancel: CancellationToken) -> std::io::Result<()> {
