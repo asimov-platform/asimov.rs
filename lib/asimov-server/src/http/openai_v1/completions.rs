@@ -63,13 +63,13 @@ async fn create(
             logprobs: None,
             text: provider_output,
         }],
-        system_fingerprint: "".into(), // TODO: module name
-        usage: CompletionUsage {
+        system_fingerprint: None,
+        usage: Some(CompletionUsage {
             prompt_tokens: 0,     // TODO
             completion_tokens: 0, // TODO
             total_tokens: 0,      // TODO
             prompt_tokens_details: Default::default(),
             completion_tokens_details: Default::default(),
-        },
+        }),
     })) // TODO
 }

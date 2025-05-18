@@ -87,13 +87,13 @@ fn dummy_response() -> CreateChatCompletionResponse {
         model: "gpt-4.1-2025-04-14".into(),
         choices: vec![],
         service_tier: None,
-        system_fingerprint: "".into(),
-        usage: CompletionUsage {
-            completion_tokens: 0,
+        system_fingerprint: None,
+        usage: Some(CompletionUsage {
             prompt_tokens: 0,
+            completion_tokens: 0,
             total_tokens: 0,
-            completion_tokens_details: Default::default(),
             prompt_tokens_details: Default::default(),
-        },
+            completion_tokens_details: Default::default(),
+        }),
     }
 }

@@ -21,14 +21,14 @@ pub fn routes() -> Router {
 #[axum::debug_handler]
 async fn create(extract::Json(_): extract::Json<CreateImageRequest>) -> Json<ImagesResponse> {
     Json(ImagesResponse {
-        data: vec![], // TODO
+        data: Some(vec![]), // TODO
         created: Timestamp::now().as_second(),
-        usage: ImagesResponse_Usage {
+        usage: Some(ImagesResponse_Usage {
             total_tokens: 0,
             input_tokens: 0,
             output_tokens: 0,
             input_tokens_details: Default::default(),
-        },
+        }),
     })
 }
 
@@ -38,14 +38,14 @@ async fn create_edit(
     extract::Json(_): extract::Json<CreateImageEditRequest>,
 ) -> Json<ImagesResponse> {
     Json(ImagesResponse {
-        data: vec![], // TODO
+        data: Some(vec![]), // TODO
         created: Timestamp::now().as_second(),
-        usage: ImagesResponse_Usage {
+        usage: Some(ImagesResponse_Usage {
             total_tokens: 0,
             input_tokens: 0,
             output_tokens: 0,
             input_tokens_details: Default::default(),
-        },
+        }),
     })
 }
 
@@ -55,13 +55,13 @@ async fn create_variation(
     extract::Json(_): extract::Json<CreateImageVariationRequest>,
 ) -> Json<ImagesResponse> {
     Json(ImagesResponse {
-        data: vec![], // TODO
+        data: Some(vec![]), // TODO
         created: Timestamp::now().as_second(),
-        usage: ImagesResponse_Usage {
+        usage: Some(ImagesResponse_Usage {
             total_tokens: 0,
             input_tokens: 0,
             output_tokens: 0,
             input_tokens_details: Default::default(),
-        },
+        }),
     })
 }
