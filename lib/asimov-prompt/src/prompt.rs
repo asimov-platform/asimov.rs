@@ -20,6 +20,12 @@ impl Collection for Prompt {
     }
 }
 
+impl From<Vec<PromptMessage>> for Prompt {
+    fn from(messages: Vec<PromptMessage>) -> Self {
+        Self { messages }
+    }
+}
+
 impl FromStr for Prompt {
     type Err = ();
 
