@@ -2,17 +2,20 @@
 
 #![allow(unused_imports)]
 
+mod nonstreaming;
+mod streaming;
+
 use super::error::CompletionError;
 use axum::{
     Json, Router, extract,
+    response::{IntoResponse, Response},
     routing::{delete, get, post},
 };
 use jiff::Timestamp;
 use openai::schemas::{
-    ChatCompletionDeleted, ChatCompletionList, ChatCompletionMessageList,
-    ChatCompletionMessageToolCalls, ChatCompletionResponseMessage, CompletionUsage,
+    ChatCompletionDeleted, ChatCompletionList, ChatCompletionMessageList, CompletionUsage,
     CreateChatCompletionRequest_Variant2 as CreateChatCompletionRequest,
-    CreateChatCompletionResponse, CreateChatCompletionResponse_Choices, Metadata,
+    CreateChatCompletionResponse, Metadata,
 };
 
 /// See: https://platform.openai.com/docs/api-reference/chat
@@ -58,10 +61,12 @@ async fn get_messages(extract::Path(_): extract::Path<String>) -> Json<ChatCompl
 
 /// See: https://platform.openai.com/docs/api-reference/chat/create
 #[axum::debug_handler]
-async fn create(
-    extract::Json(_): extract::Json<CreateChatCompletionRequest>,
-) -> Json<CreateChatCompletionResponse> {
-    Json(dummy_response()) // TODO
+async fn create(extract::Json(request): extract::Json<CreateChatCompletionRequest>) -> Response {
+    if request.stream.unwrap_or_default() {
+        streaming::create(request).await.into_response()
+    } else {
+        nonstreaming::create(request).await.into_response()
+    }
 }
 
 /// See: https://platform.openai.com/docs/api-reference/chat/update
