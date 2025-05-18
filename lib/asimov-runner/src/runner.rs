@@ -60,6 +60,8 @@ impl Runner {
 
     pub async fn wait(&mut self, process: Child) -> RunnerResult {
         let output = process.wait_with_output().await?;
+
+        #[cfg(feature = "tracing")]
         tracing::trace!("The command exited with: {}", output.status);
 
         if !output.status.success() {
