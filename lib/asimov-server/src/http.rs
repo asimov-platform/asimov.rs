@@ -9,11 +9,15 @@ mod prometheus;
 mod sparql;
 mod well_known;
 
-use axum::{Router, response::Json, routing::get};
+use axum::{Router, body::Body, response::Json, routing::get};
+use http::Request;
 use tokio::net::{TcpListener, ToSocketAddrs};
 use tokio_util::sync::CancellationToken;
-use tower_http::cors::CorsLayer;
-use tracing::info;
+use tower_http::{
+    cors::CorsLayer,
+    trace::{DefaultMakeSpan, TraceLayer},
+};
+use tracing::{Span, info};
 
 pub fn routes() -> Router {
     Router::new()
@@ -25,6 +29,17 @@ pub fn routes() -> Router {
         .merge(sparql::routes())
         .merge(well_known::routes())
         .layer(CorsLayer::permissive())
+        .layer(
+            TraceLayer::new_for_http()
+                .make_span_with(DefaultMakeSpan::new().include_headers(true))
+                .on_request(|request: &Request<Body>, _span: &Span| {
+                    tracing::info!(
+                        "Received a {} {} request",
+                        request.method(),
+                        request.uri().path()
+                    );
+                }),
+        )
         .route("/", get(http_handler))
 }
 

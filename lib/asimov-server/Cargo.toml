@@ -22,7 +22,13 @@ tracing = ["dep:tracing"]
 unstable = ["https", "mdns", "ssdp"]
 
 # Protocols:
-http = ["persistence", "dep:axum", "dep:axum-prometheus", "dep:tower-http"]
+http = [
+    "persistence",
+    "dep:axum",
+    "dep:axum-prometheus",
+    "dep:http",
+    "dep:tower-http",
+]
 https = ["http"]
 mdns = ["dep:mdns-sd", "dep:lazy_static", "dep:local-ip-address"]
 ssdp = []
@@ -42,6 +48,7 @@ axum = { workspace = true, optional = true }
 axum-prometheus = { workspace = true, optional = true }
 bs58.workspace = true
 dogma.workspace = true
+http = { workspace = true, optional = true }
 jiff.workspace = true
 lazy_static = { version = "1.5", optional = true }
 local-ip-address = { version = "0.6", optional = true }
@@ -53,6 +60,7 @@ tokio.workspace = true
 tokio-util.workspace = true
 tower-http = { version = "0.6", default-features = false, features = [
     "cors",
+    "trace",
 ], optional = true }
 tracing = { workspace = true, optional = true }
 serde = { version = "1", optional = true, features = ["derive"] }
