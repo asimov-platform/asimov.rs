@@ -5,7 +5,6 @@
 mod nonstreaming;
 mod streaming;
 
-use super::error::CompletionError;
 use axum::{
     Json, Router, extract,
     response::{IntoResponse, Response},

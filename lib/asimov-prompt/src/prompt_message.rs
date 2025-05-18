@@ -41,10 +41,12 @@ impl From<(PromptRole, String)> for PromptMessage {
 }
 
 #[cfg(feature = "openai")]
-impl TryFrom<openai::schemas::ChatCompletionRequestMessage> for PromptMessage {
+impl TryFrom<&openai::schemas::ChatCompletionRequestMessage> for PromptMessage {
     type Error = ();
 
-    fn try_from(input: openai::schemas::ChatCompletionRequestMessage) -> Result<Self, Self::Error> {
+    fn try_from(
+        input: &openai::schemas::ChatCompletionRequestMessage,
+    ) -> Result<Self, Self::Error> {
         use PromptRole::*;
         match (input.role(), input.text_content()) {
             ("assistant", Some(message)) => Ok(PromptMessage(Assistant, message.into())),

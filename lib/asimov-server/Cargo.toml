@@ -44,10 +44,12 @@ persistence = ["dep:serde", "dep:serde_json"]
 [dependencies]
 asimov-runner.workspace = true
 asimov-prompt = { workspace = true, features = ["openai"] }
-axum = { workspace = true, optional = true }
+async-stream.workspace = true
+axum = { workspace = true, features = ["tokio"], optional = true }
 axum-prometheus = { workspace = true, optional = true }
 bs58.workspace = true
 dogma.workspace = true
+futures.workspace = true
 http = { workspace = true, optional = true }
 jiff.workspace = true
 lazy_static = { version = "1.5", optional = true }
