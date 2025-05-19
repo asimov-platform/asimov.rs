@@ -1,55 +1,26 @@
 // This is free and unencumbered software released into the public domain.
 
-use std::{borrow::Cow, collections::BTreeMap, sync::Arc};
+use std::{borrow::Cow, collections::BTreeMap};
 
 use rmcp::model::{
-    self, Annotated, Content, Implementation, PromptArgument, PromptMessage, ProtocolVersion,
-    RawResource, ResourceContents, ServerCapabilities,
+    self, Annotated, Content, Implementation, ProtocolVersion, RawResource, ResourceContents,
+    ServerCapabilities,
 };
 use serde_json::{Map, Value};
 
-use super::provider::Provider;
+use super::{
+    prompt::Prompt,
+    provider::Provider,
+    resource::{Resource, ResourceTemplate},
+    tool::Tool,
+};
 
-pub type PromptCallback =
-    Arc<dyn Fn(Option<Map<String, Value>>) -> Result<Vec<PromptMessage>, Error> + Send + Sync>;
-
-pub type ResourceCallback = Arc<dyn Fn() -> Result<Vec<ResourceContents>, Error> + Send + Sync>;
-
-pub type ToolCallback =
-    Arc<dyn Fn(Option<Map<String, Value>>) -> Result<Vec<Content>, Error> + Send + Sync>;
-
-#[derive(Clone)]
-pub struct Prompt {
-    pub name: String,
-    pub description: Option<String>,
-    pub arguments: Option<Vec<PromptArgument>>,
-    pub callback: PromptCallback,
-}
-
-#[derive(Clone)]
-pub struct Resource {
-    pub uri: String,
-    pub name: String,
-    pub description: Option<String>,
-    pub mime_type: Option<String>,
-    pub size: Option<u32>,
-    pub callback: ResourceCallback,
-}
-
-#[derive(Clone)]
-pub struct ResourceTemplate {
-    pub name: String,
-    pub uri_template: String,
-    pub description: Option<String>,
-    pub mime_type: Option<String>,
-}
-
-#[derive(Clone)]
-pub struct Tool {
-    pub name: String,
-    pub description: Option<String>,
-    pub input_schema: Arc<Map<String, Value>>,
-    pub callback: ToolCallback,
+#[derive(Clone, Debug)]
+pub enum Error {
+    UnknownPrompt,
+    UnknownResource,
+    UnknownTool,
+    MissingArgument(String),
 }
 
 #[derive(Clone, Default)]
@@ -65,161 +36,95 @@ impl Server {
         Server::default()
     }
 
+    /// Register a prompt with a callback to generate its messages.
     /// ```rust
     /// # use asimov_server::http::mcp::{Server, Error, Prompt};
     /// # use rmcp::model::{
     /// #     PromptArgument, PromptMessage,
     /// #     PromptMessageRole,
     /// # };
+    /// # use serde_json::Value;
     /// # let mut server = Server::new();
     /// // Register a simple prompt with no arguments
-    /// server.register_prompt(
-    ///     "greeting".to_string(),
-    ///     Prompt{
-    ///
-    ///     }
-    ///     Some("A simple greeting prompt".to_string()),
-    ///     None,
-    ///     |_args| {
+    /// let prompt = Prompt::new(
+    ///     "greeting",
+    ///     Some("A simple greeting prompt"),
+    ///     || {
     ///         Ok(vec![PromptMessage::new_text(PromptMessageRole::Assistant, format!("Hello, world!"))])
-    ///     }
-    /// );
+    ///     });
+    /// server.register_prompt(prompt);
     ///
-    /// // Register a prompt with arguments
-    /// server.register_prompt(
-    ///     "personalized_greeting".to_string(),
-    ///     Some("A personalized greeting prompt".to_string()),
-    ///     Some(vec![
-    ///         PromptArgument {
-    ///             name: "name".to_string(),
-    ///             description: Some("The name to greet".to_string()),
-    ///             required: Some(true),
-    ///         }
-    ///     ]),
-    ///     |args| {
-    ///         let args = args.ok_or(Error::MissingArgument("args".to_string()))?;
-    ///         let name = args.get("name")
-    ///             .and_then(|v| v.as_str())
+    /// let prompt = Prompt::new_with_args(
+    ///    "personalized_greeting",
+    ///    Some("A personalized greeting prompt"),
+    ///    vec![PromptArgument {
+    ///           name: "person".to_string(),
+    ///           description: Some("The name of the person to greet".to_string()),
+    ///           required: Some(true),
+    ///    }],
+    ///    |args| {
+    ///         let args = args.ok_or(Error::MissingArgument("name".to_string()))?;
+    ///         let name = args
+    ///             .get("name")
+    ///             .and_then(Value::as_str)
     ///             .ok_or(Error::MissingArgument("name".to_string()))?;
-    ///
-    ///         Ok(vec![PromptMessage::new_text(PromptMessageRole::Assistant, format!("Hello, {}!", name))])
-    ///     }
+    ///         Ok(vec![PromptMessage::new_text(
+    ///             PromptMessageRole::Assistant,
+    ///             format!("Hello, {}!", name),
+    ///         )])
+    ///    }
     /// );
+    /// server.register_prompt(prompt);
+    ///
     /// ```
-    pub fn register_prompt<F>(&mut self, name: String, prompt: Prompt) {
-        self.prompts.insert(name, prompt);
+    pub fn register_prompt(&mut self, prompt: Prompt) {
+        self.prompts.insert(prompt.name.clone(), prompt);
     }
 
-    /// Register a resource with a callback to generate its contents.
-    ///
+    /// Register a resource with a callback to provide its contents.
     /// ```rust
-    /// # use asimov_server::http::mcp::{Server, Error};
-    /// # use rmcp::model::{PromptArgument, ResourceContents};
+    /// # use asimov_server::http::mcp::{Server, Resource};
+    /// # use rmcp::model::ResourceContents;
     /// # let mut server = Server::new();
-    /// // Register a simple resource with no arguments
-    /// server.register_resource(
-    ///     "resource:example".to_string(),
-    ///     "Example Resource".to_string(),
-    ///     Some("An example resource".to_string()),
-    ///     "text/plain".to_string(),
-    ///     Some(24),
+    /// let resource = Resource::new(
+    ///     "file:///foo/bar/baz.txt",
+    ///     "baz.txt",
+    ///     Some("An example file"),
+    ///     Some("text/plain"),
     ///     None,
-    ///     |_args| {
-    ///         Ok(vec![ResourceContents::Text("Example resource content".to_string())])
-    ///     }
+    ///     || {
+    ///         Ok(vec![ResourceContents::text(
+    ///             "Hello, world!",
+    ///             "file:///foo/bar/baz.txt",
+    ///         )])
+    ///     },
     /// );
-    ///
-    /// // Register a resource with arguments
-    /// server.register_resource(
-    ///     "resource:personalized".to_string(),
-    ///     "Personalized Resource".to_string(),
-    ///     Some("A personalized resource".to_string()),
-    ///     "text/plain".to_string(),
-    ///     None,
-    ///     Some(vec![
-    ///         PromptArgument {
-    ///             name: "name".to_string(),
-    ///             description: Some("The name to include".to_string()),
-    ///             required: Some(true),
-    ///         }
-    ///     ]),
-    ///     |args| {
-    ///         let args = args.ok_or(Error::MissingArgument("args".to_string()))?;
-    ///         let name = args.get("name")
-    ///             .and_then(|v| v.as_str())
-    ///             .ok_or(Error::MissingArgument("name".to_string()))?;
-    ///
-    ///         Ok(vec![ResourceContents::Text(format!("Hello, {}!", name))])
-    ///     }
-    /// );
+    /// server.register_resource(resource);
     /// ```
-    pub fn register_resource<F>(&mut self, uri: String, resource: Resource) {
-        self.resources.insert(uri, resource);
+    pub fn register_resource(&mut self, resource: Resource) {
+        self.resources.insert(resource.uri.clone(), resource);
     }
 
     /// Register a resource template.
-    ///
-    /// ```rust
-    /// # use asimov_server::http::mcp::{Server, Error};
-    /// # use rmcp::model::{PromptArgument};
-    /// # let mut server = Server::new();
-    /// server.register_resource_template(
-    ///     "template:example".to_string(),
-    ///     "Example Template".to_string(),
-    ///     Some("A template for creating example resources".to_string()),
-    ///     "text/plain".to_string(),
-    ///     Some(vec![
-    ///         PromptArgument {
-    ///             name: "content".to_string(),
-    ///             description: Some("The content to include".to_string()),
-    ///             required: Some(true),
-    ///         }
-    ///     ]),
-    /// );
-    /// ```
-    pub fn register_resource_template(&mut self, name: String, template: ResourceTemplate) {
-        self.resource_templates.insert(name, template);
+    pub fn register_resource_template(&mut self, template: ResourceTemplate) {
+        self.resource_templates
+            .insert(template.name.clone(), template);
     }
 
     /// Register a tool with a callback to handle tool calls.
-    ///
     /// ```rust
-    /// # use asimov_server::http::mcp::{Server, Error};
-    /// # use rmcp::model::{PromptArgument, Content};
-    /// # use serde_json::json;
+    /// # use asimov_server::http::mcp::{Server, Tool};
+    /// # use rmcp::model::Content;
     /// # let mut server = Server::new();
-    /// server.register_tool(
-    ///     "example_tool".to_string(),
-    ///     Some("An example tool".to_string()),
-    ///     Some(vec![
-    ///         PromptArgument {
-    ///             name: "input".to_string(),
-    ///             description: Some("The input to process".to_string()),
-    ///             required: Some(true),
-    ///         }
-    ///     ]),
-    ///     |args| {
-    ///         let args = args.ok_or(Error::MissingArgument("args".to_string()))?;
-    ///         let input = args.get("input")
-    ///             .and_then(|v| v.as_str())
-    ///             .ok_or(Error::MissingArgument("input".to_string()))?;
-    ///
-    ///         let result = format!("Processed: {}", input);
-    ///         Ok(vec![Content::Text(result)])
-    ///     }
-    /// );
+    /// let tool = Tool::new("frobnicate", Some("Does some processing"), || {
+    ///     std::thread::sleep(std::time::Duration::from_millis(10));
+    ///     Ok(vec![Content::text("Processing is done")])
+    /// });
+    /// server.register_tool(tool);
     /// ```
-    pub fn register_tool<F>(&mut self, name: String, tool: Tool) {
-        self.tools.insert(name, tool);
+    pub fn register_tool(&mut self, tool: Tool) {
+        self.tools.insert(tool.name.clone(), tool);
     }
-}
-
-#[derive(Clone)]
-pub enum Error {
-    UnknownPrompt,
-    UnknownResource,
-    UnknownTool,
-    MissingArgument(String),
 }
 
 #[async_trait::async_trait]
@@ -251,9 +156,9 @@ impl Provider for Server {
     ) -> Result<(Vec<model::Prompt>, Option<String>), Self::Error> {
         let prompts = self
             .prompts
-            .iter()
-            .map(|(name, prompt)| model::Prompt {
-                name: name.clone(),
+            .values()
+            .map(|prompt| model::Prompt {
+                name: prompt.name.clone(),
                 description: prompt.description.clone(),
                 arguments: prompt.arguments.clone(),
             })
@@ -282,10 +187,10 @@ impl Provider for Server {
     ) -> Result<(Vec<Annotated<RawResource>>, Option<String>), Self::Error> {
         let resources = self
             .resources
-            .iter()
-            .map(|(name, resource)| Annotated {
+            .values()
+            .map(|resource| Annotated {
                 raw: RawResource {
-                    name: name.clone(),
+                    name: resource.name.clone(),
                     uri: resource.uri.clone(),
                     description: resource.description.clone(),
                     mime_type: resource.mime_type.clone(),
@@ -303,10 +208,10 @@ impl Provider for Server {
     ) -> Result<(Vec<model::ResourceTemplate>, Option<String>), Self::Error> {
         let templates = self
             .resource_templates
-            .iter()
-            .map(|(name, template)| model::ResourceTemplate {
+            .values()
+            .map(|template| model::ResourceTemplate {
                 raw: model::RawResourceTemplate {
-                    name: name.clone(),
+                    name: template.name.clone(),
                     uri_template: template.uri_template.clone(),
                     description: template.description.clone(),
                     mime_type: template.mime_type.clone(),
@@ -333,9 +238,9 @@ impl Provider for Server {
     ) -> Result<(Vec<model::Tool>, Option<String>), Self::Error> {
         let tools = self
             .tools
-            .iter()
-            .map(|(name, tool)| model::Tool {
-                name: Cow::from(name.clone()),
+            .values()
+            .map(|tool| model::Tool {
+                name: Cow::from(tool.name.clone()),
                 description: tool.description.clone().map(Cow::from),
                 input_schema: tool.input_schema.clone(),
                 annotations: None,
@@ -356,5 +261,152 @@ impl Provider for Server {
         let contents = (tool.callback)(arguments)?;
 
         Ok((contents, None))
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::{Error, Prompt, Server};
+    use crate::http::mcp::{Provider, Resource, Tool};
+    use rmcp::model::{
+        self, Content, PromptArgument, PromptMessage, PromptMessageRole, RawResource,
+        ResourceContents,
+    };
+    use serde_json::{Map, Value};
+
+    #[tokio::test]
+    async fn test_prompts() {
+        let mut server = Server::new();
+        let prompt = Prompt::new("greeting", Some("A simple greeting prompt"), || {
+            Ok(vec![PromptMessage::new_text(
+                PromptMessageRole::Assistant,
+                "Hello, world!",
+            )])
+        });
+        server.register_prompt(prompt);
+
+        let prompt = Prompt::new_with_args(
+            "personalized_greeting",
+            Some("A personalized greeting prompt"),
+            vec![PromptArgument {
+                name: "person".to_string(),
+                description: Some("The name of the person to greet".to_string()),
+                required: Some(true),
+            }],
+            |args| {
+                let args = args.ok_or(Error::MissingArgument("name".to_string()))?;
+                let name = args
+                    .get("name")
+                    .and_then(Value::as_str)
+                    .ok_or(Error::MissingArgument("name".to_string()))?;
+                Ok(vec![PromptMessage::new_text(
+                    PromptMessageRole::Assistant,
+                    format!("Hello, {}!", name),
+                )])
+            },
+        );
+        server.register_prompt(prompt);
+
+        let (prompts, _) = server.list_prompts(None).await.unwrap();
+        assert_eq!(
+            prompts,
+            vec![
+                model::Prompt::new("greeting", Some("A simple greeting prompt"), None),
+                model::Prompt::new(
+                    "personalized_greeting",
+                    Some("A personalized greeting prompt"),
+                    Some(vec![PromptArgument {
+                        name: "person".into(),
+                        description: Some("The name of the person to greet".into()),
+                        required: Some(true)
+                    }])
+                )
+            ]
+        );
+
+        let mut args = Map::new();
+        args.insert("name".to_string(), "Foobar".into());
+
+        let (result, _) = server
+            .get_prompt("personalized_greeting".to_string(), Some(args))
+            .await
+            .unwrap();
+        assert_eq!(
+            result,
+            vec![PromptMessage::new_text(
+                PromptMessageRole::Assistant,
+                "Hello, Foobar!"
+            )]
+        );
+    }
+
+    #[tokio::test]
+    async fn test_resources() {
+        let mut server = Server::new();
+        let resource = Resource::new(
+            "file:///foo/bar/baz.txt",
+            "baz.txt",
+            Some("An example file"),
+            Some("text/plain"),
+            None,
+            || {
+                Ok(vec![ResourceContents::text(
+                    "Hello, world!",
+                    "file:///foo/bar/baz.txt",
+                )])
+            },
+        );
+
+        server.register_resource(resource);
+
+        let (resources, _) = server.list_resources(None).await.unwrap();
+        assert_eq!(
+            resources,
+            vec![model::Resource {
+                raw: RawResource {
+                    uri: "file:///foo/bar/baz.txt".into(),
+                    name: "baz.txt".into(),
+                    description: Some("An example file".into()),
+                    mime_type: Some("text/plain".into()),
+                    size: None,
+                },
+                annotations: None,
+            }]
+        );
+
+        let result = server
+            .read_resource("file:///foo/bar/baz.txt")
+            .await
+            .unwrap();
+        assert_eq!(
+            result,
+            vec![ResourceContents::text(
+                "Hello, world!",
+                "file:///foo/bar/baz.txt"
+            )]
+        );
+    }
+
+    #[tokio::test]
+    async fn test_tools() {
+        let mut server = Server::new();
+        let tool = Tool::new("frobnicate", Some("Does some processing"), || {
+            std::thread::sleep(std::time::Duration::from_millis(10));
+            Ok(vec![Content::text("Processing is done")])
+        });
+        server.register_tool(tool);
+
+        let (tools, _) = server.list_tools(None).await.unwrap();
+        assert_eq!(
+            tools,
+            vec![model::Tool::new(
+                "frobnicate",
+                "Does some processing",
+                Map::new(),
+            )],
+        );
+
+        let (result, _) = server.call_tool("frobnicate", None).await.unwrap();
+        assert_eq!(result, vec![Content::text("Processing is done")]);
     }
 }
