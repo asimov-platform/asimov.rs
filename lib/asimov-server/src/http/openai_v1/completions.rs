@@ -35,21 +35,16 @@ async fn create(
         return Err(CompletionError::EmptyPrompt);
     }
 
+    let prompt = Prompt::try_from(request.prompt.unwrap()).map_err(|_| {
+        CompletionError::UnimplementedFeature("prompt from an array of tokens".into())
+    })?;
     let provider_name = state.read().unwrap().provider.clone();
-    let mut provider = Provider::new(
-        provider_name,
-        ProviderOptions {
-            prompt: Prompt::try_from(request.prompt.unwrap()).map_err(|_| {
-                CompletionError::UnimplementedFeature("prompt from an array of tokens".into())
-            })?,
-            ..Default::default()
-        },
-    );
+    let mut provider = Provider::new(provider_name, ProviderOptions { prompt });
 
     let provider_output = provider
         .execute()
         .await
-        .map_err(|e| CompletionError::FailedExecute(e))?;
+        .map_err(|error| CompletionError::FailedExecute(error))?;
 
     // See: https://platform.openai.com/docs/api-reference/completions/object
     Ok(Json(CreateCompletionResponse {

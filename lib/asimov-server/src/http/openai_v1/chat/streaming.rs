@@ -1,6 +1,9 @@
 // This is free and unencumbered software released into the public domain.
 
-use crate::http::openai_v1::{error::CompletionError, util::generate_openai_id};
+use crate::{
+    http::openai_v1::{error::CompletionError, util::generate_openai_id},
+    persistence::PersistentState,
+};
 use asimov_prompt::{Prompt, PromptMessage, PromptRole};
 use asimov_runner::{Execute, Provider, ProviderOptions};
 use async_stream::try_stream;
@@ -12,9 +15,11 @@ use openai::schemas::{
     CreateChatCompletionRequest_Variant2 as CreateChatCompletionRequest,
     CreateChatCompletionStreamResponse, CreateChatCompletionStreamResponse_Choices,
 };
+use std::sync::{Arc, RwLock};
 
 /// See: https://platform.openai.com/docs/api-reference/chat/create
 pub async fn create(
+    state: Arc<RwLock<PersistentState>>,
     request: CreateChatCompletionRequest,
 ) -> Result<Sse<impl Stream<Item = Result<Event, axum::Error>>>, CompletionError> {
     let id = generate_openai_id("chatcmpl");
@@ -30,8 +35,12 @@ pub async fn create(
     }
     let prompt = Prompt::from(prompt_messages);
 
-    let mut provider = Provider::new("asimov-default-provider", ProviderOptions { prompt }); // TODO
-    let provider_output = provider.execute().await?;
+    let provider_name = state.read().unwrap().provider.clone();
+    let mut provider = Provider::new(provider_name, ProviderOptions { prompt });
+    let provider_output = provider
+        .execute()
+        .await
+        .map_err(|error| CompletionError::FailedExecute(error))?;
 
     Ok(Sse::new(try_stream!({
         yield Event::default().json_data(CreateChatCompletionStreamResponse {

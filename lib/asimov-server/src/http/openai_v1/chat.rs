@@ -5,6 +5,8 @@
 mod nonstreaming;
 mod streaming;
 
+use super::error::CompletionError;
+use crate::persistence::{self, PersistentState};
 use axum::{
     Json, Router, extract,
     response::{IntoResponse, Response},
@@ -16,6 +18,7 @@ use openai::schemas::{
     CreateChatCompletionRequest_Variant2 as CreateChatCompletionRequest,
     CreateChatCompletionResponse, Metadata,
 };
+use std::sync::{Arc, RwLock};
 
 /// See: https://platform.openai.com/docs/api-reference/chat
 pub fn routes() -> Router {
@@ -26,6 +29,7 @@ pub fn routes() -> Router {
         .route("/", post(create))
         .route("/{completion_id}", post(update))
         .route("/{completion_id}", delete(delete_))
+        .with_state(persistence::get_ref())
 }
 
 /// See: https://platform.openai.com/docs/api-reference/chat/list
@@ -60,11 +64,18 @@ async fn get_messages(extract::Path(_): extract::Path<String>) -> Json<ChatCompl
 
 /// See: https://platform.openai.com/docs/api-reference/chat/create
 #[axum::debug_handler]
-async fn create(extract::Json(request): extract::Json<CreateChatCompletionRequest>) -> Response {
+async fn create(
+    extract::State(state): extract::State<Arc<RwLock<PersistentState>>>,
+    extract::Json(request): extract::Json<CreateChatCompletionRequest>,
+) -> Response {
+    if request.model.is_empty() {
+        return CompletionError::EmptyModel.into_response();
+    }
+
     if request.stream.unwrap_or_default() {
-        streaming::create(request).await.into_response()
+        streaming::create(state, request).await.into_response()
     } else {
-        nonstreaming::create(request).await.into_response()
+        nonstreaming::create(state, request).await.into_response()
     }
 }
 
