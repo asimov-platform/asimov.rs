@@ -72,7 +72,9 @@ know = { version = "0", default-features = true }
 openai = { package = "known-types-openai", version = "0.0.5", default-features = false, features = [
     "alloc",
 ] }
-rmcp = { version = "0.1.5", default-features = false }
+# TODO: Once rmcp releases a new version use that.
+# rmcp = { version = "0.1.5", default-features = false }
+rmcp = { git = "https://github.com/modelcontextprotocol/rust-sdk", branch = "main", default-features = false }
 miette = { version = "7.5", default-features = false, features = ["derive"] }
 protoflow = { version = "=0.4.1", default-features = false, features = [
 	"blocks",
@@ -96,7 +98,6 @@ typed-builder = "0.21"
 uuid = { version = "1.16", features = ["v4"] }
 
 [patch.crates-io]
-rmcp = { path = "../mcp-rust-sdk/crates/rmcp/" }
 asimov-account = { path = "lib/asimov-account" }
 asimov-agent = { path = "lib/asimov-agent" }
 asimov-cache = { path = "lib/asimov-cache" }
