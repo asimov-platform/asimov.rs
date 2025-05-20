@@ -12,7 +12,7 @@ mod well_known;
 #[cfg(feature = "app")]
 mod app;
 
-use axum::{Router, response::Json, routing::get};
+use axum::{response::Json, routing::get, Router};
 use tokio::net::{TcpListener, ToSocketAddrs};
 use tokio_util::sync::CancellationToken;
 use tower_http::cors::CorsLayer;
