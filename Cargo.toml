@@ -4,6 +4,7 @@
 members = ["lib/*"]
 default-members = [
     "lib/asimov-env",
+    "lib/asimov-module",
     "lib/asimov-patterns",
     "lib/asimov-prompt",
     "lib/asimov-runner",
