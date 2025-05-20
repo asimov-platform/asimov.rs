@@ -95,6 +95,7 @@ pub async fn test_mcp_lifecycle() {
     let req_str = serde_json::to_string(&req).unwrap();
     debug!("{req:?}: {req_str:?}");
     let resp = server.post("/mcp").json(&req).await;
+    assert_eq!(resp.header("content-type"), "application/json");
     debug!("{resp:?}");
     let resp = resp.json::<JsonRpcResponse<CallToolResult>>();
     debug!("{resp:?}");

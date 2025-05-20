@@ -37,7 +37,7 @@ async fn get_handler<P>(State(_provider): State<P>, _parts: Parts) -> Result<Res
 where
     P: Provider,
 {
-    Ok(Json(false).into_response())
+    Ok(StatusCode::METHOD_NOT_ALLOWED.into_response())
 }
 
 async fn post_handler<P>(
@@ -73,7 +73,7 @@ where
             ListPromptsRequest(list_req) => {
                 let cursor = list_req.params.and_then(|opt| opt.cursor);
                 let Ok((prompts, next_cursor)) = provider.list_prompts(cursor).await else {
-                    todo!()
+                    return Err(StatusCode::INTERNAL_SERVER_ERROR.into_response());
                 };
 
                 Ok(Json(JsonRpcResponse {
@@ -90,7 +90,7 @@ where
                 let GetPromptRequestParam { name, arguments } = get_req.params;
 
                 let Ok((messages, description)) = provider.get_prompt(name, arguments).await else {
-                    todo!()
+                    return Err(StatusCode::INTERNAL_SERVER_ERROR.into_response());
                 };
 
                 Ok(Json(JsonRpcResponse {
@@ -108,7 +108,7 @@ where
             ListResourcesRequest(list_req) => {
                 let cursor = list_req.params.and_then(|opt| opt.cursor);
                 let Ok((resources, next_cursor)) = provider.list_resources(cursor).await else {
-                    todo!()
+                    return Err(StatusCode::INTERNAL_SERVER_ERROR.into_response());
                 };
 
                 Ok(Json(JsonRpcResponse {
@@ -126,7 +126,7 @@ where
                 let Ok((resource_templates, next_cursor)) =
                     provider.list_resource_templates(cursor).await
                 else {
-                    todo!()
+                    return Err(StatusCode::INTERNAL_SERVER_ERROR.into_response());
                 };
 
                 Ok(Json(JsonRpcResponse {
@@ -143,7 +143,7 @@ where
                 let uri = read_req.params.uri;
 
                 let Ok(contents) = provider.read_resource(&uri).await else {
-                    todo!()
+                    return Err(StatusCode::INTERNAL_SERVER_ERROR.into_response());
                 };
 
                 Ok(Json(JsonRpcResponse {
@@ -158,7 +158,7 @@ where
             ListToolsRequest(list_req) => {
                 let cursor = list_req.params.and_then(|opt| opt.cursor);
                 let Ok((tools, next_cursor)) = provider.list_tools(cursor).await else {
-                    todo!()
+                    return Err(StatusCode::INTERNAL_SERVER_ERROR.into_response());
                 };
 
                 Ok(Json(JsonRpcResponse {
@@ -172,7 +172,7 @@ where
                 let CallToolRequestParam { name, arguments } = call_req.params;
 
                 let Ok((content, is_error)) = provider.call_tool(&name, arguments).await else {
-                    todo!()
+                    return Err(StatusCode::INTERNAL_SERVER_ERROR.into_response());
                 };
 
                 Ok(Json(JsonRpcResponse {
@@ -183,20 +183,19 @@ where
                 .into_response())
             }
 
-            CompleteRequest(_req) => todo!(),
-            SetLevelRequest(_req) => todo!(),
-            SubscribeRequest(_req) => todo!(),
-            UnsubscribeRequest(_req) => todo!(),
+            CompleteRequest(_)
+            | SetLevelRequest(_)
+            | SubscribeRequest(_)
+            | UnsubscribeRequest(_) => Err(StatusCode::NOT_IMPLEMENTED.into_response()),
         },
-        Response(_resp) => todo!(),
         Notification(not) => match not.notification {
             CancelledNotification(_)
             | InitializedNotification(_)
             | ProgressNotification(_)
             | RootsListChangedNotification(_) => Ok(StatusCode::ACCEPTED.into_response()),
         },
-        Error(_err) => todo!(),
-        BatchRequest(_items) => todo!(),
-        BatchResponse(_items) => todo!(),
+        Response(_) | Error(_) | BatchRequest(_) | BatchResponse(_) => {
+            Err(StatusCode::NOT_IMPLEMENTED.into_response())
+        }
     }
 }
