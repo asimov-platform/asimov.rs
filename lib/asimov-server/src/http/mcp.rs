@@ -11,7 +11,6 @@ use rmcp::model::{
     CallToolRequestParam, CallToolResult, ClientJsonRpcMessage, GetPromptRequestParam,
     GetPromptResult, JsonRpcResponse, JsonRpcVersion2_0, ListPromptsResult,
     ListResourceTemplatesResult, ListResourcesResult, ListToolsResult, ReadResourceResult,
-    ServerInfo,
 };
 
 mod prompt;
@@ -51,17 +50,27 @@ where
     use rmcp::model::{ClientNotification::*, ClientRequest::*, JsonRpcMessage::*};
     match message {
         Request(req) => match req.request {
-            InitializeRequest(_req) => Ok(Json(JsonRpcResponse {
-                jsonrpc: JsonRpcVersion2_0,
-                id: req.id,
-                result: ServerInfo {
-                    protocol_version: provider.protocol_version(),
-                    capabilities: provider.capabilities(),
-                    server_info: provider.implementation(),
-                    instructions: None,
-                },
-            })
-            .into_response()),
+            InitializeRequest(_req) => {
+                Ok(Json(JsonRpcResponse {
+                    jsonrpc: JsonRpcVersion2_0,
+                    id: req.id,
+                    // TODO: Once rmcp releases a new version we will be able to ask the server for ProtocolVersion.
+                    // With the latest release only 2024-11-05 is possible.
+                    //
+                    // result: ServerInfo {
+                    //     protocol_version: provider.protocol_version(),
+                    //     capabilities: provider.capabilities(),
+                    //     server_info: provider.implementation(),
+                    //     instructions: None,
+                    // },
+                    result: serde_json::json!({
+                        "protocolVersion": "2025-03-26",
+                        "capabilities": provider.capabilities(),
+                        "serverInfo": provider.implementation(),
+                    }),
+                })
+                .into_response())
+            }
             PingRequest(_req) => Ok(Json(JsonRpcResponse {
                 jsonrpc: JsonRpcVersion2_0,
                 id: req.id,
@@ -194,8 +203,7 @@ where
             | ProgressNotification(_)
             | RootsListChangedNotification(_) => Ok(StatusCode::ACCEPTED.into_response()),
         },
-        Response(_) | Error(_) | BatchRequest(_) | BatchResponse(_) => {
-            Err(StatusCode::NOT_IMPLEMENTED.into_response())
-        }
+        // Response(_) | Error(_) | BatchRequest(_) | BatchResponse(_) => {
+        Response(_) | Error(_) => Err(StatusCode::NOT_IMPLEMENTED.into_response()),
     }
 }

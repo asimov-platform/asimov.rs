@@ -5,10 +5,10 @@ use axum::{http::StatusCode, Router};
 use axum_test::TestServer;
 use rmcp::model::{
     CallToolRequest, CallToolRequestMethod, CallToolRequestParam, CallToolResult, Content,
-    Extensions, InitializeRequest, InitializeRequestParam, InitializeResultMethod,
-    InitializedNotification, InitializedNotificationMethod, JsonRpcNotification, JsonRpcRequest,
-    JsonRpcResponse, JsonRpcVersion2_0, ListToolsRequest, ListToolsRequestMethod, ListToolsResult,
-    RequestId, ServerInfo,
+    InitializeRequest, InitializeRequestParam, InitializeResultMethod, InitializedNotification,
+    InitializedNotificationMethod, JsonRpcNotification, JsonRpcRequest, JsonRpcResponse,
+    JsonRpcVersion2_0, ListToolsRequest, ListToolsRequestMethod, ListToolsResult, RequestId,
+    ServerInfo,
 };
 use serde_json::json;
 use tracing::debug;
@@ -42,7 +42,7 @@ pub async fn test_mcp_lifecycle() {
         id: RequestId::Number(1),
         request: InitializeRequest {
             method: InitializeResultMethod,
-            extensions: Extensions::default(),
+            // extensions: Extensions::default(),
             params: InitializeRequestParam::default(),
         },
     };
@@ -57,7 +57,7 @@ pub async fn test_mcp_lifecycle() {
         jsonrpc: JsonRpcVersion2_0,
         notification: InitializedNotification {
             method: InitializedNotificationMethod,
-            extensions: Extensions::default(),
+            // extensions: Extensions::default(),
         },
     };
     let req_str = serde_json::to_string(&req).unwrap();
@@ -72,7 +72,7 @@ pub async fn test_mcp_lifecycle() {
         id: RequestId::Number(1),
         request: ListToolsRequest {
             method: ListToolsRequestMethod,
-            extensions: Extensions::default(),
+            // extensions: Extensions::default(),
             params: None,
         },
     };
@@ -88,7 +88,7 @@ pub async fn test_mcp_lifecycle() {
         id: RequestId::Number(1),
         request: CallToolRequest {
             method: CallToolRequestMethod,
-            extensions: Extensions::default(),
+            // extensions: Extensions::default(),
             params: CallToolRequestParam {
                 name: "text/transform".into(),
                 arguments: Some(json!({"text": "foobar"}).as_object().unwrap().clone()),

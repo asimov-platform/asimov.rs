@@ -132,7 +132,7 @@ impl Provider for Server {
     type Error = Error;
 
     fn protocol_version(&self) -> ProtocolVersion {
-        ProtocolVersion::V_2025_03_26
+        ProtocolVersion::LATEST
     }
 
     fn capabilities(&self) -> ServerCapabilities {
@@ -241,9 +241,9 @@ impl Provider for Server {
             .values()
             .map(|tool| model::Tool {
                 name: Cow::from(tool.name.clone()),
-                description: tool.description.clone().map(Cow::from),
+                description: tool.description.clone().unwrap_or(String::new()).into(),
                 input_schema: tool.input_schema.clone(),
-                annotations: None,
+                // annotations: None,
             })
             .collect();
         Ok((tools, None))

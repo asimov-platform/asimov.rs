@@ -78,9 +78,7 @@ know = { version = "0", default-features = true }
 openai = { package = "known-types-openai", version = "0.0.8", default-features = false, features = [
     "alloc",
 ] }
-# TODO: Once rmcp releases a new version use that.
-# rmcp = { version = "0.1.5", default-features = false }
-rmcp = { git = "https://github.com/modelcontextprotocol/rust-sdk", branch = "main", default-features = false }
+rmcp = { version = "0.1.5", default-features = false }
 miette = { version = "7.5", default-features = false, features = ["derive"] }
 protoflow = { version = "=0.4.1", default-features = false, features = [
     "blocks",
