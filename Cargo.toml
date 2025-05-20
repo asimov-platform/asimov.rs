@@ -68,8 +68,8 @@ derive_more = { version = "2", default-features = false }
 dogma = { version = "0.1.7", default-features = false, features = ["traits"] }
 futures = "0.3"
 gofer = { version = "0.1.4", default-features = false, features = [
-	"all",
-	"miette",
+    "all",
+    "miette",
 ] }
 http = "1.3"
 http-body-util = "0.1"
@@ -83,12 +83,12 @@ openai = { package = "known-types-openai", version = "0.0.8", default-features =
 rmcp = { git = "https://github.com/modelcontextprotocol/rust-sdk", branch = "main", default-features = false }
 miette = { version = "7.5", default-features = false, features = ["derive"] }
 protoflow = { version = "=0.4.1", default-features = false, features = [
-	"blocks",
-	"derive",
-	"sysml",
+    "blocks",
+    "derive",
+    "sysml",
 ] }
 protoflow-blocks = { version = "=0.4.1", default-features = false, features = [
-	"hash",
+    "hash",
 ] }
 protoflow-core = { version = "=0.4.1", default-features = false }
 rdf-model = { version = "0.2.2", default-features = false }
