@@ -1,11 +1,12 @@
 // This is free and unencumbered software released into the public domain.
 
 use asimov_server::http::mcp::Tool;
-use axum::Router;
+use axum::{http::StatusCode, Router};
 use axum_test::TestServer;
 use rmcp::model::{
     CallToolRequest, CallToolRequestMethod, CallToolRequestParam, CallToolResult, Content,
-    Extensions, InitializeRequest, InitializeRequestParam, InitializeResultMethod, JsonRpcRequest,
+    Extensions, InitializeRequest, InitializeRequestParam, InitializeResultMethod,
+    InitializedNotification, InitializedNotificationMethod, JsonRpcNotification, JsonRpcRequest,
     JsonRpcResponse, JsonRpcVersion2_0, ListToolsRequest, ListToolsRequestMethod, ListToolsResult,
     RequestId, ServerInfo,
 };
@@ -48,6 +49,21 @@ pub async fn test_mcp_lifecycle() {
     debug!("{resp:?}");
     let resp = resp.json::<JsonRpcResponse<ServerInfo>>();
     debug!("{resp:?}");
+
+    let req = JsonRpcNotification {
+        jsonrpc: JsonRpcVersion2_0,
+        notification: InitializedNotification {
+            method: InitializedNotificationMethod,
+            extensions: Extensions::default(),
+        },
+    };
+    let req_str = serde_json::to_string(&req).unwrap();
+    debug!("{req:?}: {req_str:?}");
+    let resp = server.post("/mcp").json(&req).await;
+    debug!("{resp:?}");
+    assert_eq!(resp.status_code(), StatusCode::ACCEPTED);
+    assert_eq!(resp.as_bytes().len(), 0);
+
     let req = JsonRpcRequest {
         jsonrpc: JsonRpcVersion2_0,
         id: RequestId::Number(1),

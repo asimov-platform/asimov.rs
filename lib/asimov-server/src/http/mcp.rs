@@ -2,7 +2,7 @@
 
 use axum::{
     extract::State,
-    http::request::Parts,
+    http::{request::Parts, StatusCode},
     response::{IntoResponse, Response},
     routing::post,
     Json, Router,
@@ -48,7 +48,7 @@ async fn post_handler<P>(
 where
     P: Provider,
 {
-    use rmcp::model::{ClientRequest::*, JsonRpcMessage::*};
+    use rmcp::model::{ClientNotification::*, ClientRequest::*, JsonRpcMessage::*};
     match message {
         Request(req) => match req.request {
             InitializeRequest(_req) => Ok(Json(JsonRpcResponse {
@@ -189,7 +189,12 @@ where
             UnsubscribeRequest(_req) => todo!(),
         },
         Response(_resp) => todo!(),
-        Notification(_not) => todo!(),
+        Notification(not) => match not.notification {
+            CancelledNotification(_)
+            | InitializedNotification(_)
+            | ProgressNotification(_)
+            | RootsListChangedNotification(_) => Ok(StatusCode::ACCEPTED.into_response()),
+        },
         Error(_err) => todo!(),
         BatchRequest(_items) => todo!(),
         BatchResponse(_items) => todo!(),
