@@ -65,7 +65,7 @@ where
             PingRequest(_req) => Ok(Json(JsonRpcResponse {
                 jsonrpc: JsonRpcVersion2_0,
                 id: req.id,
-                result: {},
+                result: serde_json::Map::new(),
             })
             .into_response()),
 
