@@ -20,13 +20,15 @@ pub fn routes() -> Router {
 /// See: https://platform.openai.com/docs/api-reference/responses/create
 #[axum::debug_handler]
 async fn create(extract::Json(_): extract::Json<CreateResponse>) -> Json<Response> {
-    Json(Response::default()) // TODO
+    //Json(Response::default()) // TODO
+    todo!()
 }
 
 /// See: https://platform.openai.com/docs/api-reference/responses/get
 #[axum::debug_handler]
 async fn get_(extract::Path(_): extract::Path<String>) -> Json<Response> {
-    Json(Response::default()) // TODO
+    //Json(Response::default()) // TODO
+    todo!()
 }
 
 /// See: https://platform.openai.com/docs/api-reference/responses/delete

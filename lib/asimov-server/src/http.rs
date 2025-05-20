@@ -9,22 +9,44 @@ mod prometheus;
 mod sparql;
 mod well_known;
 
-use axum::{response::Json, routing::get, Router};
+#[cfg(feature = "app")]
+mod app;
+
+use axum::{Router, response::Json, routing::get};
 use tokio::net::{TcpListener, ToSocketAddrs};
 use tokio_util::sync::CancellationToken;
 use tower_http::cors::CorsLayer;
-use tracing::info;
 
 pub fn routes() -> Router {
     let mcp_server = mcp::Server::default();
-    Router::new()
+    let router = Router::new()
         .merge(graphql::routes())
         .merge(gsp::routes())
         .merge(mcp::routes().with_state(mcp_server))
         .merge(openai::routes())
         .merge(prometheus::routes())
         .merge(sparql::routes())
-        .merge(well_known::routes())
+        .merge(well_known::routes());
+
+    #[cfg(feature = "app")]
+    let router = router.merge(app::routes());
+
+    #[cfg(feature = "tracing")]
+    let router = router.layer(
+        tower_http::trace::TraceLayer::new_for_http()
+            .make_span_with(tower_http::trace::DefaultMakeSpan::new().include_headers(true))
+            .on_request(
+                |request: &http::Request<axum::body::Body>, _span: &tracing::Span| {
+                    tracing::info!(
+                        "Received a {} {} request",
+                        request.method(),
+                        request.uri().path()
+                    );
+                },
+            ),
+    );
+
+    router
         .layer(CorsLayer::permissive())
         .route("/", get(http_handler))
 }
@@ -32,7 +54,8 @@ pub fn routes() -> Router {
 pub async fn start(addr: impl ToSocketAddrs, cancel: CancellationToken) -> std::io::Result<()> {
     let listener = TcpListener::bind(addr).await?;
 
-    info!(
+    #[cfg(feature = "tracing")]
+    tracing::info!(
         "Listening for HTTP requests on {}...",
         listener.local_addr().unwrap()
     );

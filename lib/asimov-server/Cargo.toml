@@ -16,50 +16,66 @@ publish.workspace = true
 
 [features]
 default = ["all", "std"]
-all = ["http", "tracing"]
+all = ["app", "http", "tracing"]
 std = ["dogma/std", "jiff/std", "openai/std", "tracing?/std"]
 tracing = ["dep:tracing"]
 unstable = ["https", "mdns", "ssdp"]
 
 # Protocols:
-http = ["dep:axum", "dep:axum-prometheus", "dep:tower-http"]
+http = [
+    "persistence",
+    "dep:axum",
+    "dep:axum-prometheus",
+    "dep:http",
+    "dep:tower-http",
+]
 https = ["http"]
 mdns = ["dep:mdns-sd", "dep:lazy_static", "dep:local-ip-address"]
 ssdp = []
 
 # Protocols on top of HTTP:
+app = ["http", "dep:axum-embed", "dep:rust-embed"]
 graphql = ["http"]
 gsp = ["http"]
 sparql = ["http"]
 mcp = ["http"]
 
+# Other:
+persistence = ["dep:serde", "dep:serde_json"]
+
 [dependencies]
 asimov-runner.workspace = true
 asimov-prompt = { workspace = true, features = ["openai"] }
 async-trait.workspace = true
-axum = { workspace = true, optional = true }
+async-stream.workspace = true
+axum = { workspace = true, features = ["tokio"], optional = true }
+axum-embed = { version = "0.1", optional = true }
 axum-prometheus = { workspace = true, optional = true }
 bs58.workspace = true
 dogma.workspace = true
+futures.workspace = true
+http = { workspace = true, optional = true }
 jiff.workspace = true
 lazy_static = { version = "1.5", optional = true }
 local-ip-address = { version = "0.6", optional = true }
 mdns-sd = { version = "0.13", optional = true }
 openai = { workspace = true, features = ["serde"] }
 rmcp = { workspace = true, features = [
-	"base64",
-	"macros",
-	"server",
-	"transport-sse-server",
+    "base64",
+    "macros",
+    "server",
+    "transport-sse-server",
 ] }
-serde = { version = "1.0", default-features = false, features = ["alloc", "derive", "rc", "std"] }
-serde_json = { version = "1.0", default-features = false, features = ["alloc", "std"] }
+rust-embed = { workspace = true, optional = true }
+serde = { version = "1", optional = true, features = ["derive"] }
+serde_json = { version = "1", optional = true }
 stability.workspace = true
 thiserror.workspace = true
 tokio.workspace = true
 tokio-util.workspace = true
 tower-http = { version = "0.6", default-features = false, features = [
-	"cors",
+    "cors",
+    "trace",
 ], optional = true }
 tracing = { workspace = true, optional = true }
 uuid.workspace = true
@@ -78,3 +94,8 @@ required-features = ["mdns"]
 name = "mdns-server"
 path = "examples/mdns-server.rs"
 required-features = ["mdns"]
+
+[[example]]
+name = "persistence"
+path = "examples/persistence.rs"
+required-features = ["http", "persistence"]

@@ -22,7 +22,10 @@ pub async fn test_mcp_lifecycle() {
     server.register_tool(Tool::new_with_args(
         "text/transform",
         Some("Transform a piece of text"),
-        json!({ "text": "string" }).as_object().unwrap().clone(),
+        json!({ "type": "object", "properties": { "text": { "type": "string" } } })
+            .as_object()
+            .unwrap()
+            .clone(),
         |args| {
             let args = args.unwrap();
             let text = args.get("text").unwrap().as_str().unwrap();

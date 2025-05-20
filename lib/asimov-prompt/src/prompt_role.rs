@@ -2,7 +2,7 @@
 
 use derive_more::{Display, From, FromStr};
 use dogma::{
-    prelude::{Cow, ToString},
+    prelude::{Cow, String, ToString},
     traits::{Labeled, Named},
 };
 
@@ -36,5 +36,11 @@ impl Labeled for PromptRole {
             User => "User",
             Assistant => "Assistant",
         })
+    }
+}
+
+impl Into<String> for PromptRole {
+    fn into(self) -> String {
+        self.to_string()
     }
 }

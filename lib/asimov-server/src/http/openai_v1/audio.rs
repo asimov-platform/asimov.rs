@@ -29,7 +29,7 @@ async fn create_transcription(
 ) -> Json<CreateTranscriptionResponseJson> {
     Json(CreateTranscriptionResponseJson {
         text: String::new(), // TODO
-        logprobs: vec![],
+        logprobs: None,
     })
 }
 

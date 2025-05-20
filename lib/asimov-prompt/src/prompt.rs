@@ -20,6 +20,12 @@ impl Collection for Prompt {
     }
 }
 
+impl From<Vec<PromptMessage>> for Prompt {
+    fn from(messages: Vec<PromptMessage>) -> Self {
+        Self { messages }
+    }
+}
+
 impl FromStr for Prompt {
     type Err = ();
 
@@ -72,10 +78,10 @@ impl TryFrom<openai::schemas::CreateCompletionRequest_Prompt> for Prompt {
     ) -> Result<Self, Self::Error> {
         use openai::schemas::CreateCompletionRequest_Prompt::*;
         match input {
-            String(prompt) => Ok(prompt.into()),
-            ArrayOfStrings(prompts) => Ok(prompts.join("").into()),
-            ArrayOfIntegers(_) => Err(()),
-            Array(_) => Err(()),
+            Text(prompt) => Ok(prompt.into()),
+            TextArray(prompts) => Ok(prompts.join("").into()),
+            TokenArray(_) => Err(()),
+            TokenArrayArray(_) => Err(()),
         }
     }
 }
