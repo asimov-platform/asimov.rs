@@ -92,7 +92,8 @@ rdf-model = { version = "0.2.2", default-features = false }
 rust-embed = { version = "8.7", default-features = false, features = [
     "deterministic-timestamps",
 ] }
-stability = "0.2"
+secrecy = { version = "0.10", default-features = false }
+stability = "0.2" # TODO: use instability
 thiserror = "2"
 tokio = { version = "1", default-features = false, features = [
     "io-util",

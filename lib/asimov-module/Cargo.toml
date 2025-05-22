@@ -23,4 +23,5 @@ unstable = []
 
 [dependencies]
 dogma.workspace = true
+secrecy.workspace = true
 tracing = { workspace = true, optional = true }
