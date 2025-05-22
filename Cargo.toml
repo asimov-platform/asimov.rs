@@ -67,6 +67,12 @@ clientele = { version = "0.3", default-features = false }
 derive_more = { version = "2", default-features = false }
 dogma = { version = "0.1.7", default-features = false, features = ["traits"] }
 futures = "0.3"
+getenv = { version = "0.1.2", default-features = false, features = [
+    "cargo",
+    "posix",
+    "python",
+    "ruby",
+] }
 gofer = { version = "0.1.4", default-features = false, features = [
     "all",
     "miette",

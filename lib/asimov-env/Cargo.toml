@@ -27,10 +27,5 @@ cap-std = { version = "3.4", default-features = false, features = [
     "fs_utf8",
 ], optional = true }
 dogma.workspace = true
-getenv = { version = "0.1", default-features = false, features = [
-    "cargo",
-    "posix",
-    "python",
-    "ruby",
-] }
-stability.workspace = true
+getenv.workspace = true
+#stability.workspace = true

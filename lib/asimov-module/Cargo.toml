@@ -15,13 +15,15 @@ categories = ["api-bindings", "development-tools"]
 publish.workspace = true
 
 [features]
-default = ["all", "std"]
+default = ["all", "cli", "std"]
 all = ["tracing"]
-std = ["dogma/std", "tracing?/std"]
+cli = []
+std = ["dogma/std", "getenv?/std", "tracing?/std", "dep:getenv"]
 tracing = ["dep:tracing"]
 unstable = []
 
 [dependencies]
 dogma.workspace = true
+getenv = { workspace = true, optional = true }
 secrecy.workspace = true
 tracing = { workspace = true, optional = true }
