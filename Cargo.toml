@@ -108,6 +108,10 @@ tokio = { version = "1", default-features = false, features = [
 tokio-stream = "0.1"
 tokio-util = { version = "0.7", default-features = false }
 tracing = { version = "0.1" }
+tracing-subscriber = { version = "0.3", default-features = false, features = [
+    "alloc",
+    "tracing-log",
+] }
 typed-builder = "0.21"
 uuid = { version = "1.16", features = ["v4"] }
 

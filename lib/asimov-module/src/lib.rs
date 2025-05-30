@@ -4,10 +4,17 @@
 #![forbid(unsafe_code)]
 
 pub use dogma::prelude;
-pub use secrecy;
+
+#[cfg(feature = "cli")]
+pub use clientele::{SysexitsError, SysexitsResult, args_os, dotenv, exit};
 
 #[cfg(feature = "std")]
 pub use getenv;
 
+pub use secrecy;
+
 #[cfg(feature = "tracing")]
 pub use tracing;
+
+#[cfg(feature = "tracing")]
+pub use tracing_subscriber;
