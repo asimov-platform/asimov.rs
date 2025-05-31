@@ -38,6 +38,7 @@ app = ["http", "dep:axum-embed", "dep:rust-embed"]
 graphql = ["http"]
 gsp = ["http"]
 sparql = ["http"]
+mcp = ["http"]
 
 # Other:
 persistence = ["dep:serde", "dep:serde_json"]
@@ -45,6 +46,7 @@ persistence = ["dep:serde", "dep:serde_json"]
 [dependencies]
 asimov-runner.workspace = true
 asimov-prompt = { workspace = true, features = ["openai"] }
+async-trait.workspace = true
 async-stream.workspace = true
 axum = { workspace = true, features = ["tokio"], optional = true }
 axum-embed = { version = "0.1", optional = true }
@@ -58,6 +60,12 @@ lazy_static = { version = "1.5", optional = true }
 local-ip-address = { version = "0.6", optional = true }
 mdns-sd = { version = "0.13", optional = true }
 openai = { workspace = true, features = ["serde"] }
+rmcp = { workspace = true, features = [
+    "base64",
+    "macros",
+    "server",
+    "transport-sse-server",
+] }
 rust-embed = { workspace = true, optional = true }
 serde = { version = "1", optional = true, features = ["derive"] }
 serde_json = { version = "1", optional = true }
@@ -74,6 +82,8 @@ uuid.workspace = true
 
 [dev-dependencies]
 tokio = { version = "1", features = ["full"] }
+axum-test = { version = "17.3.0" }
+tracing-subscriber = "0.3"
 
 [[example]]
 name = "mdns-client"

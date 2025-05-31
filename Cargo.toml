@@ -84,6 +84,7 @@ know = { version = "0", default-features = true }
 openai = { package = "known-types-openai", version = "0.0.8", default-features = false, features = [
     "alloc",
 ] }
+rmcp = { version = "0.1.5", default-features = false }
 miette = { version = "7.5", default-features = false, features = ["derive"] }
 protoflow = { version = "=0.4.1", default-features = false, features = [
     "blocks",
