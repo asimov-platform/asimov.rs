@@ -19,25 +19,26 @@ default = ["all", "cli", "std"]
 all = ["tracing"]
 cli = ["std", "dep:clientele"]
 std = [
-    "dep:getenv",
-    "clientele?/std",
-    "dogma/std",
-    "getenv?/std",
-    "tracing?/std",
-    "tracing-subscriber?/fmt",
-    "tracing-subscriber?/std",
+	"dep:getenv",
+	"clientele?/std",
+	"dogma/std",
+	"getenv?/std",
+	"tracing?/std",
+	"tracing-subscriber?/fmt",
+	"tracing-subscriber?/std",
 ]
 tracing = ["dep:tracing", "dep:tracing-subscriber"]
 unstable = []
 
 [dependencies]
 clientele = { workspace = true, features = [
-    "argfile",
-    "dotenv",
-    "wild",
+	"argfile",
+	"dotenv",
+	"wild",
 ], optional = true }
 dogma.workspace = true
 getenv = { workspace = true, optional = true }
 secrecy.workspace = true
 tracing = { workspace = true, optional = true }
 tracing-subscriber = { workspace = true, optional = true }
+trie-rs = { version = "0.4", default-features = false }
