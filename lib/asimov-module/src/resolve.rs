@@ -43,6 +43,7 @@ pub struct Module {
 #[derive(Clone, Debug, Default)]
 pub struct ResolverBuilder {
     modules: BTreeMap<String, Rc<Module>>,
+    protocol_modules: BTreeMap<String, Vec<Rc<Module>>>,
     pattern_modules: BTreeMap<String, Vec<Rc<Module>>>,
     prefix_modules: BTreeMap<String, Vec<Rc<Module>>>,
 }
@@ -58,6 +59,10 @@ impl ResolverBuilder {
             prefix_trie.push(k, v);
         }
         let mut pattern_trie = TrieBuilder::new();
+        for (k, v) in self.protocol_modules {
+            let k = Sect::Protocol(k);
+            pattern_trie.push([k], v);
+        }
         for (k, v) in self.pattern_modules {
             let k = split_url(&k);
             pattern_trie.push(k, v);
@@ -71,7 +76,10 @@ impl ResolverBuilder {
 
     pub fn insert_protocol(&mut self, module: &str, protocol: &str) -> Result<(), ()> {
         let module = self.add_module(module);
-        let mods = self.prefix_modules.entry(protocol.to_string()).or_default();
+        let mods = self
+            .protocol_modules
+            .entry(protocol.to_string())
+            .or_default();
         mods.push(module);
         Ok(())
     }
