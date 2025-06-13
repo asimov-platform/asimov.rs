@@ -14,8 +14,7 @@ use trie_rs::{
 
 #[derive(Clone, Debug)]
 pub struct Resolver {
-    pattern_trie: Trie<Sect, Vec<Rc<Module>>>,
-    prefix_trie: Trie<u8, Vec<Rc<Module>>>,
+    trie: Trie<Sect, Vec<Rc<Module>>>,
 }
 
 impl Resolver {
@@ -25,13 +24,12 @@ impl Resolver {
 
     pub fn find<'r, 'u>(&'r self, url: &'u str) -> Result<impl Iterator<Item = Rc<Module>>, ()> {
         Ok(SearchIter {
-            resolver: self,
-            input: url,
+            trie: &self.trie,
+            input_idx: 0,
+            input: split_url(url),
             items: &[],
-            stage: SearchStage::Prefix {
-                input: url.as_bytes(),
-                search: self.prefix_trie.inc_search(),
-            },
+            save_stack: Vec::new(),
+            search: self.trie.inc_search(),
         })
     }
 }
@@ -55,24 +53,22 @@ impl ResolverBuilder {
     }
 
     pub fn build(self) -> Resolver {
-        let mut prefix_trie = TrieBuilder::new();
+        let mut trie = TrieBuilder::new();
         for (k, v) in self.prefix_modules {
-            prefix_trie.push(k, v);
+            let k = split_url(&k);
+            trie.push(k, v);
         }
-        let mut pattern_trie = TrieBuilder::new();
         for (k, v) in self.protocol_modules {
             let k = Sect::Protocol(k);
-            pattern_trie.push([k], v);
+            trie.push([k], v);
         }
         for (k, v) in self.pattern_modules {
-            let k = split_url(&k);
-            pattern_trie.push(k, v);
+            let k = split_url(&k).into_iter().map(Sect::as_pattern);
+            trie.insert(k, v);
         }
+        let trie = trie.build();
 
-        Resolver {
-            pattern_trie: pattern_trie.build(),
-            prefix_trie: prefix_trie.build(),
-        }
+        Resolver { trie }
     }
 
     pub fn insert_protocol(&mut self, module: &str, protocol: &str) -> Result<(), ()> {
@@ -106,27 +102,16 @@ impl ResolverBuilder {
     }
 }
 
-struct SearchIter<'r, 'a> {
-    resolver: &'r Resolver,
-    input: &'a str,
+struct SearchIter<'r> {
+    trie: &'r Trie<Sect, Vec<Rc<Module>>>,
+    input_idx: usize,
+    input: Vec<Sect>,
     items: &'r [Rc<Module>],
-    stage: SearchStage<'r, 'a>,
+    save_stack: Vec<(Position, usize)>,
+    search: IncSearch<'r, Sect, Vec<Rc<Module>>>,
 }
 
-enum SearchStage<'r, 'a> {
-    Prefix {
-        input: &'a [u8],
-        search: IncSearch<'r, u8, Vec<Rc<Module>>>,
-    },
-    Pattern {
-        input: Vec<Sect>,
-        input_idx: usize,
-        search: IncSearch<'r, Sect, Vec<Rc<Module>>>,
-        save_stack: Vec<(Position, usize)>,
-    },
-}
-
-impl<'r, 'a> Iterator for SearchIter<'r, 'a> {
+impl<'r> Iterator for SearchIter<'r> {
     type Item = Rc<Module>;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -136,142 +121,104 @@ impl<'r, 'a> Iterator for SearchIter<'r, 'a> {
         }
 
         loop {
-            match self.stage {
-                SearchStage::Prefix {
-                    ref mut input,
-                    ref mut search,
-                } => {
-                    let Some((first, rest)) = input.split_first() else {
-                        self.stage = SearchStage::Pattern {
-                            input: split_url(self.input),
-                            input_idx: 0,
-                            search: self.resolver.pattern_trie.inc_search(),
-                            save_stack: Vec::new(),
-                        };
-                        continue;
-                    };
-                    *input = &rest;
+            // Try to get current part or backtrack
+            let part = loop {
+                if let Some(part) = self.input.get(self.input_idx) {
+                    break part;
+                }
 
-                    let Some(answer) = search.query(first) else {
-                        continue;
-                    };
+                // No more input, try to backtrack
+                if let Some(save_state) = self.save_stack.pop() {
+                    // Restore saved state
+                    self.search = IncSearch::resume(&self.trie, save_state.0);
+                    self.input_idx = save_state.1;
 
-                    if !answer.is_prefix() {
-                        *input = &[];
-                    }
-
-                    if let Some(cur) = search.value() {
+                    // Check if the resumed state has values to return
+                    if let Some(cur) = self.search.value() {
                         self.items = cur;
                         if let Some((first, rest)) = self.items.split_first() {
                             self.items = rest;
                             return Some(first.clone());
                         }
                     }
+
+                    // otherwise continue consuming input from the resumed state
+                    continue;
+                };
+
+                return None; // No more save states, we're done
+            };
+
+            // Try different matching strategies based on the part type
+            let answer = match part {
+                Sect::Protocol(_) => self.search.query(part),
+                Sect::Domain(_) => {
+                    {
+                        let mut search = self.search.clone();
+                        if search.query(&Sect::WildcardDomain).is_some() {
+                            let pos = Position::from(search);
+                            self.save_stack.push((pos, self.input_idx + 1));
+                        }
+                    };
+                    self.search.query(part)
                 }
-                SearchStage::Pattern {
-                    ref mut input,
-                    ref mut input_idx,
-                    ref mut search,
-                    ref mut save_stack,
-                } => {
-                    // Try to get current part or backtrack
-                    let part = loop {
-                        if let Some(part) = input.get(*input_idx) {
-                            break part;
+                Sect::Path(_) => {
+                    {
+                        let mut search = self.search.clone();
+                        if search.query(&Sect::WildcardPath).is_some() {
+                            // We matched a wildcard path element.
+                            // Save the position that represents a consumed input.
+                            let pos = Position::from(search);
+                            self.save_stack.push((pos, self.input_idx + 1));
                         }
-
-                        // No more input, try to backtrack
-                        if let Some(save_state) = save_stack.pop() {
-                            // Restore saved state
-                            *search = IncSearch::resume(&self.resolver.pattern_trie, save_state.0);
-                            *input_idx = save_state.1;
-
-                            // Check if the resumed state has values to return
-                            if let Some(cur) = search.value() {
-                                self.items = cur;
-                                if let Some((first, rest)) = self.items.split_first() {
-                                    self.items = rest;
-                                    return Some(first.clone());
-                                }
-                            }
-
-                            // otherwise continue consuming input from the resumed state
-                            continue;
+                    }
+                    {
+                        // TODO: multiple
+                        let mut search = self.search.clone();
+                        if self
+                            .input
+                            .get(self.input_idx - 1)
+                            .is_some_and(|prev| matches!(prev, Sect::Domain(_)))
+                            && search.query(&Sect::WildcardDomain).is_some()
+                        {
+                            // The previous input was a domain and we
+                            // matched a wildcard domain element.
+                            // Save the position that represents an *unconsumed* path input
+                            let pos = Position::from(search);
+                            self.save_stack.push((pos, self.input_idx));
+                        }
+                    }
+                    self.search.query(part)
+                }
+                Sect::QueryParamName(_) => self.search.query(part),
+                Sect::QueryParamValue(_) => {
+                    {
+                        let mut search = self.search.clone();
+                        if search.query(&&Sect::WildcardQueryParamValue).is_some() {
+                            let pos = Position::from(search);
+                            self.save_stack.push((pos, self.input_idx + 1));
                         };
-
-                        return None; // No more save states, we're done
                     };
+                    self.search.query(part)
+                }
+                _ => unreachable!(),
+            };
 
-                    // Try different matching strategies based on the part type
-                    let answer = match part {
-                        Sect::Protocol(_) => search.query(part),
-                        Sect::Domain(_) => {
-                            {
-                                let mut search = search.clone();
-                                if search.query(&Sect::WildcardDomain).is_some() {
-                                    let pos = Position::from(search);
-                                    save_stack.push((pos, *input_idx + 1));
-                                }
-                            };
-                            search.query(part)
-                        }
-                        Sect::Path(_) => {
-                            {
-                                let mut search = search.clone();
-                                if search.query(&Sect::WildcardPath).is_some() {
-                                    // We matched a wildcard path element.
-                                    // Save the position that represents a consumed input.
-                                    let pos = Position::from(search);
-                                    save_stack.push((pos, *input_idx + 1));
-                                }
-                            }
-                            {
-                                // TODO: multiple
-                                let mut search = search.clone();
-                                if input
-                                    .get(*input_idx - 1)
-                                    .is_some_and(|prev| matches!(prev, Sect::Domain(_)))
-                                    && search.query(&Sect::WildcardDomain).is_some()
-                                {
-                                    // The previous input was a domain and we
-                                    // matched a wildcard domain element.
-                                    // Save the position that represents an *unconsumed* path input
-                                    let pos = Position::from(search);
-                                    save_stack.push((pos, *input_idx));
-                                }
-                            }
-                            search.query(part)
-                        }
-                        Sect::Query(q) => {
-                            if let Some((name, _)) = q.split_once('=') {
-                                let mut search = search.clone();
-                                if search.query(&Sect::WildcardQuery(name.into())).is_some() {
-                                    let pos = Position::from(search);
-                                    save_stack.push((pos, *input_idx + 1));
-                                };
-                            };
-                            search.query(part)
-                        }
-                        _ => unreachable!(),
-                    };
+            self.input_idx += 1;
 
-                    *input_idx += 1;
+            if let Some(answer) = answer {
+                if !answer.is_prefix() {
+                    // Current node is not a prefix, i.e. complete match found.
+                    // Consume remaining input.
+                    self.input_idx = self.input.len();
+                }
 
-                    if let Some(answer) = answer {
-                        if !answer.is_prefix() {
-                            // Current node is not a prefix, i.e. complete match found.
-                            // Consume remaining input.
-                            *input_idx = input.len();
-                        }
-
-                        // Check if current node has values (could use `answer.is_match()`).
-                        if let Some(cur) = search.value() {
-                            self.items = cur;
-                            if let Some((first, rest)) = self.items.split_first() {
-                                self.items = rest;
-                                return Some(first.clone());
-                            }
-                        }
+                // Check if current node has values (could use `answer.is_match()`).
+                if let Some(cur) = self.search.value() {
+                    self.items = cur;
+                    if let Some((first, rest)) = self.items.split_first() {
+                        self.items = rest;
+                        return Some(first.clone());
                     }
                 }
             }
@@ -286,8 +233,20 @@ enum Sect {
     WildcardDomain,
     Path(String),
     WildcardPath,
-    Query(String),
-    WildcardQuery(String),
+    QueryParamName(String),
+    QueryParamValue(String),
+    WildcardQueryParamValue,
+}
+
+impl Sect {
+    pub fn as_pattern(self) -> Self {
+        match self {
+            Sect::Domain(p) if p == "*" => Sect::WildcardDomain,
+            Sect::Path(p) if p.starts_with(':') => Sect::WildcardPath,
+            Sect::QueryParamValue(p) if p.starts_with(':') => Sect::WildcardQueryParamValue,
+            _ => self,
+        }
+    }
 }
 
 fn split_url(url: &str) -> Vec<Sect> {
@@ -302,11 +261,7 @@ fn split_url(url: &str) -> Vec<Sect> {
     let Some((host, rest)) = rest.split_once('/') else {
         let path_parts = rest.split('/');
         for part in path_parts {
-            if part.starts_with(':') {
-                res.push(Sect::WildcardPath)
-            } else {
-                res.push(Sect::Path(part.into()));
-            }
+            res.push(Sect::Path(part.into()));
         }
         return res;
     };
@@ -318,44 +273,27 @@ fn split_url(url: &str) -> Vec<Sect> {
     }
 
     for part in host_parts {
-        if part == "*" {
-            res.push(Sect::WildcardDomain)
-        } else {
-            res.push(Sect::Domain(part.into()));
-        }
+        res.push(Sect::Domain(part.into()));
     }
 
     let Some((path, query)) = rest.split_once('?') else {
         let path_parts = rest.split('/');
         for part in path_parts {
-            if part.starts_with(':') {
-                res.push(Sect::WildcardPath)
-            } else {
-                res.push(Sect::Path(part.into()));
-            }
+            res.push(Sect::Path(part.into()));
         }
         return res;
     };
 
     let path_parts = path.split('/');
     for part in path_parts {
-        if part.starts_with(':') {
-            res.push(Sect::WildcardPath)
-        } else {
-            res.push(Sect::Path(part.into()));
-        }
+        res.push(Sect::Path(part.into()));
     }
 
     let query_parts = query.split('&');
-    let mut query_parts: Vec<(&str, &str)> =
-        query_parts.filter_map(|q| q.split_once('=')).collect();
-    query_parts.sort_by_key(|(a, _b)| *a);
-    for (k, v) in query_parts {
-        if v.starts_with(":") {
-            res.push(Sect::WildcardQuery(k.into()))
-        } else {
-            let param = format!("{}={}", k, v);
-            res.push(Sect::Query(param));
+    for (k, v) in query_parts.filter_map(|q| q.split_once('=')) {
+        res.push(Sect::QueryParamName(k.into()));
+        if !v.is_empty() {
+            res.push(Sect::QueryParamValue(v.into()));
         }
     }
 
