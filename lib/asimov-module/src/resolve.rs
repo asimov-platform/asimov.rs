@@ -1,12 +1,13 @@
 // This is free and unencumbered software released into the public domain.
 
 use alloc::{
+    boxed::Box,
     collections::btree_map::BTreeMap,
-    format,
     rc::Rc,
     string::{String, ToString},
     vec::Vec,
 };
+use core::error::Error;
 use trie_rs::{
     inc_search::{IncSearch, Position},
     map::{Trie, TrieBuilder},
@@ -18,11 +19,11 @@ pub struct Resolver {
 }
 
 impl Resolver {
-    pub fn resolve(&self, url: &str) -> Result<Vec<Rc<Module>>, ()> {
+    pub fn resolve(&self, url: &str) -> Result<Vec<Rc<Module>>, Box<dyn Error>> {
         Ok(self.find(url)?.collect())
     }
 
-    pub fn find<'r, 'u>(&'r self, url: &'u str) -> Result<impl Iterator<Item = Rc<Module>>, ()> {
+    pub fn find(&self, url: &str) -> Result<impl Iterator<Item = Rc<Module>>, Box<dyn Error>> {
         Ok(SearchIter {
             trie: &self.trie,
             input_idx: 0,
@@ -63,7 +64,7 @@ impl ResolverBuilder {
             trie.push([k], v);
         }
         for (k, v) in self.pattern_modules {
-            let k = split_url(&k).into_iter().map(Sect::as_pattern);
+            let k = split_url(&k).into_iter().map(Sect::into_pattern);
             trie.insert(k, v);
         }
         let trie = trie.build();
@@ -71,7 +72,7 @@ impl ResolverBuilder {
         Resolver { trie }
     }
 
-    pub fn insert_protocol(&mut self, module: &str, protocol: &str) -> Result<(), ()> {
+    pub fn insert_protocol(&mut self, module: &str, protocol: &str) -> Result<(), Box<dyn Error>> {
         let module = self.add_module(module);
         let mods = self
             .protocol_modules
@@ -80,13 +81,13 @@ impl ResolverBuilder {
         mods.push(module);
         Ok(())
     }
-    pub fn insert_prefix(&mut self, module: &str, prefix: &str) -> Result<(), ()> {
+    pub fn insert_prefix(&mut self, module: &str, prefix: &str) -> Result<(), Box<dyn Error>> {
         let module = self.add_module(module);
         let mods = self.prefix_modules.entry(prefix.to_string()).or_default();
         mods.push(module.clone());
         Ok(())
     }
-    pub fn insert_pattern(&mut self, module: &str, pattern: &str) -> Result<(), ()> {
+    pub fn insert_pattern(&mut self, module: &str, pattern: &str) -> Result<(), Box<dyn Error>> {
         let module = self.add_module(module);
         let mods = self.pattern_modules.entry(pattern.to_string()).or_default();
         mods.push(module.clone());
@@ -130,7 +131,7 @@ impl<'r> Iterator for SearchIter<'r> {
                 // No more input, try to backtrack
                 if let Some(save_state) = self.save_stack.pop() {
                     // Restore saved state
-                    self.search = IncSearch::resume(&self.trie, save_state.0);
+                    self.search = IncSearch::resume(self.trie, save_state.0);
                     self.input_idx = save_state.1;
 
                     // Check if the resumed state has values to return
@@ -153,22 +154,28 @@ impl<'r> Iterator for SearchIter<'r> {
             let answer = match part {
                 Sect::Protocol(_) => self.search.query(part),
                 Sect::Domain(_) => {
+                    let answer = self.search.query(part);
+
+                    // *after* matching the current domain section try to match
+                    // a wildcard domain. If it matches, consume inputs as
+                    // long as there are domain sections.
                     let mut search = self.search.clone();
-                    for n in 1..63 {
-                        if !self
+                    if search.query(&Sect::WildcardDomain).is_some() {
+                        let mut n = 1;
+                        while self
                             .input
                             .get(self.input_idx + n)
                             .is_some_and(|i| matches!(i, Sect::Domain(_)))
                         {
-                            break;
+                            n += 1;
                         }
-                        if !search.query(&Sect::WildcardDomain).is_none() {
-                            break;
-                        }
-                        let pos = Position::from(search.clone());
+
+                        // save a state with (matched wildcard, all subdomains consumed)
+                        let pos = Position::from(search);
                         self.save_stack.push((pos, self.input_idx + n));
                     }
-                    self.search.query(part)
+
+                    answer
                 }
                 Sect::Path(_) => {
                     {
@@ -180,29 +187,13 @@ impl<'r> Iterator for SearchIter<'r> {
                             self.save_stack.push((pos, self.input_idx + 1));
                         }
                     }
-                    {
-                        // TODO: multiple
-                        let mut search = self.search.clone();
-                        if self
-                            .input
-                            .get(self.input_idx - 1)
-                            .is_some_and(|prev| matches!(prev, Sect::Domain(_)))
-                            && search.query(&Sect::WildcardDomain).is_some()
-                        {
-                            // The previous input was a domain and we
-                            // matched a wildcard domain element.
-                            // Save the position that represents an *unconsumed* path input
-                            let pos = Position::from(search);
-                            self.save_stack.push((pos, self.input_idx));
-                        }
-                    }
                     self.search.query(part)
                 }
                 Sect::QueryParamName(_) => self.search.query(part),
                 Sect::QueryParamValue(_) => {
                     {
                         let mut search = self.search.clone();
-                        if search.query(&&Sect::WildcardQueryParamValue).is_some() {
+                        if search.query(&Sect::WildcardQueryParamValue).is_some() {
                             let pos = Position::from(search);
                             self.save_stack.push((pos, self.input_idx + 1));
                         };
@@ -214,20 +205,18 @@ impl<'r> Iterator for SearchIter<'r> {
 
             self.input_idx += 1;
 
-            if let Some(answer) = answer {
-                if !answer.is_prefix() {
-                    // Current node is not a prefix, i.e. complete match found.
-                    // Consume remaining input.
-                    self.input_idx = self.input.len();
-                }
+            if !answer.is_some_and(|a| a.is_prefix()) {
+                // Current node is not a prefix, i.e. complete match found.
+                // Consume remaining input.
+                self.input_idx = self.input.len();
+            }
 
-                // Check if current node has values (could use `answer.is_match()`).
-                if let Some(cur) = self.search.value() {
-                    self.items = cur;
-                    if let Some((first, rest)) = self.items.split_first() {
-                        self.items = rest;
-                        return Some(first.clone());
-                    }
+            // Check if current node has values (could use `answer.is_match()`).
+            if let Some(cur) = self.search.value() {
+                self.items = cur;
+                if let Some((first, rest)) = self.items.split_first() {
+                    self.items = rest;
+                    return Some(first.clone());
                 }
             }
         }
@@ -251,7 +240,7 @@ impl Sect {
     /// - If a domain section is "*", make it a wildcard domain pattern
     /// - If a path section begins with ":" ("/:foo/:bar"), make it a wildcard path pattern
     /// - If the value of a query parameter begins with ":" ("q=:query"), make it a wildcard query param pattern
-    pub fn as_pattern(self) -> Self {
+    pub fn into_pattern(self) -> Self {
         match self {
             Sect::Domain(p) if p == "*" => Sect::WildcardDomain,
             Sect::Path(p) if p.starts_with(':') => Sect::WildcardPath,
@@ -280,9 +269,10 @@ fn split_url(url: &str) -> Vec<Sect> {
     };
 
     let mut host_parts = host.split('.').rev().collect::<Vec<&str>>();
-    if proto == "http" || proto == "https" {
+    if (proto == "http" || proto == "https") && host_parts.last().is_some_and(|last| *last == "www")
+    {
         // ignore a "www." at the beginning of the domain. The domain has been reversed so we're popping the last element
-        let _www = host_parts.pop_if(|last| *last == "www");
+        let _www = host_parts.pop();
     }
 
     for part in host_parts {
@@ -326,6 +316,10 @@ mod test {
 
         builder.insert_protocol("near", "near").unwrap();
         builder
+            .insert_pattern("near-account", "near://account/:id")
+            .unwrap();
+        builder.insert_pattern("near-tx", "near://tx/:id").unwrap();
+        builder
             .insert_prefix("google", "https://google.com/search?q=")
             .unwrap();
         builder
@@ -344,6 +338,9 @@ mod test {
 
         let tests = vec![
             ("near", "near"),
+            ("near://tx/1234", "near-tx"),
+            ("near://account/1234", "near-account"),
+            ("near://other/1234", "near"),
             ("https://google.com/search?q=foobar", "google"),
             ("https://www.linkedin.com/in/foobar/test", "linkedin"),
             ("https://youtube.com/watch?v=foobar", "youtube"),
