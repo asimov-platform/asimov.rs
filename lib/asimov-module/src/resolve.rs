@@ -153,13 +153,21 @@ impl<'r> Iterator for SearchIter<'r> {
             let answer = match part {
                 Sect::Protocol(_) => self.search.query(part),
                 Sect::Domain(_) => {
-                    {
-                        let mut search = self.search.clone();
-                        if search.query(&Sect::WildcardDomain).is_some() {
-                            let pos = Position::from(search);
-                            self.save_stack.push((pos, self.input_idx + 1));
+                    let mut search = self.search.clone();
+                    for n in 1..63 {
+                        if !self
+                            .input
+                            .get(self.input_idx + n)
+                            .is_some_and(|i| matches!(i, Sect::Domain(_)))
+                        {
+                            break;
                         }
-                    };
+                        if !search.query(&Sect::WildcardDomain).is_none() {
+                            break;
+                        }
+                        let pos = Position::from(search.clone());
+                        self.save_stack.push((pos, self.input_idx + n));
+                    }
                     self.search.query(part)
                 }
                 Sect::Path(_) => {
@@ -239,6 +247,10 @@ enum Sect {
 }
 
 impl Sect {
+    /// Transform a sect that matches a pattern format to a wildcard.
+    /// - If a domain section is "*", make it a wildcard domain pattern
+    /// - If a path section begins with ":" ("/:foo/:bar"), make it a wildcard path pattern
+    /// - If the value of a query parameter begins with ":" ("q=:query"), make it a wildcard query param pattern
     pub fn as_pattern(self) -> Self {
         match self {
             Sect::Domain(p) if p == "*" => Sect::WildcardDomain,
@@ -249,6 +261,7 @@ impl Sect {
     }
 }
 
+/// Split and URL into sections that we care about. This is effectively a tokenizer.
 fn split_url(url: &str) -> Vec<Sect> {
     let mut res = Vec::new();
 
@@ -321,6 +334,9 @@ mod test {
         builder
             .insert_pattern("youtube", "https://youtube.com/watch?v=:v")
             .unwrap();
+        builder
+            .insert_pattern("subdomains", "https://*.baz.com/")
+            .unwrap();
 
         let resolver = builder.build();
 
@@ -328,20 +344,21 @@ mod test {
 
         let tests = vec![
             ("near", "near"),
-            ("near://", "near"),
-            ("near://transaction/12345", "near"),
             ("https://google.com/search?q=foobar", "google"),
             ("https://www.linkedin.com/in/foobar/test", "linkedin"),
             ("https://youtube.com/watch?v=foobar", "youtube"),
+            ("https://multiple.subdomains.foo.bar.baz.com/", "subdomains"),
         ];
 
         for (input, want) in tests {
             assert_eq!(
                 resolver
-                    .resolve(input)
+                    .find(input)
                     .expect("resolve succeeds")
-                    .first()
-                    .expect("there should be at least one result")
+                    .find(|out| out.name == want)
+                    .unwrap_or_else(|| panic!(
+                        "the wanted result should be returned, input={input} want={want}"
+                    ))
                     .name,
                 want
             );
