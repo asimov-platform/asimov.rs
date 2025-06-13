@@ -3,7 +3,6 @@
 #![no_std]
 #![forbid(unsafe_code)]
 
-#[macro_use]
 extern crate alloc;
 
 pub use dogma::prelude;

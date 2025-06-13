@@ -2,6 +2,7 @@
 
 use alloc::{
     collections::btree_map::BTreeMap,
+    format,
     rc::Rc,
     string::{String, ToString},
     vec::Vec,
@@ -366,7 +367,7 @@ mod test {
     use super::*;
 
     extern crate std;
-    use std::eprintln;
+    use std::{eprintln, vec};
 
     #[test]
     fn matching() {
