@@ -261,7 +261,7 @@ fn split_url(url: &str) -> Vec<Sect> {
     res.push(Sect::Protocol(proto.into()));
 
     let Some((host, rest)) = rest.split_once('/') else {
-        let path_parts = rest.split('/');
+        let path_parts = rest.split('/').filter(|p| !p.is_empty());
         for part in path_parts {
             res.push(Sect::Path(part.into()));
         }
@@ -280,14 +280,14 @@ fn split_url(url: &str) -> Vec<Sect> {
     }
 
     let Some((path, query)) = rest.split_once('?') else {
-        let path_parts = rest.split('/');
+        let path_parts = rest.split('/').filter(|p| !p.is_empty());
         for part in path_parts {
             res.push(Sect::Path(part.into()));
         }
         return res;
     };
 
-    let path_parts = path.split('/');
+    let path_parts = path.split('/').filter(|p| !p.is_empty());
     for part in path_parts {
         res.push(Sect::Path(part.into()));
     }
@@ -322,6 +322,7 @@ mod test {
         builder
             .insert_prefix("google", "https://google.com/search?q=")
             .unwrap();
+        builder.insert_prefix("x", "https://x.com/").unwrap();
         builder
             .insert_pattern("linkedin", "https://*.linkedin.com/in/:account/test")
             .unwrap();
@@ -342,6 +343,7 @@ mod test {
             ("near://account/1234", "near-account"),
             ("near://other/1234", "near"),
             ("https://google.com/search?q=foobar", "google"),
+            ("https://x.com/foobar", "x"),
             ("https://www.linkedin.com/in/foobar/test", "linkedin"),
             ("https://youtube.com/watch?v=foobar", "youtube"),
             ("https://multiple.subdomains.foo.bar.baz.com/", "subdomains"),
