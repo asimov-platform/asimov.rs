@@ -144,7 +144,7 @@ fn main() {
         }
     }
 
-    let resolver = builder.build();
+    let resolver = builder.build().unwrap();
 
     let mut stdout = std::io::stdout().lock();
     let mut lines = std::io::stdin().lines();

@@ -3,6 +3,7 @@
 use alloc::{
     boxed::Box,
     collections::btree_map::BTreeMap,
+    format,
     rc::Rc,
     string::{String, ToString},
     vec::Vec,
@@ -27,7 +28,7 @@ impl Resolver {
         Ok(SearchIter {
             trie: &self.trie,
             input_idx: 0,
-            input: split_url(url),
+            input: split_url(url)?,
             items: &[],
             save_stack: Vec::new(),
             search: self.trie.inc_search(),
@@ -53,10 +54,10 @@ impl ResolverBuilder {
         Self::default()
     }
 
-    pub fn build(self) -> Resolver {
+    pub fn build(self) -> Result<Resolver, Box<dyn Error>> {
         let mut trie = TrieBuilder::new();
         for (k, v) in self.prefix_modules {
-            let k = split_url(&k);
+            let k = split_url(&k)?;
             trie.push(k, v);
         }
         for (k, v) in self.protocol_modules {
@@ -64,12 +65,12 @@ impl ResolverBuilder {
             trie.push([k], v);
         }
         for (k, v) in self.pattern_modules {
-            let k = split_url(&k).into_iter().map(Sect::into_pattern);
+            let k = split_url(&k)?.into_iter().map(Sect::into_pattern);
             trie.insert(k, v);
         }
         let trie = trie.build();
 
-        Resolver { trie }
+        Ok(Resolver { trie })
     }
 
     pub fn insert_protocol(&mut self, module: &str, protocol: &str) -> Result<(), Box<dyn Error>> {
@@ -82,12 +83,14 @@ impl ResolverBuilder {
         Ok(())
     }
     pub fn insert_prefix(&mut self, module: &str, prefix: &str) -> Result<(), Box<dyn Error>> {
+        let _ = split_url(prefix)?;
         let module = self.add_module(module);
         let mods = self.prefix_modules.entry(prefix.to_string()).or_default();
         mods.push(module.clone());
         Ok(())
     }
     pub fn insert_pattern(&mut self, module: &str, pattern: &str) -> Result<(), Box<dyn Error>> {
+        let _ = split_url(pattern)?;
         let module = self.add_module(module);
         let mods = self.pattern_modules.entry(pattern.to_string()).or_default();
         mods.push(module.clone());
@@ -251,56 +254,57 @@ impl Sect {
 }
 
 /// Split and URL into sections that we care about. This is effectively a tokenizer.
-fn split_url(url: &str) -> Vec<Sect> {
+fn split_url(url: &str) -> Result<Vec<Sect>, Box<dyn Error>> {
     let mut res = Vec::new();
 
-    let Some((proto, rest)) = url.split_once("://") else {
+    if !url.contains(':') {
         res.push(Sect::Protocol(url.into()));
-        return res;
-    };
+        return Ok(res);
+    }
+
+    let url: url::Url = url
+        .parse()
+        .map_err(|e| format!("Unable to handle URL {url:?}: {e}"))?;
+
+    let proto = url.scheme();
     res.push(Sect::Protocol(proto.into()));
 
-    let Some((host, rest)) = rest.split_once('/') else {
-        let path_parts = rest.split('/').filter(|p| !p.is_empty());
-        for part in path_parts {
-            res.push(Sect::Path(part.into()));
+    if let Some(host) = url.host_str() {
+        let mut host_parts: Vec<&str> = host.split('.').rev().collect();
+
+        if (proto == "http" || proto == "https")
+            && host_parts.last().is_some_and(|last| *last == "www")
+        {
+            // ignore a "www." at the beginning of the domain. The domain has been reversed so we're popping the last element
+            let _www = host_parts.pop();
         }
-        return res;
-    };
 
-    let mut host_parts = host.split('.').rev().collect::<Vec<&str>>();
-    if (proto == "http" || proto == "https") && host_parts.last().is_some_and(|last| *last == "www")
-    {
-        // ignore a "www." at the beginning of the domain. The domain has been reversed so we're popping the last element
-        let _www = host_parts.pop();
-    }
-
-    for part in host_parts {
-        res.push(Sect::Domain(part.into()));
-    }
-
-    let Some((path, query)) = rest.split_once('?') else {
-        let path_parts = rest.split('/').filter(|p| !p.is_empty());
-        for part in path_parts {
-            res.push(Sect::Path(part.into()));
+        for part in host_parts {
+            res.push(Sect::Domain(part.into()));
         }
-        return res;
-    };
-
-    let path_parts = path.split('/').filter(|p| !p.is_empty());
-    for part in path_parts {
-        res.push(Sect::Path(part.into()));
     }
 
-    let query_parts = query.split('&');
-    for (k, v) in query_parts.filter_map(|q| q.split_once('=')) {
+    if url.cannot_be_a_base() {
+        res.push(Sect::Path(url.path().into()))
+    } else {
+        if let Some(path_parts) = url.path_segments() {
+            for part in path_parts {
+                if part.is_empty() {
+                    continue;
+                }
+                res.push(Sect::Path(part.into()));
+            }
+        }
+    }
+
+    for (k, v) in url.query_pairs() {
         res.push(Sect::QueryParamName(k.into()));
         if !v.is_empty() {
             res.push(Sect::QueryParamValue(v.into()));
         }
     }
 
-    res
+    Ok(res)
 }
 
 #[cfg(test)]
@@ -332,8 +336,11 @@ mod test {
         builder
             .insert_pattern("subdomains", "https://*.baz.com/")
             .unwrap();
+        builder.insert_pattern("data", "data:text/plain").unwrap();
+        builder.insert_pattern("fs", "file://").unwrap();
+        builder.insert_pattern("fs2", "file:///2").unwrap();
 
-        let resolver = builder.build();
+        let resolver = builder.build().expect("resolver should build");
 
         eprintln!("{resolver:?}");
 
@@ -347,6 +354,9 @@ mod test {
             ("https://www.linkedin.com/in/foobar/test", "linkedin"),
             ("https://youtube.com/watch?v=foobar", "youtube"),
             ("https://multiple.subdomains.foo.bar.baz.com/", "subdomains"),
+            ("data:text/plain?Hello+World", "data"),
+            ("file:///foo/bar/baz", "fs"),
+            ("file:///2/foo", "fs2"),
         ];
 
         for (input, want) in tests {
