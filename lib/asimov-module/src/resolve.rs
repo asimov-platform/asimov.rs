@@ -2,7 +2,7 @@
 
 use alloc::{
     boxed::Box,
-    collections::btree_map::BTreeMap,
+    collections::{btree_map::BTreeMap, btree_set::BTreeSet},
     format,
     rc::Rc,
     string::{String, ToString},
@@ -32,11 +32,12 @@ impl Resolver {
             items: &[],
             save_stack: Vec::new(),
             search: self.trie.inc_search(),
+            unique: BTreeSet::new(),
         })
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
 pub struct Module {
     pub name: String,
 }
@@ -113,15 +114,18 @@ struct SearchIter<'r> {
     items: &'r [Rc<Module>],
     save_stack: Vec<(Position, usize)>,
     search: IncSearch<'r, Sect, Vec<Rc<Module>>>,
+    unique: BTreeSet<Rc<Module>>,
 }
 
 impl<'r> Iterator for SearchIter<'r> {
     type Item = Rc<Module>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if let Some((first, rest)) = self.items.split_first() {
+        while let Some((first, rest)) = self.items.split_first() {
             self.items = rest;
-            return Some(first.clone());
+            if self.unique.insert(first.clone()) {
+                return Some(first.clone());
+            }
         }
 
         loop {
@@ -140,9 +144,11 @@ impl<'r> Iterator for SearchIter<'r> {
                     // Check if the resumed state has values to return
                     if let Some(cur) = self.search.value() {
                         self.items = cur;
-                        if let Some((first, rest)) = self.items.split_first() {
+                        while let Some((first, rest)) = self.items.split_first() {
                             self.items = rest;
-                            return Some(first.clone());
+                            if self.unique.insert(first.clone()) {
+                                return Some(first.clone());
+                            }
                         }
                     }
 
@@ -217,9 +223,11 @@ impl<'r> Iterator for SearchIter<'r> {
             // Check if current node has values (could use `answer.is_match()`).
             if let Some(cur) = self.search.value() {
                 self.items = cur;
-                if let Some((first, rest)) = self.items.split_first() {
+                while let Some((first, rest)) = self.items.split_first() {
                     self.items = rest;
-                    return Some(first.clone());
+                    if self.unique.insert(first.clone()) {
+                        return Some(first.clone());
+                    }
                 }
             }
         }
