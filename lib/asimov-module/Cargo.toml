@@ -39,6 +39,7 @@ clientele = { workspace = true, features = [
 dogma.workspace = true
 getenv = { workspace = true, optional = true }
 secrecy.workspace = true
+serde_yml = { version = "0.0.12", default-features = false }
 tracing = { workspace = true, optional = true }
 tracing-subscriber = { workspace = true, optional = true }
 trie-rs = { version = "0.4", default-features = false }
