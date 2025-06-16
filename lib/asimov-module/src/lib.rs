@@ -3,6 +3,8 @@
 #![no_std]
 #![forbid(unsafe_code)]
 
+extern crate alloc;
+
 pub use dogma::prelude;
 
 #[cfg(feature = "cli")]
@@ -18,3 +20,5 @@ pub use tracing;
 
 #[cfg(feature = "tracing")]
 pub use tracing_subscriber;
+
+pub mod resolve;
