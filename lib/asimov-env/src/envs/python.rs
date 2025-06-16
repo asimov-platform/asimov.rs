@@ -52,8 +52,18 @@ impl Env for PythonEnv {
         // Create the directory if it doesn't exist:
         std::fs::create_dir_all(path)?;
 
+        let mut python = if self
+            .venv
+            .as_ref()
+            .is_some_and(|path| path.join("bin").join("python3").exists())
+        {
+            self.python()
+        } else {
+            Command::new(python().unwrap().as_ref())
+        };
+
         // Create the venv if it doesn't exist:
-        self.python()
+        python
             .args(["-m", "venv", path.to_str().unwrap()])
             .status()?;
 
