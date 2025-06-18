@@ -16,21 +16,21 @@
 ### Installation via Cargo
 
 ```bash
-cargo add asimov-sdk
+cargo add asimov-env
 ```
 
 ### Installation in `Cargo.toml` (with all features enabled)
 
 ```toml
 [dependencies]
-asimov = { package = "asimov-sdk", "version" = "25.0.0-dev.9" }
+asimov = { package = "asimov-env", "version" = "25.0.0-dev.10" }
 ```
 
 ### Installation in `Cargo.toml` (with only specific features enabled)
 
 ```toml
 [dependencies]
-asimov = { package = "asimov-sdk", "version" = "25.0.0-dev.9", default-features = false, features = ["tracing"] }
+asimov = { package = "asimov-env", "version" = "25.0.0-dev.10", default-features = false, features = ["tracing"] }
 ```
 
 ## 👉 Examples

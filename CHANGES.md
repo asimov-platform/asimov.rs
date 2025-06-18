@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 25.0.0-dev.10 - 2025-06-18
+### Changed
+- Implement a module resolver (#8)
+### Added
+- Implement an MCP server (#6)
+### Fixed
+- Fix `PythonEnv::initialize` (#9)
+
 ## 25.0.0-dev.9 - 2025-05-30
 
 ## 25.0.0-dev.8 - 2025-05-23
