@@ -1,0 +1,18 @@
+# See: https://docs.github.com/en/actions/sharing-automations/reusing-workflows
+# See: https://github.com/asimov-platform/.github/blob/master/.github/workflows/tweet-release.yaml
+---
+name: Tweet release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  tweet:
+    uses: asimov-platform/.github/.github/workflows/tweet.yaml@master
+    with:
+      message: |
+        📦 ASIMOV Software Development Kit (SDK) for Rust ${{ github.event.release.tag_name }} has been released:
+        ${{ github.event.release.html_url }}
+    secrets: inherit
