@@ -12,7 +12,7 @@ repository.workspace = true
 license.workspace = true
 keywords = ["asimov", "ai", "sdk", "ffi"]
 categories = ["external-ffi-bindings"]
-publish.workspace = true
+publish = false
 
 [features]
 default = []

@@ -12,7 +12,7 @@ repository.workspace = true
 license.workspace = true
 keywords.workspace = true
 categories = ["api-bindings", "data-structures", "text-processing"]
-publish.workspace = true
+publish = false
 
 [features]
 default = ["all", "std"]
