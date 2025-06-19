@@ -2,8 +2,10 @@
 
 [![License](https://img.shields.io/badge/license-Public%20Domain-blue.svg)](https://unlicense.org)
 [![Compatibility](https://img.shields.io/badge/rust-1.85%2B-blue)](https://blog.rust-lang.org/2025/02/20/Rust-1.85.0/)
-[![Package](https://img.shields.io/crates/v/asimov-sdk)](https://crates.io/crates/asimov-sdk)
-[![Documentation](https://docs.rs/asimov-sdk/badge.svg)](https://docs.rs/asimov-sdk/)
+[![Package](https://img.shields.io/crates/v/asimov-module)](https://crates.io/crates/asimov-module)
+[![Documentation](https://docs.rs/asimov-module/badge.svg)](https://docs.rs/asimov-module/)
+
+[ASIMOV] is a polyglot development platform for trustworthy, neurosymbolic AI.
 
 🚧 _We are building in public. This is presently under heavy construction._
 
@@ -16,21 +18,21 @@
 ### Installation via Cargo
 
 ```bash
-cargo add asimov-env
+cargo add asimov-module
 ```
 
 ### Installation in `Cargo.toml` (with all features enabled)
 
 ```toml
 [dependencies]
-asimov = { package = "asimov-env", "version" = "25.0.0-dev.10" }
+asimov = { package = "asimov-module", "version" = "25.0.0-dev.10" }
 ```
 
 ### Installation in `Cargo.toml` (with only specific features enabled)
 
 ```toml
 [dependencies]
-asimov = { package = "asimov-env", "version" = "25.0.0-dev.10", default-features = false, features = ["tracing"] }
+asimov = { package = "asimov-module", "version" = "25.0.0-dev.10", default-features = false, features = ["tracing"] }
 ```
 
 ## 👉 Examples
@@ -43,7 +45,7 @@ use asimov::*;
 
 ## 📚 Reference
 
-https://docs.rs/asimov-sdk/
+[docs.rs/asimov-module/](https://docs.rs/asimov-module/)
 
 ## 👨‍💻 Development
 
@@ -58,3 +60,5 @@ git clone https://github.com/asimov-platform/asimov.rs.git
 [![Share on Hacker News](https://img.shields.io/badge/share%20on-hn-orange?logo=ycombinator)](https://news.ycombinator.com/submitlink?u=https://github.com/asimov-platform/asimov.rs&t=ASIMOV%20Software%20Development%20Kit%20%28SDK%29%20for%20Rust)
 [![Share on Facebook](https://img.shields.io/badge/share%20on-fb-1976D2?logo=facebook)](https://www.facebook.com/sharer/sharer.php?u=https://github.com/asimov-platform/asimov.rs)
 [![Share on LinkedIn](https://img.shields.io/badge/share%20on-linkedin-3949AB?logo=linkedin)](https://www.linkedin.com/sharing/share-offsite/?url=https://github.com/asimov-platform/asimov.rs)
+
+[ASIMOV]: https://asimov.sh
