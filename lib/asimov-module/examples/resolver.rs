@@ -2,7 +2,7 @@
 
 use std::io::Write;
 
-use asimov_module::{models::Manifest, resolve::ResolverBuilder};
+use asimov_module::{models::Manifest, resolve::Resolver};
 
 const YAMLS: &str = r#"
 name: near
@@ -113,24 +113,11 @@ handles:
 "#;
 
 fn main() {
-    let mut builder = ResolverBuilder::new();
-
-    for module in YAMLS.split("---") {
-        let module: Manifest = serde_yml::from_str(module).unwrap();
-        for protocol in module.handles.url_protocols {
-            builder.insert_protocol(&module.name, &protocol).unwrap();
-        }
-
-        for prefix in module.handles.url_prefixes {
-            builder.insert_prefix(&module.name, &prefix).unwrap()
-        }
-
-        for pattern in module.handles.url_patterns {
-            builder.insert_pattern(&module.name, &pattern).unwrap()
-        }
-    }
-
-    let resolver = builder.build().unwrap();
+    let manifests = YAMLS
+        .split("---")
+        .map(serde_yml::from_str::<'_, Manifest>)
+        .map(Result::unwrap);
+    let resolver = Resolver::try_from_iter(manifests).unwrap();
 
     let mut stdout = std::io::stdout().lock();
     let mut lines = std::io::stdin().lines();

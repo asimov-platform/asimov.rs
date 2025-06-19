@@ -1,5 +1,6 @@
 // This is free and unencumbered software released into the public domain.
 
+use crate::models::Manifest;
 use alloc::{
     boxed::Box,
     collections::{btree_map::BTreeMap, btree_set::BTreeSet},
@@ -8,7 +9,7 @@ use alloc::{
     string::{String, ToString},
     vec::Vec,
 };
-use core::error::Error;
+use core::{borrow::Borrow, error::Error};
 use trie_rs::{
     inc_search::{IncSearch, Position},
     map::{Trie, TrieBuilder},
@@ -34,6 +35,22 @@ impl Resolver {
             search: self.trie.inc_search(),
             unique: BTreeSet::new(),
         })
+    }
+
+    pub fn try_from_iter<I, T>(iter: I) -> Result<Self, Box<dyn Error>>
+    where
+        I: Iterator<Item = T>,
+        T: Borrow<Manifest>,
+    {
+        ResolverBuilder::try_from_iter(iter)?.build()
+    }
+}
+
+impl TryFrom<&[Manifest]> for Resolver {
+    type Error = Box<dyn Error>;
+
+    fn try_from(value: &[Manifest]) -> Result<Self, Self::Error> {
+        ResolverBuilder::try_from(value)?.build()
     }
 }
 
@@ -98,12 +115,44 @@ impl ResolverBuilder {
         Ok(())
     }
 
+    pub fn insert_manifest(&mut self, manifest: &Manifest) -> Result<(), Box<dyn Error>> {
+        for protocol in &manifest.handles.url_protocols {
+            self.insert_protocol(&manifest.name, protocol)?;
+        }
+        for prefix in &manifest.handles.url_prefixes {
+            self.insert_prefix(&manifest.name, prefix)?;
+        }
+        for pattern in &manifest.handles.url_patterns {
+            self.insert_pattern(&manifest.name, pattern)?;
+        }
+        Ok(())
+    }
+
+    pub fn try_from_iter<I, T>(mut iter: I) -> Result<Self, Box<dyn Error>>
+    where
+        I: Iterator<Item = T>,
+        T: Borrow<Manifest>,
+    {
+        iter.try_fold(ResolverBuilder::new(), |mut b, m| {
+            b.insert_manifest(m.borrow())?;
+            Ok(b)
+        })
+    }
+
     fn add_module(&mut self, name: &str) -> Rc<Module> {
         let name = name.to_string();
         self.modules
             .entry(name.clone())
             .or_insert_with(|| Rc::new(Module { name }))
             .clone()
+    }
+}
+
+impl TryFrom<&[Manifest]> for ResolverBuilder {
+    type Error = Box<dyn Error>;
+
+    fn try_from(value: &[Manifest]) -> Result<Self, Self::Error> {
+        Self::try_from_iter(value.iter())
     }
 }
 
