@@ -15,7 +15,7 @@ categories = ["api-bindings", "development-tools"]
 publish.workspace = true
 
 [features]
-default = ["all", "cli", "std"]
+default = ["all", "cli", "serde", "std"]
 all = ["tracing"]
 cli = ["std", "dep:clientele"]
 std = [
@@ -23,6 +23,7 @@ std = [
 	"clientele?/std",
 	"dogma/std",
 	"getenv?/std",
+	"serde?/std",
 	"tracing?/std",
 	"tracing-subscriber?/fmt",
 	"tracing-subscriber?/std",
@@ -40,8 +41,11 @@ clientele = { workspace = true, features = [
 dogma.workspace = true
 getenv = { workspace = true, optional = true }
 secrecy.workspace = true
-serde_yml = { version = "0.0.12", default-features = false }
+serde = { version = "1.0", optional = true, default-features = false, features = ["alloc", "derive"] }
 tracing = { workspace = true, optional = true }
 tracing-subscriber = { workspace = true, optional = true }
 trie-rs = { version = "0.4", default-features = false }
 url = { version = "2.5", default-features = false }
+
+[dev-dependencies]
+serde_yml = { version = "0.0.12", default-features = false }

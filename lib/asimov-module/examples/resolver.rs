@@ -2,9 +2,9 @@
 
 use std::io::Write;
 
-use asimov_module::resolve::ResolverBuilder;
+use asimov_module::{models::ModuleManifest, resolve::Resolver};
 
-const YAMLS: &'static str = r#"
+const YAMLS: &str = r#"
 name: near
 label: NEAR Protocol
 summary: Data import from the NEAR Protocol blockchain network.
@@ -16,7 +16,7 @@ links:
   - https://npmjs.com/package/asimov-near-module
 
 provides:
-  flows:
+  programs:
     - asimov-near-fetcher
 
 handles:
@@ -35,7 +35,7 @@ links:
   - https://npmjs.com/package/asimov-serpapi-module
 
 provides:
-  flows:
+  programs:
     - asimov-serpapi-fetcher
     - asimov-serpapi-importer
 
@@ -57,7 +57,7 @@ links:
     - https://npmjs.com/package/asimov-apify-module
 
 provides:
-    flows:
+    programs:
     - asimov-apify-fetcher
     - asimov-apify-importer
 
@@ -79,7 +79,7 @@ links:
     - https://npmjs.com/package/asimov-brightdata-module
 
 provides:
-    flows:
+    programs:
     - asimov-brightdata-fetcher
     - asimov-brightdata-importer
 
@@ -113,38 +113,11 @@ handles:
 "#;
 
 fn main() {
-    let mut builder = ResolverBuilder::new();
-
-    for module in YAMLS.split("---") {
-        let module: serde_yml::Mapping = serde_yml::from_str(module).unwrap();
-        let name = &module["name"].as_str().unwrap();
-
-        if let Some(protocols) = &module["handles"]["url_protocols"].as_sequence() {
-            for protocol in protocols.iter() {
-                builder
-                    .insert_protocol(name, protocol.as_str().unwrap())
-                    .unwrap();
-            }
-        }
-
-        if let Some(prefixes) = &module["handles"]["url_prefixes"].as_sequence() {
-            for prefix in prefixes.iter() {
-                builder
-                    .insert_prefix(name, prefix.as_str().unwrap())
-                    .unwrap()
-            }
-        }
-
-        if let Some(patterns) = &module["handles"]["url_patterns"].as_sequence() {
-            for pattern in patterns.iter() {
-                builder
-                    .insert_pattern(name, pattern.as_str().unwrap())
-                    .unwrap()
-            }
-        }
-    }
-
-    let resolver = builder.build().unwrap();
+    let manifests = YAMLS
+        .split("---")
+        .map(serde_yml::from_str::<'_, ModuleManifest>)
+        .map(Result::unwrap);
+    let resolver = Resolver::try_from_iter(manifests).unwrap();
 
     let mut stdout = std::io::stdout().lock();
     let mut lines = std::io::stdin().lines();
