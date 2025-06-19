@@ -14,7 +14,7 @@ resolver = "2"
 
 [workspace.package]
 version = "25.0.0-dev.10"
-authors = ["ASIMOV Protocol <support@asimov.so>"]
+authors = ["ASIMOV Systems <support@asimov.systems>"]
 edition = "2024"
 rust-version = "1.85"
 description = "ASIMOV Software Development Kit (SDK) for Rust"
