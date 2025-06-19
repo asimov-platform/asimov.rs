@@ -21,6 +21,6 @@ pub use tracing;
 #[cfg(feature = "tracing")]
 pub use tracing_subscriber;
 
-pub mod resolve;
-
 pub mod models;
+
+pub mod resolve;
