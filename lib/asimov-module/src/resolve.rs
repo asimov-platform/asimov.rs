@@ -1,6 +1,6 @@
 // This is free and unencumbered software released into the public domain.
 
-use crate::models::Manifest;
+use crate::models::ModuleManifest;
 use alloc::{
     boxed::Box,
     collections::{btree_map::BTreeMap, btree_set::BTreeSet},
@@ -40,16 +40,16 @@ impl Resolver {
     pub fn try_from_iter<I, T>(iter: I) -> Result<Self, Box<dyn Error>>
     where
         I: Iterator<Item = T>,
-        T: Borrow<Manifest>,
+        T: Borrow<ModuleManifest>,
     {
         ResolverBuilder::try_from_iter(iter)?.build()
     }
 }
 
-impl TryFrom<&[Manifest]> for Resolver {
+impl TryFrom<&[ModuleManifest]> for Resolver {
     type Error = Box<dyn Error>;
 
-    fn try_from(value: &[Manifest]) -> Result<Self, Self::Error> {
+    fn try_from(value: &[ModuleManifest]) -> Result<Self, Self::Error> {
         ResolverBuilder::try_from(value)?.build()
     }
 }
@@ -115,7 +115,7 @@ impl ResolverBuilder {
         Ok(())
     }
 
-    pub fn insert_manifest(&mut self, manifest: &Manifest) -> Result<(), Box<dyn Error>> {
+    pub fn insert_manifest(&mut self, manifest: &ModuleManifest) -> Result<(), Box<dyn Error>> {
         for protocol in &manifest.handles.url_protocols {
             self.insert_protocol(&manifest.name, protocol)?;
         }
@@ -131,7 +131,7 @@ impl ResolverBuilder {
     pub fn try_from_iter<I, T>(mut iter: I) -> Result<Self, Box<dyn Error>>
     where
         I: Iterator<Item = T>,
-        T: Borrow<Manifest>,
+        T: Borrow<ModuleManifest>,
     {
         iter.try_fold(ResolverBuilder::new(), |mut b, m| {
             b.insert_manifest(m.borrow())?;
@@ -148,10 +148,10 @@ impl ResolverBuilder {
     }
 }
 
-impl TryFrom<&[Manifest]> for ResolverBuilder {
+impl TryFrom<&[ModuleManifest]> for ResolverBuilder {
     type Error = Box<dyn Error>;
 
-    fn try_from(value: &[Manifest]) -> Result<Self, Self::Error> {
+    fn try_from(value: &[ModuleManifest]) -> Result<Self, Self::Error> {
         Self::try_from_iter(value.iter())
     }
 }

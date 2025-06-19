@@ -2,7 +2,7 @@
 
 use std::io::Write;
 
-use asimov_module::{models::Manifest, resolve::Resolver};
+use asimov_module::{models::ModuleManifest, resolve::Resolver};
 
 const YAMLS: &str = r#"
 name: near
@@ -16,7 +16,7 @@ links:
   - https://npmjs.com/package/asimov-near-module
 
 provides:
-  flows:
+  programs:
     - asimov-near-fetcher
 
 handles:
@@ -35,7 +35,7 @@ links:
   - https://npmjs.com/package/asimov-serpapi-module
 
 provides:
-  flows:
+  programs:
     - asimov-serpapi-fetcher
     - asimov-serpapi-importer
 
@@ -57,7 +57,7 @@ links:
     - https://npmjs.com/package/asimov-apify-module
 
 provides:
-    flows:
+    programs:
     - asimov-apify-fetcher
     - asimov-apify-importer
 
@@ -79,7 +79,7 @@ links:
     - https://npmjs.com/package/asimov-brightdata-module
 
 provides:
-    flows:
+    programs:
     - asimov-brightdata-fetcher
     - asimov-brightdata-importer
 
@@ -115,7 +115,7 @@ handles:
 fn main() {
     let manifests = YAMLS
         .split("---")
-        .map(serde_yml::from_str::<'_, Manifest>)
+        .map(serde_yml::from_str::<'_, ModuleManifest>)
         .map(Result::unwrap);
     let resolver = Resolver::try_from_iter(manifests).unwrap();
 

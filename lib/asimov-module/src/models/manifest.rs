@@ -4,16 +4,16 @@ use alloc::{string::String, vec::Vec};
 
 #[derive(Clone, Debug, Default)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
-pub struct Manifest {
+pub struct ModuleManifest {
     pub name: String,
     pub label: String,
     pub summary: String,
     pub links: Vec<String>,
     #[cfg_attr(
         feature = "serde",
-        serde(default, skip_serializing_if = "Flows::is_empty")
+        serde(default, skip_serializing_if = "Provides::is_empty")
     )]
-    pub provides: Flows,
+    pub provides: Provides,
     #[cfg_attr(
         feature = "serde",
         serde(default, skip_serializing_if = "Handles::is_empty")
@@ -23,13 +23,13 @@ pub struct Manifest {
 
 #[derive(Clone, Debug, Default)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
-pub struct Flows {
-    pub flows: Vec<String>,
+pub struct Provides {
+    pub programs: Vec<String>,
 }
 
-impl Flows {
+impl Provides {
     pub fn is_empty(&self) -> bool {
-        self.flows.is_empty()
+        self.programs.is_empty()
     }
 }
 
