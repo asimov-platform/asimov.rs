@@ -8,7 +8,7 @@ extern crate alloc;
 pub use dogma::prelude;
 
 #[cfg(feature = "cli")]
-pub use clientele::{SysexitsError, SysexitsResult, args_os, dotenv, exit};
+pub use clientele::{args_os, dotenv, exit, SysexitsError, SysexitsResult};
 
 #[cfg(feature = "std")]
 pub use getenv;
@@ -22,3 +22,5 @@ pub use tracing;
 pub use tracing_subscriber;
 
 pub mod resolve;
+
+pub mod models;

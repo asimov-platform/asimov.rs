@@ -2,9 +2,9 @@
 
 use std::io::Write;
 
-use asimov_module::resolve::ResolverBuilder;
+use asimov_module::{models::Manifest, resolve::ResolverBuilder};
 
-const YAMLS: &'static str = r#"
+const YAMLS: &str = r#"
 name: near
 label: NEAR Protocol
 summary: Data import from the NEAR Protocol blockchain network.
@@ -116,31 +116,17 @@ fn main() {
     let mut builder = ResolverBuilder::new();
 
     for module in YAMLS.split("---") {
-        let module: serde_yml::Mapping = serde_yml::from_str(module).unwrap();
-        let name = &module["name"].as_str().unwrap();
-
-        if let Some(protocols) = &module["handles"]["url_protocols"].as_sequence() {
-            for protocol in protocols.iter() {
-                builder
-                    .insert_protocol(name, protocol.as_str().unwrap())
-                    .unwrap();
-            }
+        let module: Manifest = serde_yml::from_str(module).unwrap();
+        for protocol in module.handles.url_protocols {
+            builder.insert_protocol(&module.name, &protocol).unwrap();
         }
 
-        if let Some(prefixes) = &module["handles"]["url_prefixes"].as_sequence() {
-            for prefix in prefixes.iter() {
-                builder
-                    .insert_prefix(name, prefix.as_str().unwrap())
-                    .unwrap()
-            }
+        for prefix in module.handles.url_prefixes {
+            builder.insert_prefix(&module.name, &prefix).unwrap()
         }
 
-        if let Some(patterns) = &module["handles"]["url_patterns"].as_sequence() {
-            for pattern in patterns.iter() {
-                builder
-                    .insert_pattern(name, pattern.as_str().unwrap())
-                    .unwrap()
-            }
+        for pattern in module.handles.url_patterns {
+            builder.insert_pattern(&module.name, &pattern).unwrap()
         }
     }
 

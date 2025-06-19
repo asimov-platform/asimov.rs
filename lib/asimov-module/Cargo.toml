@@ -23,6 +23,7 @@ std = [
 	"clientele?/std",
 	"dogma/std",
 	"getenv?/std",
+	"serde/std",
 	"tracing?/std",
 	"tracing-subscriber?/fmt",
 	"tracing-subscriber?/std",
@@ -40,6 +41,7 @@ clientele = { workspace = true, features = [
 dogma.workspace = true
 getenv = { workspace = true, optional = true }
 secrecy.workspace = true
+serde = { version = "1.0", default-features = false, features = ["alloc", "derive"] }
 serde_yml = { version = "0.0.12", default-features = false }
 tracing = { workspace = true, optional = true }
 tracing-subscriber = { workspace = true, optional = true }
