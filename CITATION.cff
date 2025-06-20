@@ -1,0 +1,29 @@
+# See: https://github.com/citation-file-format/citation-file-format/blob/1.2.0/schema-guide.md
+---
+cff-version: 1.2.0
+title: ASIMOV Software Development Kit (SDK) for Rust
+message: >-
+  If you use this software, please cite it using the metadata from this file.
+type: software
+authors:
+  - given-names: Arto
+    family-names: Bendiken
+    affiliation: ASIMOV Systems
+    alias: artob
+    website: https://github.com/artob
+    orcid: https://orcid.org/0009-0002-0725-4874
+  - given-names: Samuel
+    family-names: Sarle
+    affiliation: ASIMOV Systems
+    alias: SamuelSarle
+    website: https://github.com/SamuelSarle
+    orcid: https://orcid.org/0009-0007-4597-2451
+repository-code: https://github.com/asimov-platform/asimov.rs
+url: https://asimov.sh
+abstract: >-
+  ASIMOV is a polyglot development platform for trustworthy, neurosymbolic AI.
+keywords:
+  - asimov
+  - sdk
+  - rust
+license: Unlicense
