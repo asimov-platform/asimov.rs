@@ -19,13 +19,11 @@ pub struct Resolver {
     roots: BTreeMap<Sect, usize>,
 }
 
-#[derive(Clone, Debug, Default)]
-struct Node {
-    paths: BTreeMap<Sect, usize>,
-    modules: BTreeSet<Rc<Module>>,
-}
-
 impl Resolver {
+    pub fn new() -> Self {
+        Resolver::default()
+    }
+
     pub fn resolve(&self, url: &str) -> Result<Vec<Rc<Module>>, Box<dyn Error>> {
         let input = split_url(url)?;
 
@@ -94,6 +92,21 @@ impl Resolver {
 
         Ok(())
     }
+    pub fn insert_manifest(&mut self, manifest: &ModuleManifest) -> Result<(), Box<dyn Error>> {
+        for protocol in &manifest.handles.url_protocols {
+            self.insert_protocol(&manifest.name, protocol)?;
+        }
+        for prefix in &manifest.handles.url_prefixes {
+            self.insert_prefix(&manifest.name, prefix)?;
+        }
+        for pattern in &manifest.handles.url_patterns {
+            self.insert_pattern(&manifest.name, pattern)?;
+        }
+        for filetype in &manifest.handles.file_extensions {
+            self.insert_filetype(&manifest.name, filetype)?;
+        }
+        Ok(())
+    }
     pub fn insert_protocol(&mut self, module: &str, protocol: &str) -> Result<(), Box<dyn Error>> {
         let module = self.add_module(module);
         let node_idx = self.get_or_create_node(&[Sect::Protocol(protocol.to_string())]);
@@ -128,21 +141,6 @@ impl Resolver {
 
         self.nodes[node_idx].modules.insert(module);
 
-        Ok(())
-    }
-    pub fn insert_manifest(&mut self, manifest: &ModuleManifest) -> Result<(), Box<dyn Error>> {
-        for protocol in &manifest.handles.url_protocols {
-            self.insert_protocol(&manifest.name, protocol)?;
-        }
-        for prefix in &manifest.handles.url_prefixes {
-            self.insert_prefix(&manifest.name, prefix)?;
-        }
-        for pattern in &manifest.handles.url_patterns {
-            self.insert_pattern(&manifest.name, pattern)?;
-        }
-        for filetype in &manifest.handles.file_extensions {
-            self.insert_filetype(&manifest.name, filetype)?;
-        }
         Ok(())
     }
 
@@ -204,6 +202,12 @@ impl TryFrom<&[ModuleManifest]> for Resolver {
 #[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
 pub struct Module {
     pub name: String,
+}
+
+#[derive(Clone, Debug, Default)]
+struct Node {
+    paths: BTreeMap<Sect, usize>,
+    modules: BTreeSet<Rc<Module>>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
