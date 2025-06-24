@@ -56,7 +56,7 @@ impl Resolver {
         // Process remaining input
         let final_states = input[1..].iter().fold(root_states, |states, sect| {
             if states.is_empty() {
-                return BTreeSet::new();
+                return states;
             }
 
             states
