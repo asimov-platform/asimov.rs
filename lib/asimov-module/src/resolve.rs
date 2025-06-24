@@ -14,7 +14,7 @@ use core::{borrow::Borrow, error::Error};
 #[derive(Clone, Debug, Default)]
 pub struct Resolver {
     modules: BTreeMap<String, Rc<Module>>,
-    filetypes: BTreeMap<String, Vec<Rc<Module>>>,
+    file_extensions: BTreeMap<String, Vec<Rc<Module>>>,
     nodes: slab::Slab<Node>,
     roots: BTreeMap<Sect, usize>,
 }
@@ -32,7 +32,7 @@ impl Resolver {
         if matches!(input.first(), Some(Sect::Protocol(proto)) if proto == "file") {
             if let Some(Sect::Path(filename)) = input.last() {
                 if let Some((_, ext)) = filename.split_once(".") {
-                    self.filetypes
+                    self.file_extensions
                         .get(ext)
                         .into_iter()
                         .flatten()
@@ -82,11 +82,15 @@ impl Resolver {
         Ok(results.into_iter().collect())
     }
 
-    pub fn insert_filetype(&mut self, module: &str, filetype: &str) -> Result<(), Box<dyn Error>> {
+    pub fn insert_file_extension(
+        &mut self,
+        module: &str,
+        file_extension: &str,
+    ) -> Result<(), Box<dyn Error>> {
         let module = self.add_module(module);
 
-        self.filetypes
-            .entry(filetype.to_string())
+        self.file_extensions
+            .entry(file_extension.to_string())
             .or_default()
             .push(module);
 
@@ -102,8 +106,8 @@ impl Resolver {
         for pattern in &manifest.handles.url_patterns {
             self.insert_pattern(&manifest.name, pattern)?;
         }
-        for filetype in &manifest.handles.file_extensions {
-            self.insert_filetype(&manifest.name, filetype)?;
+        for file_extension in &manifest.handles.file_extensions {
+            self.insert_file_extension(&manifest.name, file_extension)?;
         }
         Ok(())
     }
@@ -338,8 +342,8 @@ mod test {
         resolver.insert_prefix("data", "data:text/plain").unwrap();
         resolver.insert_prefix("fs", "file://").unwrap();
         resolver.insert_prefix("fs2", "file:///2").unwrap();
-        resolver.insert_filetype("txt-filetype", "txt").unwrap();
-        resolver.insert_filetype("tar-filetype", "tar.gz").unwrap();
+        resolver.insert_file_extension("txt-ext", "txt").unwrap();
+        resolver.insert_file_extension("tar-ext", "tar.gz").unwrap();
 
         eprintln!("{resolver:?}");
 
@@ -356,8 +360,8 @@ mod test {
             ("data:text/plain?Hello+World", "data"),
             ("file:///foo/bar/baz", "fs"),
             ("file:///2/foo", "fs2"),
-            ("file:///foobar.txt", "txt-filetype"),
-            ("file:///foobar.tar.gz", "tar-filetype"),
+            ("file:///foobar.txt", "txt-ext"),
+            ("file:///foobar.tar.gz", "tar-ext"),
         ];
 
         for (input, want) in tests {
