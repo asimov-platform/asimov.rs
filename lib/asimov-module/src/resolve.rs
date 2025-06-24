@@ -14,6 +14,7 @@ use core::{borrow::Borrow, error::Error};
 #[derive(Clone, Debug, Default)]
 pub struct Resolver {
     modules: BTreeMap<String, Rc<Module>>,
+    filetypes: BTreeMap<String, Vec<Rc<Module>>>,
     nodes: slab::Slab<Node>,
     roots: BTreeMap<Sect, usize>,
 }
@@ -27,6 +28,22 @@ struct Node {
 impl Resolver {
     pub fn resolve(&self, url: &str) -> Result<Vec<Rc<Module>>, Box<dyn Error>> {
         let input = split_url(url)?;
+
+        let mut results: BTreeSet<Rc<Module>> = BTreeSet::new();
+
+        if matches!(input.first(), Some(Sect::Protocol(proto)) if proto == "file") {
+            if let Some(Sect::Path(filename)) = input.last() {
+                if let Some((_, ext)) = filename.split_once(".") {
+                    self.filetypes
+                        .get(ext)
+                        .into_iter()
+                        .flatten()
+                        .for_each(|module| {
+                            results.insert(module.clone());
+                        });
+                }
+            }
+        }
 
         // Initialize with root states that match the first input
         let root_states: BTreeSet<usize> =
@@ -58,14 +75,25 @@ impl Resolver {
         });
 
         // Collect all modules from final states
-        let mut result: BTreeSet<Rc<Module>> = BTreeSet::new();
         for &state_idx in &final_states {
-            result.extend(self.nodes[state_idx].modules.iter().cloned());
+            for module in &self.nodes[state_idx].modules {
+                results.insert(module.clone());
+            }
         }
 
-        Ok(result.into_iter().collect())
+        Ok(results.into_iter().collect())
     }
 
+    pub fn insert_filetype(&mut self, module: &str, filetype: &str) -> Result<(), Box<dyn Error>> {
+        let module = self.add_module(module);
+
+        self.filetypes
+            .entry(filetype.to_string())
+            .or_default()
+            .push(module);
+
+        Ok(())
+    }
     pub fn insert_protocol(&mut self, module: &str, protocol: &str) -> Result<(), Box<dyn Error>> {
         let module = self.add_module(module);
         let node_idx = self.get_or_create_node(&[Sect::Protocol(protocol.to_string())]);
@@ -112,6 +140,9 @@ impl Resolver {
         for pattern in &manifest.handles.url_patterns {
             self.insert_pattern(&manifest.name, pattern)?;
         }
+        for filetype in &manifest.handles.file_extensions {
+            self.insert_filetype(&manifest.name, filetype)?;
+        }
         Ok(())
     }
 
@@ -134,21 +165,20 @@ impl Resolver {
             .or_insert_with(|| self.nodes.insert(Node::default()));
 
         path[1..].iter().fold(root_idx, |cur_idx, sect| {
-            match self.nodes[cur_idx].paths.get(sect) {
-                Some(&idx) => idx,
-                None => {
-                    if let Sect::WildcardDomain = sect {
-                        // If the sect is a wildcard domain add a link to self so that multiple subdomains can be matched.
-                        self.nodes[cur_idx].paths.insert(sect.clone(), cur_idx);
-                        cur_idx
-                    } else {
-                        // Create a new node
-                        let new_node_idx = self.nodes.insert(Node::default());
+            match (self.nodes[cur_idx].paths.get(sect), sect) {
+                (Some(&idx), _sect) => idx,
+                (None, Sect::WildcardDomain) => {
+                    // If the sect is a wildcard domain add a link to self, this will also match multiple subdomains.
+                    self.nodes[cur_idx].paths.insert(sect.clone(), cur_idx);
+                    cur_idx
+                }
+                (None, sect) => {
+                    // Create a new node
+                    let new_node_idx = self.nodes.insert(Node::default());
 
-                        // Add the transition from current node to new node
-                        self.nodes[cur_idx].paths.insert(sect.clone(), new_node_idx);
-                        new_node_idx
-                    }
+                    // Add the transition from current node to new node
+                    self.nodes[cur_idx].paths.insert(sect.clone(), new_node_idx);
+                    new_node_idx
                 }
             }
         })
@@ -306,6 +336,8 @@ mod test {
         resolver.insert_prefix("data", "data:text/plain").unwrap();
         resolver.insert_prefix("fs", "file://").unwrap();
         resolver.insert_prefix("fs2", "file:///2").unwrap();
+        resolver.insert_filetype("txt-filetype", "txt").unwrap();
+        resolver.insert_filetype("tar-filetype", "tar.gz").unwrap();
 
         eprintln!("{resolver:?}");
 
@@ -322,6 +354,8 @@ mod test {
             ("data:text/plain?Hello+World", "data"),
             ("file:///foo/bar/baz", "fs"),
             ("file:///2/foo", "fs2"),
+            ("file:///foobar.txt", "txt-filetype"),
+            ("file:///foobar.tar.gz", "tar-filetype"),
         ];
 
         for (input, want) in tests {
