@@ -43,19 +43,19 @@ impl Resolver {
             }
         }
 
-        // Initialize with start states that match the first input
-        let start_states: BTreeSet<usize> = self
-            .roots
-            .iter()
-            .filter_map(|(path, &node_idx)| path.matches_input(&input[0]).then_some(node_idx))
-            .collect();
-
         let with_freemove = |node_idx: usize| {
             // Return the node ID
             core::iter::once(node_idx)
                 // And the destination ID after following a `FreeMove` path from the node
                 .chain(self.nodes[node_idx].paths.get(&Sect::FreeMove).copied())
         };
+
+        // Initialize with start states that match the first input
+        let start_states: BTreeSet<usize> = self
+            .roots
+            .iter()
+            .filter_map(|(path, &node_idx)| path.matches_input(&input[0]).then_some(node_idx))
+            .collect();
 
         let final_states = if input.len() == 1 {
             // There is no further input, just get free moves from the start_states
