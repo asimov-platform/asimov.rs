@@ -257,7 +257,7 @@ impl Sect {
 /// Split and URL into sections that we care about. This is effectively a tokenizer.
 fn split_url(url: &str) -> Result<Vec<Sect>, Box<dyn Error>> {
     if url.is_empty() {
-        return Err("URL can not be empty".into());
+        return Err("URL cannot be empty".into());
     }
 
     let mut res = Vec::new();
