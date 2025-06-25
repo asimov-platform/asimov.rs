@@ -123,9 +123,10 @@ impl Resolver {
         Ok(())
     }
     pub fn insert_prefix(&mut self, module: &str, prefix: &str) -> Result<(), Box<dyn Error>> {
+        let mut path = split_url(prefix)?;
         // Add an `FreeMove` node at the end of the path to separate the prefix from
         // patterns at the same node
-        let path = [split_url(prefix)?.as_slice(), &[Sect::FreeMove]].concat();
+        path.push(Sect::FreeMove);
         let module = self.add_module(module);
         let node_idx = self.get_or_create_node(&path);
 
