@@ -116,7 +116,7 @@ impl Resolver {
         let module = self.add_module(module);
         let node_idx = self.get_or_create_node(path);
 
-        // Add a free move back to self from the `FreeMove` node. (represents a protocol as an prefix):
+        // Add a free move back to itself from the `FreeMove` node. (represents a protocol as a prefix):
         self.nodes[node_idx].paths.insert(Sect::FreeMove, node_idx);
         self.nodes[node_idx].modules.insert(module);
 
@@ -124,7 +124,7 @@ impl Resolver {
     }
     pub fn insert_prefix(&mut self, module: &str, prefix: &str) -> Result<(), Box<dyn Error>> {
         let mut path = split_url(prefix)?;
-        // Add an `FreeMove` node at the end of the path to separate the prefix from
+        // Add a `FreeMove` node at the end of the path to separate the prefix from
         // patterns at the same node
         path.push(Sect::FreeMove);
         let module = self.add_module(module);
