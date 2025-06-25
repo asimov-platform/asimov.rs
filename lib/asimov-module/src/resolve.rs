@@ -57,8 +57,8 @@ impl Resolver {
             .collect();
 
         let final_states = if input.len() == 1 {
-            // There is no further input, just get freemoves from the start_states
             let freemoves = start_states
+            // There is no further input, just get free moves from the start_states
                 .iter()
                 .flat_map(|&node_idx| &self.nodes[node_idx].paths)
                 .filter_map(|(path, &next_idx)| {
@@ -143,7 +143,7 @@ impl Resolver {
         let module = self.add_module(module);
         let node_idx = self.get_or_create_node(path);
 
-        // Add a free move back to self from then `FreeMove` node. (represents a protocol as an prefix):
+        // Add a free move back to self from the `FreeMove` node. (represents a protocol as an prefix):
         self.nodes[node_idx].paths.insert(Sect::FreeMove, node_idx);
         self.nodes[node_idx].modules.insert(module);
 
@@ -256,9 +256,9 @@ enum Sect {
     WildcardPath,
     /// `q` from `https://example.org/?q=example`, matches a parameter name
     QueryParamName(String),
-    /// `example` from `https://example.org/?q=example`, matches a literal parameter value at, position
+    /// `example` from `https://example.org/?q=example`, matches a literal parameter value
     QueryParamValue(String),
-    /// `:query` from `https://example.org/?q=:query`, matches any query param value at that position
+    /// `:query` from `https://example.org/?q=:query`, matches any query param value
     WildcardQueryParamValue,
     /// Matches a single section of any kind
     FreeMove,
@@ -285,6 +285,7 @@ impl Sect {
             (WildcardDomain, Domain(_)) => true,
             (WildcardPath, Path(_)) => true,
             (WildcardQueryParamValue, QueryParamValue(_)) => true,
+            // As a special case if the path section is a `FreeMove` then always accept it.
             (FreeMove, _) => true,
             _ => false,
         }
