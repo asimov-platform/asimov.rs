@@ -43,34 +43,61 @@ impl Resolver {
             }
         }
 
-        // Initialize with root states that match the first input
-        let root_states: BTreeSet<usize> =
-            BTreeSet::from_iter(self.roots.iter().filter_map(|(pattern, &idx)| {
-                if pattern.matches_input(&input[0]) {
-                    Some(idx)
+        // Initialize with start states that match the first input
+        let start_states: BTreeSet<usize> = self
+            .roots
+            .iter()
+            .filter_map(|(path, &node_idx)| {
+                if path.matches_input(&input[0]) {
+                    Some(node_idx)
                 } else {
                     None
                 }
-            }));
+            })
+            .collect();
 
-        // Process remaining input
-        let final_states = input[1..].iter().fold(root_states, |states, sect| {
-            if states.is_empty() {
-                return states;
-            }
-
-            states
+        let final_states = if input.len() == 1 {
+            // There is no further input, just get freemoves from the start_states
+            let freemoves = start_states
                 .iter()
                 .flat_map(|&node_idx| &self.nodes[node_idx].paths)
                 .filter_map(|(path, &next_idx)| {
-                    if path.matches_input(sect) {
+                    if Sect::FreeMove == *path {
                         Some(next_idx)
                     } else {
                         None
                     }
-                })
-                .collect()
-        });
+                });
+            let iter = start_states.iter().cloned().chain(freemoves);
+            BTreeSet::from_iter(iter)
+        } else {
+            // Process remaining input
+            input[1..].iter().fold(start_states, |states, sect| {
+                let states = states
+                    .iter()
+                    .flat_map(|&node_idx| &self.nodes[node_idx].paths)
+                    .filter_map(|(path, &next_idx)| {
+                        if path.matches_input(sect) {
+                            Some(next_idx)
+                        } else {
+                            None
+                        }
+                    });
+
+                let freemoves = states
+                    .clone()
+                    .flat_map(|node_idx| &self.nodes[node_idx].paths)
+                    .filter_map(|(path, &next_idx)| {
+                        if Sect::FreeMove == *path {
+                            Some(next_idx)
+                        } else {
+                            None
+                        }
+                    });
+
+                BTreeSet::from_iter(states.chain(freemoves))
+            })
+        };
 
         // Collect all modules from final states
         for &state_idx in &final_states {
@@ -112,25 +139,26 @@ impl Resolver {
         Ok(())
     }
     pub fn insert_protocol(&mut self, module: &str, protocol: &str) -> Result<(), Box<dyn Error>> {
+        let path = &[Sect::Protocol(protocol.to_string()), Sect::FreeMove];
         let module = self.add_module(module);
-        let node_idx = self.get_or_create_node(&[Sect::Protocol(protocol.to_string())]);
+        let node_idx = self.get_or_create_node(path);
 
-        // add a free move back to self (represent a protocol as an prefix):
-        self.nodes[node_idx].paths.insert(Sect::Any, node_idx);
+        // Add a free move back to self from then `FreeMove` node. (represents a protocol as an prefix):
+        self.nodes[node_idx].paths.insert(Sect::FreeMove, node_idx);
         self.nodes[node_idx].modules.insert(module);
 
         Ok(())
     }
     pub fn insert_prefix(&mut self, module: &str, prefix: &str) -> Result<(), Box<dyn Error>> {
-        let path = split_url(prefix)?;
+        // Add an `FreeMove` node at the end of the path to separate the prefix from
+        // patterns at the same node
+        let path = [split_url(prefix)?.as_slice(), &[Sect::FreeMove]].concat();
         let module = self.add_module(module);
         let node_idx = self.get_or_create_node(&path);
 
-        // add a free move back to self:
-        // TODO: there is a possibility that non-prefixes have the same end node
-        // and that this collides with them, causing the others to also be
-        // turned into prefixes
-        self.nodes[node_idx].paths.insert(Sect::Any, node_idx);
+        // Add a free move back to itself from the `FreeMove` node. Enables matching
+        // zero-or-more of anything:
+        self.nodes[node_idx].paths.insert(Sect::FreeMove, node_idx);
         self.nodes[node_idx].modules.insert(module);
 
         Ok(())
@@ -216,15 +244,24 @@ struct Node {
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 enum Sect {
+    /// `https` from `https://example.org/`, matches the protocol (a.k.a. scheme) of an URL
     Protocol(String),
+    /// `org` and `example` from `https://example.org/`, matches a single literal subdomain
     Domain(String),
+    /// `*` from `https://*.example.org/`, matches zero-or-more subdomains
     WildcardDomain,
+    /// `file` and `path` from `https://example.org/file/path`, match literal path segments
     Path(String),
+    /// `:name` from `https://example.org/file/:name`, matches any single path segment
     WildcardPath,
+    /// `q` from `https://example.org/?q=example`, matches a parameter name
     QueryParamName(String),
+    /// `example` from `https://example.org/?q=example`, matches a literal parameter value at, position
     QueryParamValue(String),
+    /// `:query` from `https://example.org/?q=:query`, matches any query param value at that position
     WildcardQueryParamValue,
-    Any,
+    /// Matches a single section of any kind
+    FreeMove,
 }
 
 impl Sect {
@@ -248,7 +285,7 @@ impl Sect {
             (WildcardDomain, Domain(_)) => true,
             (WildcardPath, Path(_)) => true,
             (WildcardQueryParamValue, QueryParamValue(_)) => true,
-            (Any, _) => true,
+            (FreeMove, _) => true,
             _ => false,
         }
     }
@@ -345,7 +382,7 @@ mod test {
         resolver.insert_file_extension("txt-ext", "txt").unwrap();
         resolver.insert_file_extension("tar-ext", "tar.gz").unwrap();
 
-        eprintln!("{resolver:?}");
+        eprintln!("{resolver:#?}");
 
         let tests = vec![
             ("near", "near"),
@@ -378,5 +415,47 @@ mod test {
                 want
             );
         }
+    }
+
+    #[test]
+    fn prefix_doesnt_turn_pattern_to_prefix() {
+        let mut resolver = Resolver::new();
+
+        resolver
+            .insert_pattern("pattern", "https://foobar.com/")
+            .unwrap();
+        eprintln!("{resolver:#?}");
+
+        let results = resolver.resolve("https://foobar.com/").unwrap();
+        eprintln!("{results:?}");
+        assert!(
+            results
+                .first()
+                .is_some_and(|module| module.name == "pattern"),
+            "the pattern should match"
+        );
+
+        let results = resolver.resolve("https://foobar.com/more").unwrap();
+        eprintln!("{results:?}");
+        assert!(results.is_empty(), "the pattern shouldn't be a prefix");
+
+        resolver
+            .insert_prefix("prefix", "https://foobar.com/")
+            .unwrap();
+        eprintln!("{resolver:#?}");
+
+        let results = resolver.resolve("https://foobar.com/").unwrap();
+        eprintln!("{results:?}");
+        assert!(results.len() == 2, "both items should match");
+
+        let results = resolver.resolve("https://foobar.com/more").unwrap();
+        eprintln!("{results:?}");
+        assert!(results.len() == 1, "only the prefix should match");
+        assert!(
+            results
+                .first()
+                .is_some_and(|module| module.name == "prefix"),
+            "only the prefix should match"
+        );
     }
 }
