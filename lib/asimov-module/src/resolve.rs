@@ -54,7 +54,7 @@ impl Resolver {
             // Return the node ID
             core::iter::once(node_idx)
                 // And the destination ID after following a `FreeMove` path from the node
-                .chain(self.nodes[node_idx].paths.get(&Sect::FreeMove).cloned())
+                .chain(self.nodes[node_idx].paths.get(&Sect::FreeMove).copied())
         };
 
         let final_states = if input.len() == 1 {
