@@ -10,111 +10,92 @@ use alloc::{
     vec::Vec,
 };
 use core::{borrow::Borrow, error::Error};
-use trie_rs::{
-    inc_search::{IncSearch, Position},
-    map::{Trie, TrieBuilder},
-};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct Resolver {
-    trie: Trie<Sect, Vec<Rc<Module>>>,
+    modules: BTreeMap<String, Rc<Module>>,
+    file_extensions: BTreeMap<String, Vec<Rc<Module>>>,
+    nodes: slab::Slab<Node>,
+    roots: BTreeMap<Sect, usize>,
 }
 
 impl Resolver {
-    pub fn resolve(&self, url: &str) -> Result<Vec<Rc<Module>>, Box<dyn Error>> {
-        Ok(self.find(url)?.collect())
-    }
-
-    pub fn find(&self, url: &str) -> Result<impl Iterator<Item = Rc<Module>>, Box<dyn Error>> {
-        Ok(SearchIter {
-            trie: &self.trie,
-            input_idx: 0,
-            input: split_url(url)?,
-            items: &[],
-            save_stack: Vec::new(),
-            search: self.trie.inc_search(),
-            unique: BTreeSet::new(),
-        })
-    }
-
-    pub fn try_from_iter<I, T>(iter: I) -> Result<Self, Box<dyn Error>>
-    where
-        I: Iterator<Item = T>,
-        T: Borrow<ModuleManifest>,
-    {
-        ResolverBuilder::try_from_iter(iter)?.build()
-    }
-}
-
-impl TryFrom<&[ModuleManifest]> for Resolver {
-    type Error = Box<dyn Error>;
-
-    fn try_from(value: &[ModuleManifest]) -> Result<Self, Self::Error> {
-        ResolverBuilder::try_from(value)?.build()
-    }
-}
-
-#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
-pub struct Module {
-    pub name: String,
-}
-
-#[derive(Clone, Debug, Default)]
-pub struct ResolverBuilder {
-    modules: BTreeMap<String, Rc<Module>>,
-    protocol_modules: BTreeMap<String, Vec<Rc<Module>>>,
-    pattern_modules: BTreeMap<String, Vec<Rc<Module>>>,
-    prefix_modules: BTreeMap<String, Vec<Rc<Module>>>,
-}
-
-impl ResolverBuilder {
     pub fn new() -> Self {
-        Self::default()
+        Resolver::default()
     }
 
-    pub fn build(self) -> Result<Resolver, Box<dyn Error>> {
-        let mut trie = TrieBuilder::new();
-        for (k, v) in self.prefix_modules {
-            let k = split_url(&k)?;
-            trie.push(k, v);
-        }
-        for (k, v) in self.protocol_modules {
-            let k = Sect::Protocol(k);
-            trie.push([k], v);
-        }
-        for (k, v) in self.pattern_modules {
-            let k = split_url(&k)?.into_iter().map(Sect::into_pattern);
-            trie.insert(k, v);
-        }
-        let trie = trie.build();
+    pub fn resolve(&self, url: &str) -> Result<Vec<Rc<Module>>, Box<dyn Error>> {
+        let input = split_url(url)?;
 
-        Ok(Resolver { trie })
+        let mut results: BTreeSet<Rc<Module>> = BTreeSet::new();
+
+        if matches!(input.first(), Some(Sect::Protocol(proto)) if proto == "file") {
+            if let Some(Sect::Path(filename)) = input.last() {
+                if let Some((_, ext)) = filename.split_once(".") {
+                    self.file_extensions
+                        .get(ext)
+                        .into_iter()
+                        .flatten()
+                        .for_each(|module| {
+                            results.insert(module.clone());
+                        });
+                }
+            }
+        }
+
+        // Initialize with root states that match the first input
+        let root_states: BTreeSet<usize> =
+            BTreeSet::from_iter(self.roots.iter().filter_map(|(pattern, &idx)| {
+                if pattern.matches_input(&input[0]) {
+                    Some(idx)
+                } else {
+                    None
+                }
+            }));
+
+        // Process remaining input
+        let final_states = input[1..].iter().fold(root_states, |states, sect| {
+            if states.is_empty() {
+                return states;
+            }
+
+            states
+                .iter()
+                .flat_map(|&node_idx| &self.nodes[node_idx].paths)
+                .filter_map(|(path, &next_idx)| {
+                    if path.matches_input(sect) {
+                        Some(next_idx)
+                    } else {
+                        None
+                    }
+                })
+                .collect()
+        });
+
+        // Collect all modules from final states
+        for &state_idx in &final_states {
+            for module in &self.nodes[state_idx].modules {
+                results.insert(module.clone());
+            }
+        }
+
+        Ok(results.into_iter().collect())
     }
 
-    pub fn insert_protocol(&mut self, module: &str, protocol: &str) -> Result<(), Box<dyn Error>> {
+    pub fn insert_file_extension(
+        &mut self,
+        module: &str,
+        file_extension: &str,
+    ) -> Result<(), Box<dyn Error>> {
         let module = self.add_module(module);
-        let mods = self
-            .protocol_modules
-            .entry(protocol.to_string())
-            .or_default();
-        mods.push(module);
+
+        self.file_extensions
+            .entry(file_extension.to_string())
+            .or_default()
+            .push(module);
+
         Ok(())
     }
-    pub fn insert_prefix(&mut self, module: &str, prefix: &str) -> Result<(), Box<dyn Error>> {
-        let _ = split_url(prefix)?;
-        let module = self.add_module(module);
-        let mods = self.prefix_modules.entry(prefix.to_string()).or_default();
-        mods.push(module.clone());
-        Ok(())
-    }
-    pub fn insert_pattern(&mut self, module: &str, pattern: &str) -> Result<(), Box<dyn Error>> {
-        let _ = split_url(pattern)?;
-        let module = self.add_module(module);
-        let mods = self.pattern_modules.entry(pattern.to_string()).or_default();
-        mods.push(module.clone());
-        Ok(())
-    }
-
     pub fn insert_manifest(&mut self, manifest: &ModuleManifest) -> Result<(), Box<dyn Error>> {
         for protocol in &manifest.handles.url_protocols {
             self.insert_protocol(&manifest.name, protocol)?;
@@ -125,6 +106,45 @@ impl ResolverBuilder {
         for pattern in &manifest.handles.url_patterns {
             self.insert_pattern(&manifest.name, pattern)?;
         }
+        for file_extension in &manifest.handles.file_extensions {
+            self.insert_file_extension(&manifest.name, file_extension)?;
+        }
+        Ok(())
+    }
+    pub fn insert_protocol(&mut self, module: &str, protocol: &str) -> Result<(), Box<dyn Error>> {
+        let module = self.add_module(module);
+        let node_idx = self.get_or_create_node(&[Sect::Protocol(protocol.to_string())]);
+
+        // add a free move back to self (represent a protocol as an prefix):
+        self.nodes[node_idx].paths.insert(Sect::Any, node_idx);
+        self.nodes[node_idx].modules.insert(module);
+
+        Ok(())
+    }
+    pub fn insert_prefix(&mut self, module: &str, prefix: &str) -> Result<(), Box<dyn Error>> {
+        let path = split_url(prefix)?;
+        let module = self.add_module(module);
+        let node_idx = self.get_or_create_node(&path);
+
+        // add a free move back to self:
+        // TODO: there is a possibility that non-prefixes have the same end node
+        // and that this collides with them, causing the others to also be
+        // turned into prefixes
+        self.nodes[node_idx].paths.insert(Sect::Any, node_idx);
+        self.nodes[node_idx].modules.insert(module);
+
+        Ok(())
+    }
+    pub fn insert_pattern(&mut self, module: &str, pattern: &str) -> Result<(), Box<dyn Error>> {
+        let path: Vec<Sect> = split_url(pattern)?
+            .into_iter()
+            .map(Sect::into_pattern)
+            .collect();
+        let module = self.add_module(module);
+        let node_idx = self.get_or_create_node(&path);
+
+        self.nodes[node_idx].modules.insert(module);
+
         Ok(())
     }
 
@@ -133,9 +153,36 @@ impl ResolverBuilder {
         I: Iterator<Item = T>,
         T: Borrow<ModuleManifest>,
     {
-        iter.try_fold(ResolverBuilder::new(), |mut b, m| {
+        iter.try_fold(Resolver::default(), |mut b, m| {
             b.insert_manifest(m.borrow())?;
             Ok(b)
+        })
+    }
+
+    fn get_or_create_node(&mut self, path: &[Sect]) -> usize {
+        // Get or create the root node
+        let root_idx = *self
+            .roots
+            .entry(path[0].clone())
+            .or_insert_with(|| self.nodes.insert(Node::default()));
+
+        path[1..].iter().fold(root_idx, |cur_idx, sect| {
+            match (self.nodes[cur_idx].paths.get(sect), sect) {
+                (Some(&idx), _sect) => idx,
+                (None, Sect::WildcardDomain) => {
+                    // If the sect is a wildcard domain add a link to self, this will also match multiple subdomains.
+                    self.nodes[cur_idx].paths.insert(sect.clone(), cur_idx);
+                    cur_idx
+                }
+                (None, sect) => {
+                    // Create a new node
+                    let new_node_idx = self.nodes.insert(Node::default());
+
+                    // Add the transition from current node to new node
+                    self.nodes[cur_idx].paths.insert(sect.clone(), new_node_idx);
+                    new_node_idx
+                }
+            }
         })
     }
 
@@ -148,139 +195,23 @@ impl ResolverBuilder {
     }
 }
 
-impl TryFrom<&[ModuleManifest]> for ResolverBuilder {
+impl TryFrom<&[ModuleManifest]> for Resolver {
     type Error = Box<dyn Error>;
 
     fn try_from(value: &[ModuleManifest]) -> Result<Self, Self::Error> {
-        Self::try_from_iter(value.iter())
+        Resolver::try_from_iter(value.iter())
     }
 }
 
-struct SearchIter<'r> {
-    trie: &'r Trie<Sect, Vec<Rc<Module>>>,
-    input_idx: usize,
-    input: Vec<Sect>,
-    items: &'r [Rc<Module>],
-    save_stack: Vec<(Position, usize)>,
-    search: IncSearch<'r, Sect, Vec<Rc<Module>>>,
-    unique: BTreeSet<Rc<Module>>,
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
+pub struct Module {
+    pub name: String,
 }
 
-impl<'r> Iterator for SearchIter<'r> {
-    type Item = Rc<Module>;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        while let Some((first, rest)) = self.items.split_first() {
-            self.items = rest;
-            if self.unique.insert(first.clone()) {
-                return Some(first.clone());
-            }
-        }
-
-        loop {
-            // Try to get current part or backtrack
-            let part = loop {
-                if let Some(part) = self.input.get(self.input_idx) {
-                    break part;
-                }
-
-                // No more input, try to backtrack
-                if let Some(save_state) = self.save_stack.pop() {
-                    // Restore saved state
-                    self.search = IncSearch::resume(self.trie, save_state.0);
-                    self.input_idx = save_state.1;
-
-                    // Check if the resumed state has values to return
-                    if let Some(cur) = self.search.value() {
-                        self.items = cur;
-                        while let Some((first, rest)) = self.items.split_first() {
-                            self.items = rest;
-                            if self.unique.insert(first.clone()) {
-                                return Some(first.clone());
-                            }
-                        }
-                    }
-
-                    // otherwise continue consuming input from the resumed state
-                    continue;
-                };
-
-                return None; // No more save states, we're done
-            };
-
-            // Try different matching strategies based on the part type
-            let answer = match part {
-                Sect::Protocol(_) => self.search.query(part),
-                Sect::Domain(_) => {
-                    let answer = self.search.query(part);
-
-                    // *after* matching the current domain section try to match
-                    // a wildcard domain. If it matches, consume inputs as
-                    // long as there are domain sections.
-                    let mut search = self.search.clone();
-                    if search.query(&Sect::WildcardDomain).is_some() {
-                        let mut n = 1;
-                        while self
-                            .input
-                            .get(self.input_idx + n)
-                            .is_some_and(|i| matches!(i, Sect::Domain(_)))
-                        {
-                            n += 1;
-                        }
-
-                        // save a state with (matched wildcard, all subdomains consumed)
-                        let pos = Position::from(search);
-                        self.save_stack.push((pos, self.input_idx + n));
-                    }
-
-                    answer
-                }
-                Sect::Path(_) => {
-                    {
-                        let mut search = self.search.clone();
-                        if search.query(&Sect::WildcardPath).is_some() {
-                            // We matched a wildcard path element.
-                            // Save the position that represents a consumed input.
-                            let pos = Position::from(search);
-                            self.save_stack.push((pos, self.input_idx + 1));
-                        }
-                    }
-                    self.search.query(part)
-                }
-                Sect::QueryParamName(_) => self.search.query(part),
-                Sect::QueryParamValue(_) => {
-                    {
-                        let mut search = self.search.clone();
-                        if search.query(&Sect::WildcardQueryParamValue).is_some() {
-                            let pos = Position::from(search);
-                            self.save_stack.push((pos, self.input_idx + 1));
-                        };
-                    };
-                    self.search.query(part)
-                }
-                _ => unreachable!(),
-            };
-
-            self.input_idx += 1;
-
-            if !answer.is_some_and(|a| a.is_prefix()) {
-                // Current node is not a prefix, i.e. complete match found.
-                // Consume remaining input.
-                self.input_idx = self.input.len();
-            }
-
-            // Check if current node has values (could use `answer.is_match()`).
-            if let Some(cur) = self.search.value() {
-                self.items = cur;
-                while let Some((first, rest)) = self.items.split_first() {
-                    self.items = rest;
-                    if self.unique.insert(first.clone()) {
-                        return Some(first.clone());
-                    }
-                }
-            }
-        }
-    }
+#[derive(Clone, Debug, Default)]
+struct Node {
+    paths: BTreeMap<Sect, usize>,
+    modules: BTreeSet<Rc<Module>>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
@@ -293,6 +224,7 @@ enum Sect {
     QueryParamName(String),
     QueryParamValue(String),
     WildcardQueryParamValue,
+    Any,
 }
 
 impl Sect {
@@ -308,10 +240,26 @@ impl Sect {
             _ => self,
         }
     }
+
+    fn matches_input(&self, input: &Self) -> bool {
+        use Sect::*;
+        match (self, input) {
+            (a, b) if a == b => true,
+            (WildcardDomain, Domain(_)) => true,
+            (WildcardPath, Path(_)) => true,
+            (WildcardQueryParamValue, QueryParamValue(_)) => true,
+            (Any, _) => true,
+            _ => false,
+        }
+    }
 }
 
 /// Split and URL into sections that we care about. This is effectively a tokenizer.
 fn split_url(url: &str) -> Result<Vec<Sect>, Box<dyn Error>> {
+    if url.is_empty() {
+        return Err("URL cannot be empty".into());
+    }
+
     let mut res = Vec::new();
 
     if !url.contains(':') {
@@ -343,14 +291,12 @@ fn split_url(url: &str) -> Result<Vec<Sect>, Box<dyn Error>> {
 
     if url.cannot_be_a_base() {
         res.push(Sect::Path(url.path().into()))
-    } else {
-        if let Some(path_parts) = url.path_segments() {
-            for part in path_parts {
-                if part.is_empty() {
-                    continue;
-                }
-                res.push(Sect::Path(part.into()));
+    } else if let Some(path_parts) = url.path_segments() {
+        for part in path_parts {
+            if part.is_empty() {
+                continue;
             }
+            res.push(Sect::Path(part.into()));
         }
     }
 
@@ -373,31 +319,31 @@ mod test {
 
     #[test]
     fn matching() {
-        let mut builder = ResolverBuilder::default();
+        let mut resolver = Resolver::default();
 
-        builder.insert_protocol("near", "near").unwrap();
-        builder
+        resolver.insert_protocol("near", "near").unwrap();
+        resolver
             .insert_pattern("near-account", "near://account/:id")
             .unwrap();
-        builder.insert_pattern("near-tx", "near://tx/:id").unwrap();
-        builder
+        resolver.insert_pattern("near-tx", "near://tx/:id").unwrap();
+        resolver
             .insert_prefix("google", "https://google.com/search?q=")
             .unwrap();
-        builder.insert_prefix("x", "https://x.com/").unwrap();
-        builder
+        resolver.insert_prefix("x", "https://x.com/").unwrap();
+        resolver
             .insert_pattern("linkedin", "https://*.linkedin.com/in/:account/test")
             .unwrap();
-        builder
+        resolver
             .insert_pattern("youtube", "https://youtube.com/watch?v=:v")
             .unwrap();
-        builder
+        resolver
             .insert_pattern("subdomains", "https://*.baz.com/")
             .unwrap();
-        builder.insert_pattern("data", "data:text/plain").unwrap();
-        builder.insert_pattern("fs", "file://").unwrap();
-        builder.insert_pattern("fs2", "file:///2").unwrap();
-
-        let resolver = builder.build().expect("resolver should build");
+        resolver.insert_prefix("data", "data:text/plain").unwrap();
+        resolver.insert_prefix("fs", "file://").unwrap();
+        resolver.insert_prefix("fs2", "file:///2").unwrap();
+        resolver.insert_file_extension("txt-ext", "txt").unwrap();
+        resolver.insert_file_extension("tar-ext", "tar.gz").unwrap();
 
         eprintln!("{resolver:?}");
 
@@ -414,13 +360,16 @@ mod test {
             ("data:text/plain?Hello+World", "data"),
             ("file:///foo/bar/baz", "fs"),
             ("file:///2/foo", "fs2"),
+            ("file:///foobar.txt", "txt-ext"),
+            ("file:///foobar.tar.gz", "tar-ext"),
         ];
 
         for (input, want) in tests {
             assert_eq!(
                 resolver
-                    .find(input)
+                    .resolve(input)
                     .expect("resolve succeeds")
+                    .iter()
                     .find(|out| out.name == want)
                     .unwrap_or_else(|| panic!(
                         "the wanted result should be returned, input={input} want={want}"
