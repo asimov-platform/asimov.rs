@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 25.0.0-dev.12 - 2025-06-27
+### Changed
+- Bump the Clientele.rs dependency
+### Added
+- Resolve file extensions as well (#11)
+### Fixed
+- Prefixes mangling patterns (#12)
+
 ## 25.0.0-dev.11 - 2025-06-19
 ### Changed
 - Update project links
