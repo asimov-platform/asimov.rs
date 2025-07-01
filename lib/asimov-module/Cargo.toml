@@ -17,7 +17,7 @@ publish.workspace = true
 [features]
 default = ["all", "cli", "serde", "std"]
 all = ["tracing"]
-cli = ["std", "dep:clientele"]
+cli = ["std", "dep:clientele", "clientele?/clap"]
 std = [
 	"dep:getenv",
 	"clientele?/std",
@@ -30,7 +30,7 @@ std = [
 	"tracing-subscriber?/std",
 	"url/std",
 ]
-tracing = ["dep:tracing", "dep:tracing-subscriber"]
+tracing = ["dep:tracing", "dep:tracing-subscriber", "clientele?/tracing"]
 unstable = []
 
 [dependencies]

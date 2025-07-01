@@ -63,7 +63,7 @@ axum-prometheus = { version = "0.8" }
 bs58 = "0.5"
 bytes = "1.10"
 cfg_aliases = "0.2"
-clientele = { version = "0.3.7", default-features = false }
+clientele = { version = "0.3.8", default-features = false }
 derive_more = { version = "2", default-features = false }
 dogma = { version = "0.1.7", default-features = false, features = ["traits"] }
 futures = "0.3"
