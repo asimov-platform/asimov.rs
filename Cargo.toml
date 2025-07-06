@@ -65,7 +65,7 @@ bytes = "1.10"
 cfg_aliases = "0.2"
 clientele = { version = "0.3.8", default-features = false }
 derive_more = { version = "2", default-features = false }
-dogma = { version = "0.1.7", default-features = false, features = ["traits"] }
+dogma = { version = "0.1.10", default-features = false, features = ["traits"] }
 futures = "0.3"
 getenv = { version = "0.1.2", default-features = false, features = [
     "cargo",
@@ -73,7 +73,7 @@ getenv = { version = "0.1.2", default-features = false, features = [
     "python",
     "ruby",
 ] }
-gofer = { version = "0.1.4", default-features = false, features = [
+gofer = { version = "0.1.8", default-features = false, features = [
     "all",
     "miette",
 ] }
@@ -85,16 +85,17 @@ openai = { package = "known-types-openai", version = "0.0.8", default-features =
     "alloc",
 ] }
 rmcp = { version = "0.1.5", default-features = false }
-miette = { version = "7.5", default-features = false, features = ["derive"] }
-protoflow = { version = "=0.4.1", default-features = false, features = [
+#rmcp = { version = "0.2.1", default-features = false } # FIXME
+miette = { version = "7.6", default-features = false, features = ["derive"] }
+protoflow = { version = "=0.4.3", default-features = false, features = [
     "blocks",
     "derive",
     "sysml",
 ] }
-protoflow-blocks = { version = "=0.4.1", default-features = false, features = [
+protoflow-blocks = { version = "=0.4.3", default-features = false, features = [
     "hash",
 ] }
-protoflow-core = { version = "=0.4.1", default-features = false }
+protoflow-core = { version = "=0.4.3", default-features = false }
 rdf-model = { version = "0.2.2", default-features = false }
 rust-embed = { version = "8.7", default-features = false, features = [
     "deterministic-timestamps",
@@ -114,7 +115,7 @@ tracing-subscriber = { version = "0.3", default-features = false, features = [
     "tracing-log",
 ] }
 typed-builder = "0.21"
-uuid = { version = "1.16", features = ["v4"] }
+uuid = { version = "1.17", features = ["v4"] }
 
 [patch.crates-io]
 asimov-account = { path = "lib/asimov-account" }
