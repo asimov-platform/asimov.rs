@@ -4,9 +4,19 @@ use super::vars;
 use std::path::PathBuf;
 
 pub fn asimov_root() -> PathBuf {
-    vars::asimov_root()
-        .or_else(|| getenv::home().map(|p| PathBuf::from(p).join(".asimov")))
-        .expect("ASIMOV_ROOT or HOME environment variable must be set")
+    if let Some(asimov_root) = vars::asimov_root() {
+        return asimov_root;
+    }
+
+    #[cfg(unix)]
+    return getenv::home()
+        .map(|p| PathBuf::from(p).join(".asimov"))
+        .expect("ASIMOV_ROOT or HOME environment variables must be set");
+
+    #[cfg(windows)]
+    return getenv::appdata()
+        .map(|p| PathBuf::from(p).join("ASIMOV"))
+        .expect("ASIMOV_ROOT or APPDATA environment variables must be set");
 }
 
 pub fn python_env() -> PathBuf {
