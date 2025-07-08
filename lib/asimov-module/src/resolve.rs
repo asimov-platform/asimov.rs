@@ -175,7 +175,7 @@ impl Resolver {
                     // If the sect is a wildcard domain add a link to self, this will also match multiple subdomains.
                     self.nodes[cur_idx].paths.insert(sect.clone(), cur_idx);
                     cur_idx
-                }
+                },
                 (None, sect) => {
                     // Create a new node
                     let new_node_idx = self.nodes.insert(Node::default());
@@ -183,7 +183,7 @@ impl Resolver {
                     // Add the transition from current node to new node
                     self.nodes[cur_idx].paths.insert(sect.clone(), new_node_idx);
                     new_node_idx
-                }
+                },
             }
         })
     }

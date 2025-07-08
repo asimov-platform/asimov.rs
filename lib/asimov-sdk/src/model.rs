@@ -1,8 +1,8 @@
 // This is free and unencumbered software released into the public domain.
 
 use crate::{
-    prelude::{fmt::Debug, Cow, String},
     Named,
+    prelude::{Cow, String, fmt::Debug},
 };
 use asimov_sys::AsiModelManifest;
 

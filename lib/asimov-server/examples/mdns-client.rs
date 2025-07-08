@@ -9,19 +9,19 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
         match event {
             ServiceEvent::SearchStarted(ty) => {
                 println!("Search started for service of type {}", ty);
-            }
+            },
             ServiceEvent::ServiceFound(ty, name) => {
                 println!("Found service of type {} with name {}", ty, name);
-            }
+            },
             ServiceEvent::ServiceResolved(info) => {
                 println!("Resolved service: {:?}", info);
-            }
+            },
             ServiceEvent::ServiceRemoved(ty, name) => {
                 println!("Service of type {} with name {} removed", ty, name);
-            }
+            },
             ServiceEvent::SearchStopped(ty) => {
                 println!("Search stopped for service of type {}", ty);
-            }
+            },
         }
     }
 

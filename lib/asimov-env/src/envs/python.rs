@@ -147,7 +147,7 @@ impl PythonEnv {
                 let mut command = Command::new(path.join("bin/python3"));
                 command.env("VIRTUAL_ENV", path.as_os_str());
                 command
-            }
+            },
         }
     }
 

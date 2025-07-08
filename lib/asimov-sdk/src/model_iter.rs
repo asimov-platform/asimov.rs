@@ -1,10 +1,10 @@
 // This is free and unencumbered software released into the public domain.
 
 use crate::{
-    prelude::{null_mut, vec, Box, Vec},
     Error, LocalModelManifest, ModelManifest, Result,
+    prelude::{Box, Vec, null_mut, vec},
 };
-use asimov_sys::{asiEnumerateModels, AsiInstance, AsiModelManifest, AsiResult};
+use asimov_sys::{AsiInstance, AsiModelManifest, AsiResult, asiEnumerateModels};
 
 pub(crate) struct ModelManifestIter {
     #[allow(unused)]

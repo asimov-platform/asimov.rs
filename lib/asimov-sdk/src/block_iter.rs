@@ -1,10 +1,10 @@
 // This is free and unencumbered software released into the public domain.
 
 use crate::{
-    prelude::{null_mut, vec, Box, Vec},
     BlockDefinition, Error, LocalBlockDefinition, Result,
+    prelude::{Box, Vec, null_mut, vec},
 };
-use asimov_sys::{asiEnumerateBlocks, AsiBlockDefinition, AsiInstance, AsiResult};
+use asimov_sys::{AsiBlockDefinition, AsiInstance, AsiResult, asiEnumerateBlocks};
 
 pub(crate) struct BlockDefinitionIter {
     instance: AsiInstance,

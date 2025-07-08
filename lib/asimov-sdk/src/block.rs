@@ -1,16 +1,16 @@
 // This is free and unencumbered software released into the public domain.
 
 use crate::{
+    MaybeLabeled, MaybeNamed,
     flow::{
         BlockDescriptor, ParameterDescriptor, PortDescriptor, PortDirection, PortID, PortState,
     },
-    prelude::{fmt::Debug, null_mut, vec, Cow, String, Vec},
-    MaybeLabeled, MaybeNamed,
+    prelude::{Cow, String, Vec, fmt::Debug, null_mut, vec},
 };
 pub use asimov_core::block::BlockDefinition;
 use asimov_sys::{
-    asiEnumerateBlockParameters, asiEnumerateBlockPorts, AsiBlockDefinition, AsiBlockParameter,
-    AsiBlockPort, AsiInstance, AsiPortDirection, AsiResult,
+    AsiBlockDefinition, AsiBlockParameter, AsiBlockPort, AsiInstance, AsiPortDirection, AsiResult,
+    asiEnumerateBlockParameters, asiEnumerateBlockPorts,
 };
 
 #[derive(Debug)]
