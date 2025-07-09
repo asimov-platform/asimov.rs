@@ -9,16 +9,24 @@ pub struct ModuleManifest {
     pub label: String,
     pub summary: String,
     pub links: Vec<String>,
+
     #[cfg_attr(
         feature = "serde",
         serde(default, skip_serializing_if = "Provides::is_empty")
     )]
     pub provides: Provides,
+
     #[cfg_attr(
         feature = "serde",
         serde(default, skip_serializing_if = "Handles::is_empty")
     )]
     pub handles: Handles,
+
+    #[cfg_attr(
+        feature = "serde",
+        serde(alias = "configuration", skip_serializing_if = "Option::is_none")
+    )]
+    pub config: Option<Configuration>,
 }
 
 #[derive(Clone, Debug, Default)]
@@ -41,21 +49,25 @@ pub struct Handles {
         serde(default, skip_serializing_if = "Vec::is_empty")
     )]
     pub url_protocols: Vec<String>,
+
     #[cfg_attr(
         feature = "serde",
         serde(default, skip_serializing_if = "Vec::is_empty")
     )]
     pub url_prefixes: Vec<String>,
+
     #[cfg_attr(
         feature = "serde",
         serde(default, skip_serializing_if = "Vec::is_empty")
     )]
     pub url_patterns: Vec<String>,
+
     #[cfg_attr(
         feature = "serde",
         serde(default, skip_serializing_if = "Vec::is_empty")
     )]
     pub file_extensions: Vec<String>,
+
     #[cfg_attr(
         feature = "serde",
         serde(default, skip_serializing_if = "Vec::is_empty")
@@ -71,4 +83,32 @@ impl Handles {
             && self.file_extensions.is_empty()
             && self.content_types.is_empty()
     }
+}
+
+#[derive(Clone, Debug, Default)]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+pub struct Configuration {
+    #[cfg_attr(
+        feature = "serde",
+        serde(default, skip_serializing_if = "Vec::is_empty")
+    )]
+    pub variables: Vec<ConfigurationVariable>,
+}
+
+#[derive(Clone, Debug, Default)]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+pub struct ConfigurationVariable {
+    pub name: String,
+
+    #[cfg_attr(
+        feature = "serde",
+        serde(default, alias = "desc", skip_serializing_if = "Option::is_none")
+    )]
+    pub description: Option<String>,
+
+    #[cfg_attr(
+        feature = "serde",
+        serde(default, alias = "default", skip_serializing_if = "Option::is_none")
+    )]
+    pub default_value: Option<String>,
 }
