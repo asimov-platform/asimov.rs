@@ -29,6 +29,38 @@ pub struct ModuleManifest {
     pub config: Option<Configuration>,
 }
 
+impl ModuleManifest {
+    #[cfg(feature = "std")]
+    pub fn read_manifest(module_name: &str) -> std::io::Result<Self> {
+        let path = asimov_env::paths::asimov_root()
+            .join("modules")
+            .join(std::format!("{module_name}.yaml"));
+        let content = std::fs::read(&path)?;
+        serde_yml::from_slice(&content).map_err(std::io::Error::other)
+    }
+
+    #[cfg(feature = "std")]
+    pub fn variable(&self, key: &str, profile: Option<&str>) -> std::io::Result<String> {
+        let profile = profile.unwrap_or("default");
+        let path = asimov_env::paths::asimov_root()
+            .join("configs")
+            .join(profile)
+            .join(&self.name)
+            .join(key);
+
+        match std::fs::read_to_string(&path) {
+            Ok(value) => Ok(value),
+            Err(err) if err.kind() == std::io::ErrorKind::NotFound => self
+                .config
+                .as_ref()
+                .and_then(|conf| conf.variables.iter().find(|var| var.name == key))
+                .and_then(|var| var.default_value.clone())
+                .ok_or(err),
+            Err(err) => Err(err),
+        }
+    }
+}
+
 #[derive(Clone, Debug, Default)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub struct Provides {
