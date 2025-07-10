@@ -38,7 +38,7 @@ pub enum ReadVarError {
     #[error("a value for variable `{0}` was not configured")]
     UnconfiguredVar(String),
 
-    #[error("failed to read variable")]
+    #[error("failed to read variable `{name}`: {source}")]
     Io {
         name: String,
         #[source]
