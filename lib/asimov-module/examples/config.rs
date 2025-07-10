@@ -4,37 +4,52 @@ use asimov_module::models::ModuleManifest;
 use std::error::Error;
 
 const YAML: &str = r#"
-name: brightdata
-label: Bright Data
-summary: Data import powered by the Bright Data web data platform.
+name: example
+label: Example
+summary: Example module
 links:
-    - https://github.com/asimov-modules/asimov-brightdata-module
-    - https://crates.io/crates/asimov-brightdata-module
-    - https://pypi.org/project/asimov-brightdata-module
-    - https://rubygems.org/gems/asimov-brightdata-module
-    - https://npmjs.com/package/asimov-brightdata-module
+    - https://github.com/asimov-platform/asimov.rs/tree/master/lib/asimov-module/examples/config.rs
 
 config:
   variables:
-    - name: API_KEY
-      description: "API Key to authorize requests to Bright Data"
+    # name is the only mandatory field
 
-    - name: OTHER_VAR
+    - name: api_key
+      description: "api key to authorize requests"
+
+    - name: other_var
       default_value: "foobar"
+
+    - name: var_from_env
+      environment: VAR_FROM_ENV
 "#;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let manifest: ModuleManifest = serde_yml::from_str(YAML)?;
 
-    let api_key = manifest
-        .variable("API_KEY", None)
-        .or_else(|_err| std::env::var("BRIGHTDATA_API_KEY"))
-        .inspect_err(|_err| eprintln!("No API_KEY found. Either configure API_KEY with `asimov module config brightdata API_KEY <your_api-key>` or set the environment variable `BRIGHTDATA_API_KEY`"))
-        .unwrap_or_default();
-    println!("API_KEY: `{api_key}`");
+    let api_key = manifest.variable("api_key", None).unwrap_or_default();
+    if api_key.is_empty() {
+        println!("api_key: `{api_key}`");
+        println!("(consider `mkdir -p ~/.asimov/configs/default/example/ && echo -n \"<api-key-value>\" >> ~/.asimov/configs/default/example/api_key` or for a non-example module `asimov module config <example> api_key <api-key-value>`)");
+    } else {
+        println!("api_key: `{api_key}`");
+    }
 
-    let other_var = manifest.variable("OTHER_VAR", None).unwrap_or_default();
-    println!("OTHER_VAR: `{other_var}`");
+    let other_var = manifest.variable("other_var", None).unwrap_or_default();
+    println!("\nother_var: `{other_var}`");
+
+    let env_var = manifest.variable("var_from_env", None).unwrap_or_default();
+    println!("\nvar_from_env: `{env_var}`");
+
+    println!("setting env var `VAR_FROM_ENV` manually...");
+    unsafe { std::env::set_var("VAR_FROM_ENV", "hello!") }
+    let env_var = manifest.variable("var_from_env", None).unwrap_or_default();
+    println!("var_from_env: `{env_var}`");
+
+    // alternative way:
+    // let vars = manifest.read_variables(None)?;
+    // let api_key = vars.get("api_key");
+    // println!("api_key: `{api_key:?}`");
 
     Ok(())
 }
