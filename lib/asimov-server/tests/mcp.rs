@@ -1,7 +1,7 @@
 // This is free and unencumbered software released into the public domain.
 
 use asimov_server::http::mcp::Tool;
-use axum::{http::StatusCode, Router};
+use axum::{Router, http::StatusCode};
 use axum_test::TestServer;
 use rmcp::model::{
     CallToolRequest, CallToolRequestMethod, CallToolRequestParam, CallToolResult, Content,

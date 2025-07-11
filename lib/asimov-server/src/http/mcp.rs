@@ -1,11 +1,11 @@
 // This is free and unencumbered software released into the public domain.
 
 use axum::{
+    Json, Router,
     extract::State,
-    http::{request::Parts, StatusCode},
+    http::{StatusCode, request::Parts},
     response::{IntoResponse, Response},
     routing::post,
-    Json, Router,
 };
 use rmcp::model::{
     CallToolRequestParam, CallToolResult, ClientJsonRpcMessage, GetPromptRequestParam,
@@ -70,7 +70,7 @@ where
                     }),
                 })
                 .into_response())
-            }
+            },
             PingRequest(_req) => Ok(Json(JsonRpcResponse {
                 jsonrpc: JsonRpcVersion2_0,
                 id: req.id,
@@ -94,7 +94,7 @@ where
                     },
                 })
                 .into_response())
-            }
+            },
             GetPromptRequest(get_req) => {
                 let GetPromptRequestParam { name, arguments } = get_req.params;
 
@@ -111,7 +111,7 @@ where
                     },
                 })
                 .into_response())
-            }
+            },
 
             // Resources
             ListResourcesRequest(list_req) => {
@@ -129,7 +129,7 @@ where
                     },
                 })
                 .into_response())
-            }
+            },
             ListResourceTemplatesRequest(list_req) => {
                 let cursor = list_req.params.and_then(|opt| opt.cursor);
                 let Ok((resource_templates, next_cursor)) =
@@ -147,7 +147,7 @@ where
                     },
                 })
                 .into_response())
-            }
+            },
             ReadResourceRequest(read_req) => {
                 let uri = read_req.params.uri;
 
@@ -161,7 +161,7 @@ where
                     result: ReadResourceResult { contents },
                 })
                 .into_response())
-            }
+            },
 
             // Tools
             ListToolsRequest(list_req) => {
@@ -176,7 +176,7 @@ where
                     result: ListToolsResult { tools, next_cursor },
                 })
                 .into_response())
-            }
+            },
             CallToolRequest(call_req) => {
                 let CallToolRequestParam { name, arguments } = call_req.params;
 
@@ -190,7 +190,7 @@ where
                     result: CallToolResult { content, is_error },
                 })
                 .into_response())
-            }
+            },
 
             CompleteRequest(_)
             | SetLevelRequest(_)

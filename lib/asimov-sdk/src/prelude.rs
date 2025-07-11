@@ -7,7 +7,7 @@ pub use alloc::{
     borrow::Cow,
     boxed::Box,
     format,
-    string::{FromUtf16Error, FromUtf8Error, String, ToString},
+    string::{FromUtf8Error, FromUtf16Error, String, ToString},
     vec,
     vec::Vec,
 };
@@ -15,7 +15,7 @@ pub use alloc::{
 #[allow(unused)]
 pub use core::{
     convert::TryFrom,
-    ffi::{c_int, FromBytesWithNulError},
+    ffi::{FromBytesWithNulError, c_int},
     fmt,
     marker::PhantomData,
     num::{ParseFloatError, ParseIntError},

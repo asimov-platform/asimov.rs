@@ -2,12 +2,12 @@
 
 use alloc::{
     format,
-    string::{FromUtf16Error, FromUtf8Error, String, ToString},
+    string::{FromUtf8Error, FromUtf16Error, String, ToString},
 };
 use asimov_sys::AsiResult;
 use core::{
     convert::TryFrom,
-    ffi::{c_int, FromBytesWithNulError},
+    ffi::{FromBytesWithNulError, c_int},
     fmt,
     num::{ParseFloatError, ParseIntError},
     str::Utf8Error,

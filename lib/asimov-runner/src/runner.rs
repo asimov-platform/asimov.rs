@@ -53,7 +53,7 @@ impl Runner {
             Err(err) if err.kind() == ErrorKind::NotFound => {
                 let program = self.0.as_std().get_program().to_owned();
                 return Err(RunnerError::MissingProgram(program));
-            }
+            },
             Err(err) => return Err(RunnerError::SpawnFailure(err)),
         }
     }
@@ -95,7 +95,7 @@ impl fmt::Display for RunnerError {
         match self {
             Self::MissingProgram(program) => {
                 write!(f, "Missing program: {}", program.to_string_lossy())
-            }
+            },
             Self::SpawnFailure(err) => write!(f, "Failed to spawn process: {}", err),
             Self::Failure(error, stderr) => {
                 write!(
@@ -107,7 +107,7 @@ impl fmt::Display for RunnerError {
                     write!(f, "\n{}", stderr)?;
                 }
                 Ok(())
-            }
+            },
             Self::UnexpectedFailure(code, stderr) => {
                 write!(
                     f,
@@ -118,7 +118,7 @@ impl fmt::Display for RunnerError {
                     write!(f, "\n{}", stderr)?;
                 }
                 Ok(())
-            }
+            },
             Self::UnexpectedOther(err) => write!(f, "Unexpected error: {}", err),
         }
     }
