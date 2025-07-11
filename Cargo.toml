@@ -72,6 +72,7 @@ getenv = { version = "0.1.2", default-features = false, features = [
     "posix",
     "python",
     "ruby",
+    "windows",
 ] }
 gofer = { version = "0.1.8", default-features = false, features = [
     "all",
