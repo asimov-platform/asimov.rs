@@ -2,4 +2,4 @@
 
 #![no_std]
 
-pub use gofer::{open, open_buffered, Error, Result};
+pub use gofer::{Error, Result, open, open_buffered};

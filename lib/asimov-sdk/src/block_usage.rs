@@ -1,8 +1,8 @@
 // This is free and unencumbered software released into the public domain.
 
 use crate::{
-    prelude::{fmt::Debug, Box, Cow, String},
     BlockDefinition, Named, Result,
+    prelude::{Box, Cow, String, fmt::Debug},
 };
 use asimov_sys::AsiBlockUsage;
 

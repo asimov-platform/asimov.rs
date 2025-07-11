@@ -1,10 +1,10 @@
 // This is free and unencumbered software released into the public domain.
 
 use crate::{
-    prelude::{null_mut, vec, Box, Vec},
     Error, ModuleRegistration, Result, StaticModuleRegistration,
+    prelude::{Box, Vec, null_mut, vec},
 };
-use asimov_sys::{asiEnumerateModules, AsiInstance, AsiModuleRegistration, AsiResult};
+use asimov_sys::{AsiInstance, AsiModuleRegistration, AsiResult, asiEnumerateModules};
 
 pub(crate) struct ModuleRegistrationIter {
     #[allow(unused)]
