@@ -29,6 +29,23 @@ pub struct ModuleManifest {
     pub config: Option<Configuration>,
 }
 
+#[cfg(feature = "std")]
+#[derive(Debug, thiserror::Error)]
+pub enum ReadVarError {
+    #[error("variable named `{0}` not found in module manifest")]
+    UnknownVar(String),
+
+    #[error("a value for variable `{0}` was not configured")]
+    UnconfiguredVar(String),
+
+    #[error("failed to read variable `{name}`: {source}")]
+    Io {
+        name: String,
+        #[source]
+        source: std::io::Error,
+    },
+}
+
 impl ModuleManifest {
     #[cfg(feature = "std")]
     pub fn read_manifest(module_name: &str) -> std::io::Result<Self> {
@@ -40,7 +57,37 @@ impl ModuleManifest {
     }
 
     #[cfg(feature = "std")]
-    pub fn variable(&self, key: &str, profile: Option<&str>) -> std::io::Result<String> {
+    pub fn read_variables(
+        &self,
+        profile: Option<&str>,
+    ) -> Result<std::collections::BTreeMap<String, String>, ReadVarError> {
+        self.config
+            .as_ref()
+            .map(|c| c.variables.as_slice())
+            .unwrap_or_default()
+            .iter()
+            .map(|var| Ok((var.name.clone(), self.variable(&var.name, profile)?)))
+            .collect()
+    }
+
+    #[cfg(feature = "std")]
+    pub fn variable(&self, key: &str, profile: Option<&str>) -> Result<String, ReadVarError> {
+        let Some(var) = self
+            .config
+            .as_ref()
+            .and_then(|conf| conf.variables.iter().find(|var| var.name == key))
+        else {
+            return Err(ReadVarError::UnknownVar(key.into()));
+        };
+
+        if let Some(value) = var
+            .environment
+            .as_deref()
+            .and_then(|env_name| std::env::var(env_name).ok())
+        {
+            return Ok(value);
+        }
+
         let profile = profile.unwrap_or("default");
         let path = asimov_env::paths::asimov_root()
             .join("configs")
@@ -48,16 +95,18 @@ impl ModuleManifest {
             .join(&self.name)
             .join(key);
 
-        match std::fs::read_to_string(&path) {
-            Ok(value) => Ok(value),
-            Err(err) if err.kind() == std::io::ErrorKind::NotFound => self
-                .config
-                .as_ref()
-                .and_then(|conf| conf.variables.iter().find(|var| var.name == key))
-                .and_then(|var| var.default_value.clone())
-                .ok_or(err),
-            Err(err) => Err(err),
-        }
+        std::fs::read_to_string(&path).or_else(|err| {
+            if err.kind() == std::io::ErrorKind::NotFound {
+                var.default_value
+                    .clone()
+                    .ok_or_else(|| ReadVarError::UnconfiguredVar(key.into()))
+            } else {
+                Err(ReadVarError::Io {
+                    name: key.into(),
+                    source: err,
+                })
+            }
+        })
     }
 }
 
@@ -130,14 +179,27 @@ pub struct Configuration {
 #[derive(Clone, Debug, Default)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub struct ConfigurationVariable {
+    /// The name of the variable. Configured variables are by default saved in
+    /// `~/.asimov/configs/$profile/$module/$name`.
     pub name: String,
 
+    /// Optional description to provide information about the variable.
     #[cfg_attr(
         feature = "serde",
         serde(default, alias = "desc", skip_serializing_if = "Option::is_none")
     )]
     pub description: Option<String>,
 
+    /// Optional name of an environment variable to check for a value before checking for a
+    /// configured or a default value.
+    #[cfg_attr(
+        feature = "serde",
+        serde(default, alias = "env", skip_serializing_if = "Option::is_none")
+    )]
+    pub environment: Option<String>,
+
+    /// Optional default value to use as a fallback. If a default value is present the user
+    /// configuration of the value is not required.
     #[cfg_attr(
         feature = "serde",
         serde(default, alias = "default", skip_serializing_if = "Option::is_none")
