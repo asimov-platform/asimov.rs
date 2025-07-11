@@ -126,7 +126,7 @@ impl RubyEnv {
                 } else {
                     PathBuf::from(ruby().unwrap().as_ref()) // TODO: remove the allocation
                 })
-            }
+            },
         }
     }
 

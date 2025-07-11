@@ -2,10 +2,10 @@
 
 use super::{FlowDefinition, LocalFlowDefinition};
 use crate::{
-    prelude::{null_mut, vec, Box, Vec},
     Error, Result,
+    prelude::{Box, Vec, null_mut, vec},
 };
-use asimov_sys::{asiEnumerateFlows, AsiFlowDefinition, AsiInstance, AsiResult};
+use asimov_sys::{AsiFlowDefinition, AsiInstance, AsiResult, asiEnumerateFlows};
 
 pub(crate) struct FlowDefinitionIter {
     #[allow(unused)]

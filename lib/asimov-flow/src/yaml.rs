@@ -5,7 +5,7 @@ use alloc::{
     string::{String, ToString},
     vec::Vec,
 };
-use asimov_core::{flow::FlowDefinition, MaybeLabeled, MaybeNamed};
+use asimov_core::{MaybeLabeled, MaybeNamed, flow::FlowDefinition};
 use core::str::FromStr;
 
 #[derive(Clone, Debug)]

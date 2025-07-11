@@ -51,7 +51,7 @@ pub fn config_dir() -> std::io::Result<Dir> {
             .and_then(|home_dir| home_dir.open_dir(CONFIG_PATH)),
         Ok(path) if path.trim().is_empty() => {
             Err(Error::new(ErrorKind::InvalidData, "ASIMOV_HOME is empty"))
-        }
+        },
         Ok(path) => Dir::create_ambient_dir_all(&path, ambient_authority)
             .and_then(|_| Dir::open_ambient_dir(&path, ambient_authority)),
     }

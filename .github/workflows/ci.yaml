@@ -1,0 +1,32 @@
+# See: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
+---
+name: CI
+
+# WARNING! PLEASE READ BEFORE MAKING ANY CHANGES:
+#
+# This workflow is triggered on `pull_request_target` event,
+# which makes it highly prone to security issues,
+# as in this case we are executing untrusted, user-provided,
+# potentially malicious code from pull requests in an environment
+# that might contain overly permissive tokens or exposed secrets,
+# if not implemented properly.
+#
+# Please only modify this file if you know what you're doing.
+
+on:
+  push:
+    branches: [main, master]
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    uses: asimov-platform/actions/.github/workflows/ci-rust.yaml@master
+    secrets: inherit
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: write

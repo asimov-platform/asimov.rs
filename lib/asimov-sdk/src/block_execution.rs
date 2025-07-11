@@ -2,8 +2,8 @@
 
 use super::flow::FlowExecutionState;
 use crate::{
-    prelude::{fmt::Debug, Cow, String},
     Named,
+    prelude::{Cow, String, fmt::Debug},
 };
 use asimov_sys::{AsiBlockExecution, AsiFlowExecutionState};
 
