@@ -47,7 +47,7 @@ pub enum ReadVarError {
 }
 
 impl ModuleManifest {
-    #[cfg(feature = "std")]
+    #[cfg(all(feature = "std", feature = "serde"))]
     pub fn read_manifest(module_name: &str) -> std::io::Result<Self> {
         let path = asimov_env::paths::asimov_root()
             .join("modules")
