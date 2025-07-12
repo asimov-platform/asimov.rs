@@ -11,12 +11,15 @@ extern crate std;
 pub use dogma::prelude;
 
 #[cfg(feature = "cli")]
-pub use clientele::{args_os, dotenv, exit, SysexitsError, SysexitsResult};
+pub use clientele::{SysexitsError, SysexitsResult, args_os, dotenv, exit};
 
 #[cfg(feature = "std")]
 pub use getenv;
 
 pub use secrecy;
+
+#[cfg(not(feature = "tracing"))]
+pub mod tracing;
 
 #[cfg(feature = "tracing")]
 pub use tracing;
