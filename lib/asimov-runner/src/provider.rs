@@ -65,11 +65,16 @@ mod tests {
         let mut runner = Provider::new(
             "cat",
             ProviderOptions {
-                prompt: "Hello, world!".into(),
+                prompt: Prompt::builder()
+                    .messages(vec![PromptMessage(
+                        PromptRole::User,
+                        "Hello, world!".into(),
+                    )])
+                    .build(),
             },
         );
         let result = runner.execute().await;
         assert!(result.is_ok());
-        assert_eq!(result.unwrap(), String::from("Hello, world!"));
+        assert_eq!(result.unwrap(), String::from("user: Hello, world!\n"));
     }
 }
