@@ -156,7 +156,7 @@ mod tests {
     #[tokio::test]
     async fn test_success() {
         let mut runner = Runner::new("curl");
-        runner.command().arg("http://neverssl.com");
+        runner.command().arg("https://google.com");
         let result = runner.execute().await;
         assert!(result.is_ok());
     }
