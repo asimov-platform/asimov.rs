@@ -168,6 +168,7 @@ mod tests {
         assert!(matches!(result, Err(RunnerError::MissingProgram(_))));
     }
 
+    #[cfg(unix)]
     #[tokio::test]
     async fn test_spawn_failure() {
         let mut runner = Runner::new("/dev/null");
