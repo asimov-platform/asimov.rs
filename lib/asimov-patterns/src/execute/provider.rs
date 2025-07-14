@@ -13,9 +13,19 @@ pub trait Provider<T, E>: Execute<T, E> {}
 /// # Examples
 ///
 /// ```rust
-/// use asimov_patterns::ProviderOptions;
+/// use asimov_patterns::{ProviderOptions, Prompt, PromptMessage, PromptRole};
 ///
-/// let options = ProviderOptions::builder().build();
+/// let options = ProviderOptions::builder()
+///     .prompt(
+///         Prompt::builder()
+///             .messages(vec![PromptMessage(
+///                 PromptRole::User,
+///                 "Hello, world!".into(),
+///             )])
+///             .build(),
+///     )
+///     .build();
+///
 /// ```
 #[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd, TypedBuilder)]
 pub struct ProviderOptions {
