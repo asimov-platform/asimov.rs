@@ -25,14 +25,14 @@ cargo add asimov-module
 
 ```toml
 [dependencies]
-asimov = { package = "asimov-module", "version" = "25.0.0-dev.13" }
+asimov = { package = "asimov-module", "version" = "25.0.0-dev.14" }
 ```
 
 ### Installation in `Cargo.toml` (with only specific features enabled)
 
 ```toml
 [dependencies]
-asimov = { package = "asimov-module", "version" = "25.0.0-dev.13", default-features = false, features = ["tracing"] }
+asimov = { package = "asimov-module", "version" = "25.0.0-dev.14", default-features = false, features = ["tracing"] }
 ```
 
 ## 👉 Examples

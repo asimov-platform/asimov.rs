@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 25.0.0-dev.14 - 2025-07-14
+### Added
+- No-op tracing macros when tracing is disabled (by @artob)
+- Support module configuration in manifests (#16 by @SamuelSarle)
+- Support for environment variables in module configuration (#17 by @SamuelSarle)
+### Fixed
+- `asimov_root()` on Windows (#15 by @imunproductive)
+- Build error when building without default features (by @artob)
+
 ## 25.0.0-dev.13 - 2025-07-01
 ### Added
 - `asimov_module::init_tracing_subscriber` (#13)
