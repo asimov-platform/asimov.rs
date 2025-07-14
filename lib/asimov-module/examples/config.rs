@@ -30,7 +30,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     let api_key = manifest.variable("api_key", None).unwrap_or_default();
     if api_key.is_empty() {
         println!("api_key: `{api_key}`");
-        println!("(consider `mkdir -p ~/.asimov/configs/default/example/ && echo -n \"<api-key-value>\" >> ~/.asimov/configs/default/example/api_key` or for a non-example module `asimov module config <example> api_key <api-key-value>`)");
+        println!(
+            "(consider `mkdir -p ~/.asimov/configs/default/example/ && echo -n \"<api-key-value>\" >> ~/.asimov/configs/default/example/api_key` or for a non-example module `asimov module config <example> api_key <api-key-value>`)"
+        );
     } else {
         println!("api_key: `{api_key}`");
     }
