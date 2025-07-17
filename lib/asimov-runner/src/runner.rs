@@ -15,7 +15,7 @@ pub struct Runner(Command);
 impl Runner {
     pub fn new(program: impl AsRef<OsStr>) -> Self {
         let mut command = Command::new(program);
-        command.env("NO_COLOR", "1");
+        command.env("NO_COLOR", "1"); // See: https://no-color.org
         command.stdin(Stdio::null());
         command.stdout(Stdio::null());
         command.stderr(Stdio::null());

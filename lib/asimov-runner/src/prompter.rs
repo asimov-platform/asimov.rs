@@ -4,20 +4,22 @@ use crate::{Runner, RunnerError};
 use async_trait::async_trait;
 use std::{ffi::OsStr, io::Read, process::Stdio};
 
-pub use asimov_patterns::{Prompt, PromptMessage, PromptRole, ProviderOptions};
+pub use asimov_patterns::PrompterOptions;
+pub use asimov_prompt::{Prompt, PromptMessage, PromptRole};
 
 pub type ProviderResult = std::result::Result<String, RunnerError>;
 
-/// LLM inference provider. Consumes text input, produces text output.
+/// See: https://asimov-specs.github.io/program-patterns/#prompter
 #[derive(Debug)]
-pub struct Provider {
+pub struct Prompter {
     runner: Runner,
+    prompt: Prompt,
     #[allow(unused)]
-    options: ProviderOptions,
+    options: PrompterOptions,
 }
 
-impl Provider {
-    pub fn new(program: impl AsRef<OsStr>, options: ProviderOptions) -> Self {
+impl Prompter {
+    pub fn new(program: impl AsRef<OsStr>, prompt: Prompt, options: PrompterOptions) -> Self {
         let mut runner = Runner::new(program);
 
         runner
@@ -26,25 +28,29 @@ impl Provider {
             .stdout(Stdio::piped())
             .stderr(Stdio::piped());
 
-        Self { runner, options }
+        Self {
+            runner,
+            prompt,
+            options,
+        }
     }
 }
 
-impl asimov_patterns::Provider<String, RunnerError> for Provider {}
+impl asimov_patterns::Prompter<String, RunnerError> for Prompter {}
 
 #[async_trait]
-impl asimov_patterns::Execute<String, RunnerError> for Provider {
+impl asimov_patterns::Execute<String, RunnerError> for Prompter {
     async fn execute(&mut self) -> ProviderResult {
         let mut process = self.runner.spawn().await?;
 
-        let prompt = self.options.prompt.clone();
-        let mut stdin = process.stdin.take().expect("Failed to capture stdin");
+        let prompt = self.prompt.clone();
+        let mut stdin = process.stdin.take().expect("should capture stdin");
         tokio::spawn(async move {
             use tokio::io::AsyncWriteExt;
             stdin
                 .write_all(prompt.to_string().as_bytes())
                 .await
-                .expect("Failed to write to stdin");
+                .expect("should write to stdin");
         });
 
         let mut stdout = self.runner.wait(process).await?;
@@ -62,16 +68,15 @@ mod tests {
 
     #[tokio::test]
     async fn test_execute() {
-        let mut runner = Provider::new(
+        let mut runner = Prompter::new(
             "cat",
-            ProviderOptions {
-                prompt: Prompt::builder()
-                    .messages(vec![PromptMessage(
-                        PromptRole::User,
-                        "Hello, world!".into(),
-                    )])
-                    .build(),
-            },
+            Prompt::builder()
+                .messages(vec![PromptMessage(
+                    PromptRole::User,
+                    "Hello, world!".into(),
+                )])
+                .build(),
+            PrompterOptions::default(),
         );
         let result = runner.execute().await;
         assert!(result.is_ok());

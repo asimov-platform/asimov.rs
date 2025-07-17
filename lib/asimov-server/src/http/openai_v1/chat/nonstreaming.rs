@@ -5,7 +5,7 @@ use crate::{
     persistence::PersistentState,
 };
 use asimov_prompt::{Prompt, PromptMessage, PromptRole};
-use asimov_runner::{Execute, Provider, ProviderOptions};
+use asimov_runner::{Execute, Prompter, PrompterOptions};
 use axum::Json;
 use jiff::Timestamp;
 use openai::schemas::{
@@ -34,7 +34,7 @@ pub async fn create(
     let prompt = Prompt::from(prompt_messages);
 
     let provider_name = state.read().unwrap().provider.clone();
-    let mut provider = Provider::new(provider_name, ProviderOptions { prompt });
+    let mut provider = Prompter::new(provider_name, prompt, PrompterOptions::default());
     let provider_output = provider
         .execute()
         .await

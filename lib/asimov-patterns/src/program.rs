@@ -1,14 +1,10 @@
 // This is free and unencumbered software released into the public domain.
 
-//! ```rust
-//! # use asimov_runner::*;
-//! ```
+//! ASIMOV Program Patterns
+//!
+//! See: https://asimov-specs.github.io/program-patterns/
 
 #![allow(unused_imports)]
-
-pub use asimov_patterns::Execute;
-pub use clientele::SysexitsError;
-pub use tokio::process::Command;
 
 mod adapter;
 pub use adapter::*;

@@ -4,12 +4,17 @@ use std::ffi::OsStr;
 
 pub use asimov_patterns::AdapterOptions;
 
-/// RDF dataset adapter. Consumes SPARQL input, produces RDF output.
+pub type Query = String; // TODO
+
+/// See: https://asimov-specs.github.io/program-patterns/#adapter
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct Adapter {}
+pub struct Adapter {
+    query: Query,
+    options: AdapterOptions,
+}
 
 impl Adapter {
-    pub fn new(_program: impl AsRef<OsStr>, _options: AdapterOptions) -> Self {
-        Self {}
+    pub fn new(_program: impl AsRef<OsStr>, query: Query, options: AdapterOptions) -> Self {
+        Self { query, options }
     }
 }

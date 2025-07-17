@@ -6,9 +6,9 @@ use std::{ffi::OsStr, io::Cursor, process::Stdio};
 
 pub use asimov_patterns::FetcherOptions;
 
-pub type FetcherResult = std::result::Result<Cursor<Vec<u8>>, RunnerError>;
+pub type FetcherResult = std::result::Result<Cursor<Vec<u8>>, RunnerError>; // TODO
 
-/// Network protocol fetcher. Consumes a URL input, produces some output.
+/// See: https://asimov-specs.github.io/program-patterns/#fetcher
 #[derive(Debug)]
 #[allow(unused)]
 pub struct Fetcher {
@@ -17,12 +17,16 @@ pub struct Fetcher {
 }
 
 impl Fetcher {
-    pub fn new(program: impl AsRef<OsStr>, options: FetcherOptions) -> Self {
+    pub fn new(
+        program: impl AsRef<OsStr>,
+        input_url: impl AsRef<OsStr>,
+        options: FetcherOptions,
+    ) -> Self {
         let mut runner = Runner::new(program);
 
         runner
             .command()
-            .arg(&options.input_url)
+            .arg(input_url)
             .stdin(Stdio::null())
             .stdout(Stdio::piped())
             .stderr(Stdio::piped());
@@ -50,9 +54,8 @@ mod tests {
     async fn test_execute() {
         let mut runner = Fetcher::new(
             "curl",
-            FetcherOptions {
-                input_url: "https://www.google.com/robots.txt".to_string(),
-            },
+            "https://www.google.com/robots.txt",
+            FetcherOptions::default(),
         );
         let result = runner.execute().await;
         assert!(result.is_ok());

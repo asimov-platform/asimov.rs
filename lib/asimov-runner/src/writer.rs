@@ -4,12 +4,14 @@ use std::ffi::OsStr;
 
 pub use asimov_patterns::WriterOptions;
 
-/// RDF dataset converter. Consumes RDF input, produces some output.
+/// See: https://asimov-specs.github.io/program-patterns/#writer
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct Writer {}
+pub struct Writer {
+    options: WriterOptions,
+}
 
 impl Writer {
-    pub fn new(_program: impl AsRef<OsStr>, _options: WriterOptions) -> Self {
-        Self {}
+    pub fn new(_program: impl AsRef<OsStr>, options: WriterOptions) -> Self {
+        Self { options }
     }
 }

@@ -23,6 +23,7 @@ unstable = []
 
 [dependencies]
 asimov-patterns.workspace = true
+asimov-prompt.workspace = true
 async-trait.workspace = true
 clientele.workspace = true
 dogma.workspace = true

@@ -1,9 +1,12 @@
 // This is free and unencumbered software released into the public domain.
 
 use crate::Execute;
+use alloc::{string::String, vec::Vec};
 use typed_builder::TypedBuilder;
 
-/// RDF dataset reasoner. Consumes RDF input, produces entailed RDF output.
+/// RDF dataset entailer. Consumes RDF input, produces entailed RDF output.
+///
+/// See: https://asimov-specs.github.io/program-patterns/#reasoner
 pub trait Reasoner<T, E>: Execute<T, E> {}
 
 /// Configuration options for [`Reasoner`].
@@ -16,4 +19,13 @@ pub trait Reasoner<T, E>: Execute<T, E> {}
 /// let options = ReasonerOptions::builder().build();
 /// ```
 #[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd, TypedBuilder)]
-pub struct ReasonerOptions {}
+pub struct ReasonerOptions {
+    /// The input format.
+    pub input: Option<String>,
+
+    /// The output format.
+    pub output: Option<String>,
+
+    /// Extended nonstandard program options.
+    pub other: Vec<String>,
+}

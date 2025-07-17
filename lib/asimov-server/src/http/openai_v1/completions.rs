@@ -7,7 +7,7 @@ use std::sync::{Arc, RwLock};
 use crate::persistence::{self, PersistentState};
 
 use super::error::CompletionError;
-use asimov_runner::{Execute, Prompt, Provider, ProviderOptions};
+use asimov_runner::{Execute, Prompt, Prompter, PrompterOptions};
 use axum::{Json, Router, extract, routing::post};
 use jiff::Timestamp;
 use openai::schemas::{
@@ -39,7 +39,7 @@ async fn create(
         CompletionError::UnimplementedFeature("prompt from an array of tokens".into())
     })?;
     let provider_name = state.read().unwrap().provider.clone();
-    let mut provider = Provider::new(provider_name, ProviderOptions { prompt });
+    let mut provider = Prompter::new(provider_name, prompt, PrompterOptions::default());
 
     let provider_output = provider
         .execute()

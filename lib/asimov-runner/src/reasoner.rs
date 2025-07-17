@@ -4,12 +4,14 @@ use std::ffi::OsStr;
 
 pub use asimov_patterns::ReasonerOptions;
 
-/// RDF dataset reasoner. Consumes RDF input, produces entailed RDF output.
+/// See: https://asimov-specs.github.io/program-patterns/#reasoner
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct Reasoner {}
+pub struct Reasoner {
+    options: ReasonerOptions,
+}
 
 impl Reasoner {
-    pub fn new(_program: impl AsRef<OsStr>, _options: ReasonerOptions) -> Self {
-        Self {}
+    pub fn new(_program: impl AsRef<OsStr>, options: ReasonerOptions) -> Self {
+        Self { options }
     }
 }

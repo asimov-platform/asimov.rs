@@ -16,15 +16,11 @@ publish.workspace = true
 
 [features]
 default = ["all", "std"]
-all = ["tracing"]
-std = ["dogma/std"]
-tracing = []
+all = []
+std = []
 unstable = []
 
 [dependencies]
-asimov-prompt.workspace = true
 async-trait.workspace = true
-dogma.workspace = true
 rdf-model.workspace = true
-stability.workspace = true
 typed-builder.workspace = true
