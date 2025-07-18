@@ -40,4 +40,11 @@ impl<S: reasoner_options_builder::State> ReasonerOptionsBuilder<S> {
         self.other.push(flag.into());
         self
     }
+
+    pub fn maybe_other(mut self, flag: Option<impl Into<String>>) -> Self {
+        if let Some(flag) = flag {
+            self.other.push(flag.into());
+        }
+        self
+    }
 }

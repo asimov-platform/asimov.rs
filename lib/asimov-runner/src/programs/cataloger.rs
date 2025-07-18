@@ -59,6 +59,11 @@ impl Cataloger {
             output,
         }
     }
+
+    pub async fn execute(&mut self) -> CatalogerResult {
+        let stdout = self.executor.execute().await?;
+        Ok(stdout)
+    }
 }
 
 impl asimov_patterns::Cataloger<Cursor<Vec<u8>>, ExecutorError> for Cataloger {}
@@ -66,8 +71,7 @@ impl asimov_patterns::Cataloger<Cursor<Vec<u8>>, ExecutorError> for Cataloger {}
 #[async_trait]
 impl asimov_patterns::Execute<Cursor<Vec<u8>>, ExecutorError> for Cataloger {
     async fn execute(&mut self) -> CatalogerResult {
-        let stdout = self.executor.execute().await?;
-        Ok(stdout)
+        self.execute().await
     }
 }
 

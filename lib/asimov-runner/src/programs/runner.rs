@@ -54,6 +54,11 @@ impl Runner {
             output,
         }
     }
+
+    pub async fn execute(&mut self) -> RunnerResult {
+        let stdout = self.executor.execute_with_input(&mut self.input).await?;
+        Ok(stdout)
+    }
 }
 
 impl asimov_patterns::Runner<Cursor<Vec<u8>>, ExecutorError> for Runner {}
@@ -61,8 +66,7 @@ impl asimov_patterns::Runner<Cursor<Vec<u8>>, ExecutorError> for Runner {}
 #[async_trait]
 impl asimov_patterns::Execute<Cursor<Vec<u8>>, ExecutorError> for Runner {
     async fn execute(&mut self) -> RunnerResult {
-        let stdout = self.executor.execute_with_input(&mut self.input).await?;
-        Ok(stdout)
+        self.execute().await
     }
 }
 

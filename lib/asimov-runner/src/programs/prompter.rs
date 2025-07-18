@@ -63,13 +63,8 @@ impl Prompter {
             output,
         }
     }
-}
 
-impl asimov_patterns::Prompter<String, ExecutorError> for Prompter {}
-
-#[async_trait]
-impl asimov_patterns::Execute<String, ExecutorError> for Prompter {
-    async fn execute(&mut self) -> PrompterResult {
+    pub async fn execute(&mut self) -> PrompterResult {
         let mut process = self.executor.spawn().await?;
 
         let prompt = self.input.clone();
@@ -87,6 +82,15 @@ impl asimov_patterns::Execute<String, ExecutorError> for Prompter {
         stdout.read_to_string(&mut result)?;
 
         Ok(result)
+    }
+}
+
+impl asimov_patterns::Prompter<String, ExecutorError> for Prompter {}
+
+#[async_trait]
+impl asimov_patterns::Execute<String, ExecutorError> for Prompter {
+    async fn execute(&mut self) -> PrompterResult {
+        self.execute().await
     }
 }
 

@@ -36,4 +36,11 @@ impl<S: resolver_options_builder::State> ResolverOptionsBuilder<S> {
         self.other.push(flag.into());
         self
     }
+
+    pub fn maybe_other(mut self, flag: Option<impl Into<String>>) -> Self {
+        if let Some(flag) = flag {
+            self.other.push(flag.into());
+        }
+        self
+    }
 }

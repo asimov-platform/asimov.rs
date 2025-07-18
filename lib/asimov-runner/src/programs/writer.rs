@@ -57,6 +57,11 @@ impl Writer {
             output,
         }
     }
+
+    pub async fn execute(&mut self) -> WriterResult {
+        let stdout = self.executor.execute_with_input(&mut self.input).await?;
+        Ok(stdout)
+    }
 }
 
 impl asimov_patterns::Writer<Cursor<Vec<u8>>, ExecutorError> for Writer {}
@@ -64,8 +69,7 @@ impl asimov_patterns::Writer<Cursor<Vec<u8>>, ExecutorError> for Writer {}
 #[async_trait]
 impl asimov_patterns::Execute<Cursor<Vec<u8>>, ExecutorError> for Writer {
     async fn execute(&mut self) -> WriterResult {
-        let stdout = self.executor.execute_with_input(&mut self.input).await?;
-        Ok(stdout)
+        self.execute().await
     }
 }
 

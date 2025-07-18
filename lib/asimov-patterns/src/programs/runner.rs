@@ -44,6 +44,13 @@ impl<S: runner_options_builder::State> RunnerOptionsBuilder<S> {
         self
     }
 
+    pub fn maybe_other(mut self, flag: Option<impl Into<String>>) -> Self {
+        if let Some(flag) = flag {
+            self.other.push(flag.into());
+        }
+        self
+    }
+
     pub fn define(mut self, key: impl Into<String>, val: impl Into<String>) -> Self {
         self.define.insert(key.into(), val.into());
         self

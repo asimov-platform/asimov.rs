@@ -54,6 +54,12 @@ impl Resolver {
             output,
         }
     }
+
+    pub async fn execute(&mut self) -> ResolverResult {
+        let _stdout = self.executor.execute().await?;
+        //let lines = stdout.lines().into_iter().collect::<Vec<_>>().await?; // FIXME
+        Ok(Vec::new())
+    }
 }
 
 impl asimov_patterns::Resolver<Vec<String>, ExecutorError> for Resolver {}
@@ -61,9 +67,7 @@ impl asimov_patterns::Resolver<Vec<String>, ExecutorError> for Resolver {}
 #[async_trait]
 impl asimov_patterns::Execute<Vec<String>, ExecutorError> for Resolver {
     async fn execute(&mut self) -> ResolverResult {
-        let _stdout = self.executor.execute().await?;
-        //let lines = stdout.lines().into_iter().collect::<Vec<_>>().await?; // FIXME
-        Ok(Vec::new())
+        self.execute().await
     }
 }
 

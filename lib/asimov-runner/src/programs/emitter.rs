@@ -47,6 +47,11 @@ impl Emitter {
             output,
         }
     }
+
+    pub async fn execute(&mut self) -> EmitterResult {
+        let stdout = self.executor.execute().await?;
+        Ok(stdout)
+    }
 }
 
 impl asimov_patterns::Emitter<Cursor<Vec<u8>>, ExecutorError> for Emitter {}
@@ -54,8 +59,7 @@ impl asimov_patterns::Emitter<Cursor<Vec<u8>>, ExecutorError> for Emitter {}
 #[async_trait]
 impl asimov_patterns::Execute<Cursor<Vec<u8>>, ExecutorError> for Emitter {
     async fn execute(&mut self) -> EmitterResult {
-        let stdout = self.executor.execute().await?;
-        Ok(stdout)
+        self.execute().await
     }
 }
 
