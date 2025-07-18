@@ -21,12 +21,19 @@ pub trait Adapter<T, E>: Execute<T, E> {}
 ///     .build();
 /// ```
 #[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd, Builder)]
-#[builder(on(String, into))]
+#[builder(derive(Debug), on(String, into))]
 pub struct AdapterOptions {
+    /// Extended nonstandard adapter options.
+    #[builder(field)]
+    pub other: Vec<String>,
+
     /// The output format.
     pub output: Option<String>,
+}
 
-    /// Extended nonstandard adapter options.
-    #[builder(default)]
-    pub other: Vec<String>,
+impl<S: adapter_options_builder::State> AdapterOptionsBuilder<S> {
+    pub fn other(mut self, flag: impl Into<String>) -> Self {
+        self.other.push(flag.into());
+        self
+    }
 }

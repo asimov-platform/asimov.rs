@@ -22,15 +22,22 @@ pub trait Cataloger<T, E>: Execute<T, E> {}
 ///     .build();
 /// ```
 #[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd, Builder)]
-#[builder(on(String, into))]
+#[builder(derive(Debug), on(String, into))]
 pub struct CatalogerOptions {
+    /// Extended nonstandard cataloger options.
+    #[builder(field)]
+    pub other: Vec<String>,
+
     /// The maximum number of outputs.
     pub limit: Option<usize>,
 
     /// The output format.
     pub output: Option<String>,
+}
 
-    /// Extended nonstandard cataloger options.
-    #[builder(default)]
-    pub other: Vec<String>,
+impl<S: cataloger_options_builder::State> CatalogerOptionsBuilder<S> {
+    pub fn other(mut self, flag: impl Into<String>) -> Self {
+        self.other.push(flag.into());
+        self
+    }
 }

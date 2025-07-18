@@ -1,7 +1,12 @@
 // This is free and unencumbered software released into the public domain.
 
 use crate::Execute;
-use alloc::{collections::btree_map::BTreeMap, string::String, vec, vec::Vec};
+use alloc::{
+    borrow::ToOwned,
+    collections::btree_map::BTreeMap,
+    string::String,
+    vec::{self, Vec},
+};
 use bon::Builder;
 
 /// Language runtime engine. Consumes text input conforming to a grammar,
@@ -22,13 +27,25 @@ pub trait Runner<T, E>: Execute<T, E> {}
 ///     .build();
 /// ```
 #[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd, Builder)]
-#[builder(on(String, into))]
+#[builder(derive(Debug), on(String, into))]
 pub struct RunnerOptions {
-    /// Define key/value pairs.
-    #[builder(default, with = |k: &str, v: &str| BTreeMap::new())] // TODO
-    pub define: BTreeMap<String, String>,
-
     /// Extended nonstandard runner options.
-    #[builder(default)]
+    #[builder(field)]
     pub other: Vec<String>,
+
+    /// Define key/value pairs.
+    #[builder(field)]
+    pub define: BTreeMap<String, String>,
+}
+
+impl<S: runner_options_builder::State> RunnerOptionsBuilder<S> {
+    pub fn other(mut self, flag: impl Into<String>) -> Self {
+        self.other.push(flag.into());
+        self
+    }
+
+    pub fn define(mut self, key: impl Into<String>, val: impl Into<String>) -> Self {
+        self.define.insert(key.into(), val.into());
+        self
+    }
 }

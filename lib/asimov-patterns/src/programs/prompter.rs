@@ -24,8 +24,12 @@ pub trait Prompter<T, E>: Execute<T, E> {}
 ///
 /// ```
 #[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd, Builder)]
-#[builder(on(String, into))]
+#[builder(derive(Debug), on(String, into))]
 pub struct PrompterOptions {
+    /// Extended nonstandard prompter options.
+    #[builder(field)]
+    pub other: Vec<String>,
+
     /// The input format.
     pub input: Option<String>,
 
@@ -34,8 +38,11 @@ pub struct PrompterOptions {
 
     /// The output format.
     pub output: Option<String>,
+}
 
-    /// Extended nonstandard prompter options.
-    #[builder(default)]
-    pub other: Vec<String>,
+impl<S: prompter_options_builder::State> PrompterOptionsBuilder<S> {
+    pub fn other(mut self, flag: impl Into<String>) -> Self {
+        self.other.push(flag.into());
+        self
+    }
 }

@@ -8,6 +8,7 @@ use dogma::{
 };
 
 #[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd, Builder)]
+#[builder(derive(Debug), on(String, into))]
 pub struct Prompt {
     #[builder(default)]
     pub messages: Vec<PromptMessage>,

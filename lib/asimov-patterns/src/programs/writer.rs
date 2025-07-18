@@ -22,15 +22,22 @@ pub trait Writer<T, E>: Execute<T, E> {}
 ///     .build();
 /// ```
 #[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd, Builder)]
-#[builder(on(String, into))]
+#[builder(derive(Debug), on(String, into))]
 pub struct WriterOptions {
+    /// Extended nonstandard writer options.
+    #[builder(field)]
+    pub other: Vec<String>,
+
     /// The input format.
     pub input: Option<String>,
 
     /// The output format.
     pub output: Option<String>,
+}
 
-    /// Extended nonstandard writer options.
-    #[builder(default)]
-    pub other: Vec<String>,
+impl<S: writer_options_builder::State> WriterOptionsBuilder<S> {
+    pub fn other(mut self, flag: impl Into<String>) -> Self {
+        self.other.push(flag.into());
+        self
+    }
 }

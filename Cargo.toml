@@ -118,7 +118,6 @@ tracing-subscriber = { version = "0.3", default-features = false, features = [
     "alloc",
     "tracing-log",
 ] }
-typed-builder = "0.21"
 uuid = { version = "1.17", features = ["v4"] }
 
 [patch.crates-io]

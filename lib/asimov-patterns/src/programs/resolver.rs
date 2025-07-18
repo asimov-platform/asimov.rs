@@ -21,12 +21,19 @@ pub trait Resolver<T, E>: Execute<T, E> {}
 ///     .build();
 /// ```
 #[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd, Builder)]
-#[builder(on(String, into))]
+#[builder(derive(Debug), on(String, into))]
 pub struct ResolverOptions {
+    /// Extended nonstandard resolver options.
+    #[builder(field)]
+    pub other: Vec<String>,
+
     /// The maximum number of outputs.
     pub limit: Option<usize>,
+}
 
-    /// Extended nonstandard resolver options.
-    #[builder(default)]
-    pub other: Vec<String>,
+impl<S: resolver_options_builder::State> ResolverOptionsBuilder<S> {
+    pub fn other(mut self, flag: impl Into<String>) -> Self {
+        self.other.push(flag.into());
+        self
+    }
 }

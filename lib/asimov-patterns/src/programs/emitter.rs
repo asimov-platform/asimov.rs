@@ -21,12 +21,19 @@ pub trait Emitter<T, E>: Execute<T, E> {}
 ///     .build();
 /// ```
 #[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd, Builder)]
-#[builder(on(String, into))]
+#[builder(derive(Debug), on(String, into))]
 pub struct EmitterOptions {
+    /// Extended nonstandard emitter options.
+    #[builder(field)]
+    pub other: Vec<String>,
+
     /// The output format.
     pub output: Option<String>,
+}
 
-    /// Extended nonstandard emitter options.
-    #[builder(default)]
-    pub other: Vec<String>,
+impl<S: emitter_options_builder::State> EmitterOptionsBuilder<S> {
+    pub fn other(mut self, flag: impl Into<String>) -> Self {
+        self.other.push(flag.into());
+        self
+    }
 }

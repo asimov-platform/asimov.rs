@@ -21,12 +21,19 @@ pub trait Indexer<E>: Execute<(), E> {}
 ///     .build();
 /// ```
 #[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd, Builder)]
-#[builder(on(String, into))]
+#[builder(derive(Debug), on(String, into))]
 pub struct IndexerOptions {
+    /// Extended nonstandard indexer options.
+    #[builder(field)]
+    pub other: Vec<String>,
+
     /// The input format.
     pub input: Option<String>,
+}
 
-    /// Extended nonstandard indexer options.
-    #[builder(default)]
-    pub other: Vec<String>,
+impl<S: indexer_options_builder::State> IndexerOptionsBuilder<S> {
+    pub fn other(mut self, flag: impl Into<String>) -> Self {
+        self.other.push(flag.into());
+        self
+    }
 }
