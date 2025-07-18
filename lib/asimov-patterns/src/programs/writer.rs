@@ -16,9 +16,13 @@ pub trait Writer<T, E>: Execute<T, E> {}
 /// ```rust
 /// use asimov_patterns::WriterOptions;
 ///
-/// let options = WriterOptions::builder().build();
+/// let options = WriterOptions::builder()
+///     .input("jsonld")
+///     .output("jsonld")
+///     .build();
 /// ```
 #[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd, Builder)]
+#[builder(on(String, into))]
 pub struct WriterOptions {
     /// The input format.
     pub input: Option<String>,
@@ -27,5 +31,6 @@ pub struct WriterOptions {
     pub output: Option<String>,
 
     /// Extended nonstandard writer options.
+    #[builder(default)]
     pub other: Vec<String>,
 }

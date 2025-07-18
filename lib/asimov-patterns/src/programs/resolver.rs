@@ -16,13 +16,17 @@ pub trait Resolver<T, E>: Execute<T, E> {}
 /// ```rust
 /// use asimov_patterns::ResolverOptions;
 ///
-/// let options = ResolverOptions::builder().build();
+/// let options = ResolverOptions::builder()
+///     .limit(100)
+///     .build();
 /// ```
 #[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd, Builder)]
+#[builder(on(String, into))]
 pub struct ResolverOptions {
     /// The maximum number of outputs.
     pub limit: Option<usize>,
 
     /// Extended nonstandard resolver options.
+    #[builder(default)]
     pub other: Vec<String>,
 }

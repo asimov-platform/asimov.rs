@@ -14,21 +14,17 @@ pub trait Prompter<T, E>: Execute<T, E> {}
 /// # Examples
 ///
 /// ```rust
-/// use asimov_patterns::{PrompterOptions, Prompt, PromptMessage, PromptRole};
+/// use asimov_patterns::PrompterOptions;
 ///
 /// let options = PrompterOptions::builder()
-///     .prompt(
-///         Prompt::builder()
-///             .messages(vec![PromptMessage(
-///                 PromptRole::User,
-///                 "Hello, world!".into(),
-///             )])
-///             .build(),
-///     )
+///     .input("text")
+///     .output("text")
+///     .model("gemma3:1b")
 ///     .build();
 ///
 /// ```
 #[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd, Builder)]
+#[builder(on(String, into))]
 pub struct PrompterOptions {
     /// The input format.
     pub input: Option<String>,
@@ -40,5 +36,6 @@ pub struct PrompterOptions {
     pub output: Option<String>,
 
     /// Extended nonstandard prompter options.
+    #[builder(default)]
     pub other: Vec<String>,
 }

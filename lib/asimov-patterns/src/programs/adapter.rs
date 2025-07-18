@@ -16,13 +16,17 @@ pub trait Adapter<T, E>: Execute<T, E> {}
 /// ```rust
 /// use asimov_patterns::AdapterOptions;
 ///
-/// let options = AdapterOptions::builder().build();
+/// let options = AdapterOptions::builder()
+///     .output("jsonld")
+///     .build();
 /// ```
 #[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd, Builder)]
+#[builder(on(String, into))]
 pub struct AdapterOptions {
     /// The output format.
     pub output: Option<String>,
 
     /// Extended nonstandard adapter options.
+    #[builder(default)]
     pub other: Vec<String>,
 }

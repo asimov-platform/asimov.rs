@@ -17,14 +17,16 @@ pub trait Fetcher<T, E>: Execute<T, E> {}
 /// use asimov_patterns::FetcherOptions;
 ///
 /// let options = FetcherOptions::builder()
-///     .input_url("https://crates.io/robots.txt".into())
+///     .output("jsonld")
 ///     .build();
 /// ```
 #[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd, Builder)]
+#[builder(on(String, into))]
 pub struct FetcherOptions {
     /// The output format.
     pub output: Option<String>,
 
     /// Extended nonstandard fetcher options.
+    #[builder(default)]
     pub other: Vec<String>,
 }
