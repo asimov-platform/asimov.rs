@@ -152,6 +152,53 @@ impl Resolver {
         Ok(())
     }
 
+    #[cfg(feature = "std")]
+    pub fn try_from_dir(path: impl AsRef<std::path::Path>) -> Result<Self, error::FromDirError> {
+        use error::FromDirError;
+
+        let path = path.as_ref();
+
+        let dir = std::fs::read_dir(path).map_err(|source| FromDirError::ManifestDirIo {
+            path: path.into(),
+            source,
+        })?;
+
+        let mut resolver = Resolver::new();
+
+        for entry in dir {
+            let entry = entry.map_err(|source| FromDirError::ManifestDirIo {
+                path: path.into(),
+                source,
+            })?;
+            if !entry.file_type().map(|ft| ft.is_file()).unwrap_or(false) {
+                continue;
+            }
+            let filename = entry.file_name();
+            let filename = filename.to_string_lossy();
+            if !filename.ends_with(".yaml") && !filename.ends_with(".yml") {
+                continue;
+            }
+            let path = entry.path();
+            let file = std::fs::File::open(&path).map_err(|source| FromDirError::ManifestIo {
+                path: path.clone(),
+                source,
+            })?;
+
+            let manifest = serde_yml::from_reader(file).map_err(|source| FromDirError::Parse {
+                path: path.clone(),
+                source,
+            })?;
+            resolver
+                .insert_manifest(&manifest)
+                .map_err(|source| FromDirError::Insert {
+                    path: path.clone(),
+                    source,
+                })?;
+        }
+
+        Ok(resolver)
+    }
+
     pub fn try_from_iter<I, T>(mut iter: I) -> Result<Self, UrlParseError>
     where
         I: Iterator<Item = T>,
