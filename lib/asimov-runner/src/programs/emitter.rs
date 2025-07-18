@@ -1,6 +1,6 @@
 // This is free and unencumbered software released into the public domain.
 
-use crate::{NoInput, Executor, ExecutorError, GraphOutput, Input, Output};
+use crate::{Executor, ExecutorError, GraphOutput, Input, NoInput, Output};
 use async_trait::async_trait;
 use derive_more::Debug;
 use std::{
