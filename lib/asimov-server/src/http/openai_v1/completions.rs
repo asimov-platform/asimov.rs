@@ -2,18 +2,16 @@
 
 #![allow(unused_imports)]
 
-use std::sync::{Arc, RwLock};
-
-use crate::persistence::{self, PersistentState};
-
 use super::error::CompletionError;
-use asimov_runner::{Execute, Prompt, Prompter, PrompterOptions};
+use crate::persistence::{self, PersistentState};
+use asimov_runner::{Execute, Prompt, Prompter, PrompterOptions, TextOutput};
 use axum::{Json, Router, extract, routing::post};
 use jiff::Timestamp;
 use openai::schemas::{
     CompletionUsage, CreateCompletionRequest, CreateCompletionResponse,
     CreateCompletionResponse_Choices,
 };
+use std::sync::{Arc, RwLock};
 
 /// See: https://platform.openai.com/docs/api-reference/completions
 pub fn routes() -> Router {
@@ -39,7 +37,12 @@ async fn create(
         CompletionError::UnimplementedFeature("prompt from an array of tokens".into())
     })?;
     let provider_name = state.read().unwrap().provider.clone();
-    let mut provider = Prompter::new(provider_name, prompt, PrompterOptions::default());
+    let mut provider = Prompter::new(
+        provider_name,
+        prompt,
+        TextOutput::Captured,
+        PrompterOptions::default(),
+    );
 
     let provider_output = provider
         .execute()

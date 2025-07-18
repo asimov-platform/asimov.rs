@@ -12,14 +12,14 @@ pub type TextInput = Input;
 
 #[derive(Debug)]
 pub enum Input {
-    Empty,
+    Ignored,
     AsyncRead(#[debug(skip)] Box<dyn AsyncRead + Send + Sync>),
 }
 
 impl Input {
     pub fn as_stdio(&self) -> Stdio {
         match self {
-            Input::Empty => Stdio::null(),
+            Input::Ignored => Stdio::null(),
             Input::AsyncRead(_) => Stdio::piped(),
         }
     }
@@ -28,7 +28,7 @@ impl Input {
 impl Into<Stdio> for Input {
     fn into(self) -> Stdio {
         match self {
-            Input::Empty => Stdio::null(),
+            Input::Ignored => Stdio::null(),
             Input::AsyncRead(_) => Stdio::piped(),
         }
     }

@@ -5,7 +5,7 @@ use crate::{
     persistence::PersistentState,
 };
 use asimov_prompt::{Prompt, PromptMessage, PromptRole};
-use asimov_runner::{Execute, Prompter, PrompterOptions};
+use asimov_runner::{Execute, Prompter, PrompterOptions, TextOutput};
 use async_stream::try_stream;
 use axum::response::sse::{Event, Sse};
 use futures::stream::Stream;
@@ -36,7 +36,12 @@ pub async fn create(
     let prompt = Prompt::from(prompt_messages);
 
     let provider_name = state.read().unwrap().provider.clone();
-    let mut provider = Prompter::new(provider_name, prompt, PrompterOptions::default());
+    let mut provider = Prompter::new(
+        provider_name,
+        prompt,
+        TextOutput::Captured,
+        PrompterOptions::default(),
+    );
     let provider_output = provider
         .execute()
         .await

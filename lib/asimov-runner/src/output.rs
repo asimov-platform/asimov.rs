@@ -12,6 +12,7 @@ pub type TextOutput = Output;
 #[derive(Debug)]
 pub enum Output {
     Ignored,
+    Captured,
     AsyncWrite(#[debug(skip)] Box<dyn AsyncWrite + Send + Sync>),
 }
 
@@ -19,6 +20,7 @@ impl Output {
     pub fn as_stdio(&self) -> Stdio {
         match self {
             Output::Ignored => Stdio::null(),
+            Output::Captured => Stdio::piped(),
             Output::AsyncWrite(_) => Stdio::piped(),
         }
     }
@@ -28,6 +30,7 @@ impl Into<Stdio> for Output {
     fn into(self) -> Stdio {
         match self {
             Output::Ignored => Stdio::null(),
+            Output::Captured => Stdio::piped(),
             Output::AsyncWrite(_) => Stdio::piped(),
         }
     }
