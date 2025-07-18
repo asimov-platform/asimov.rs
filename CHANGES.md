@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 25.0.0-dev.15 - 2025-07-18
+### Changed
+- Enhance the module resolver (#18 by @SamuelSarle)
+- Convert to `SysexitsError` from asimov-module errors (#19 by @SamuelSarle)
+- Overhaul of asimov-patterns (by @artob)
+- Overhaul of asimov-runner (by @artob)
+
 ## 25.0.0-dev.14 - 2025-07-14
 ### Added
 - No-op tracing macros when tracing is disabled (by @artob)
