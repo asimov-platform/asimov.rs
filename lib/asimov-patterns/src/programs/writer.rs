@@ -26,6 +26,6 @@ pub struct WriterOptions {
     /// The output format.
     pub output: Option<String>,
 
-    /// Extended nonstandard program options.
+    /// Extended nonstandard writer options.
     pub other: Vec<String>,
 }

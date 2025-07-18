@@ -23,6 +23,6 @@ pub struct EmitterOptions {
     /// The output format.
     pub output: Option<String>,
 
-    /// Extended nonstandard program options.
+    /// Extended nonstandard emitter options.
     pub other: Vec<String>,
 }

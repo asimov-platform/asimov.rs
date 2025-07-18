@@ -26,6 +26,6 @@ pub struct ReasonerOptions {
     /// The output format.
     pub output: Option<String>,
 
-    /// Extended nonstandard program options.
+    /// Extended nonstandard reasoner options.
     pub other: Vec<String>,
 }

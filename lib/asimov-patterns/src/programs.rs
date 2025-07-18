@@ -18,6 +18,9 @@ pub use emitter::*;
 mod fetcher;
 pub use fetcher::*;
 
+mod indexer;
+pub use indexer::*;
+
 mod prompter;
 pub use prompter::*;
 

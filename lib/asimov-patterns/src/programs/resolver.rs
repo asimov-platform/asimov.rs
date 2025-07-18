@@ -23,6 +23,6 @@ pub struct ResolverOptions {
     /// The maximum number of outputs.
     pub limit: Option<usize>,
 
-    /// Extended nonstandard program options.
+    /// Extended nonstandard resolver options.
     pub other: Vec<String>,
 }

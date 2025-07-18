@@ -47,6 +47,11 @@ impl Executor {
         self.0.stderr(Stdio::piped());
     }
 
+    pub async fn execute(&mut self) -> ExecutorResult {
+        let process = self.spawn().await?;
+        self.wait(process).await
+    }
+
     pub async fn spawn(&mut self) -> Result<Child, ExecutorError> {
         match self.0.spawn() {
             Ok(process) => Ok(process),
@@ -70,11 +75,6 @@ impl Executor {
 
         Ok(Cursor::new(output.stdout))
     }
-
-    pub async fn execute(&mut self) -> ExecutorResult {
-        let process = self.spawn().await?;
-        self.wait(process).await
-    }
 }
 
 #[cfg(test)]
@@ -84,7 +84,7 @@ mod tests {
     #[tokio::test]
     async fn test_success() {
         let mut runner = Executor::new("curl");
-        runner.command().arg("https://google.com");
+        runner.command().arg("https://www.google.com");
         let result = runner.execute().await;
         assert!(result.is_ok());
     }

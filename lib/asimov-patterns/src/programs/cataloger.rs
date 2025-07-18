@@ -26,6 +26,6 @@ pub struct CatalogerOptions {
     /// The output format.
     pub output: Option<String>,
 
-    /// Extended nonstandard program options.
+    /// Extended nonstandard cataloger options.
     pub other: Vec<String>,
 }

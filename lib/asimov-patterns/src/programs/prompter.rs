@@ -39,6 +39,6 @@ pub struct PrompterOptions {
     /// The output format.
     pub output: Option<String>,
 
-    /// Extended nonstandard program options.
+    /// Extended nonstandard prompter options.
     pub other: Vec<String>,
 }

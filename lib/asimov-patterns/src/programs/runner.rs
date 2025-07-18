@@ -24,6 +24,6 @@ pub struct RunnerOptions {
     /// Define key/value pairs.
     pub define: Vec<BTreeMap<String, String>>,
 
-    /// Extended nonstandard program options.
+    /// Extended nonstandard runner options.
     pub other: Vec<String>,
 }

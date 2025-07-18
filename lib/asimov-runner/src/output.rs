@@ -6,6 +6,7 @@ use tokio::io::AsyncWrite;
 
 pub type AnyOutput = Output;
 pub type GraphOutput = Output;
+pub type NoOutput = ();
 pub type QueryOutput = Output;
 pub type TextOutput = Output;
 

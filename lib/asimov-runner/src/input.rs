@@ -5,8 +5,8 @@ use std::process::Stdio;
 use tokio::io::AsyncRead;
 
 pub type AnyInput = Input;
-pub type EmptyInput = ();
 pub type GraphInput = Input;
+pub type NoInput = ();
 pub type QueryInput = Input;
 pub type TextInput = Input;
 

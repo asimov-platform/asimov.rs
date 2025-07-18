@@ -26,6 +26,6 @@ pub struct ReaderOptions {
     /// The output format.
     pub output: Option<String>,
 
-    /// Extended nonstandard program options.
+    /// Extended nonstandard reader options.
     pub other: Vec<String>,
 }

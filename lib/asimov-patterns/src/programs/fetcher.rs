@@ -25,6 +25,6 @@ pub struct FetcherOptions {
     /// The output format.
     pub output: Option<String>,
 
-    /// Extended nonstandard program options.
+    /// Extended nonstandard fetcher options.
     pub other: Vec<String>,
 }

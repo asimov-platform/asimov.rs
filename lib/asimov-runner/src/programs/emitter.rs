@@ -1,6 +1,6 @@
 // This is free and unencumbered software released into the public domain.
 
-use crate::{EmptyInput, Executor, ExecutorError, GraphOutput, Input, Output};
+use crate::{NoInput, Executor, ExecutorError, GraphOutput, Input, Output};
 use async_trait::async_trait;
 use derive_more::Debug;
 use std::{
@@ -21,7 +21,7 @@ pub type EmitterResult = std::result::Result<Cursor<Vec<u8>>, ExecutorError>; //
 pub struct Emitter {
     executor: Executor,
     options: EmitterOptions,
-    input: EmptyInput,
+    input: NoInput,
     output: GraphOutput,
 }
 

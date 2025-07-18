@@ -23,6 +23,6 @@ pub struct AdapterOptions {
     /// The output format.
     pub output: Option<String>,
 
-    /// Extended nonstandard program options.
+    /// Extended nonstandard adapter options.
     pub other: Vec<String>,
 }
