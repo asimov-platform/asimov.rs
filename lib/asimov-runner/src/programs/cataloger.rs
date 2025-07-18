@@ -36,6 +36,17 @@ impl Cataloger {
         let mut executor = Executor::new(program);
         executor
             .command()
+            .args(if let Some(ref output) = options.output {
+                vec![format!("--output={}", output)]
+            } else {
+                vec![]
+            })
+            .args(if let Some(limit) = options.limit {
+                vec![format!("--limit={}", limit)]
+            } else {
+                vec![]
+            })
+            .args(&options.other)
             .arg(&input)
             .stdin(Stdio::null())
             .stdout(output.as_stdio())

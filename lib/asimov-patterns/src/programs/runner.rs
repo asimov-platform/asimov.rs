@@ -25,8 +25,8 @@ pub trait Runner<T, E>: Execute<T, E> {}
 #[builder(on(String, into))]
 pub struct RunnerOptions {
     /// Define key/value pairs.
-    #[builder(default, with = |k: &str, v: &str| vec![BTreeMap::new()])] // TODO
-    pub define: Vec<BTreeMap<String, String>>,
+    #[builder(default, with = |k: &str, v: &str| BTreeMap::new())] // TODO
+    pub define: BTreeMap<String, String>,
 
     /// Extended nonstandard runner options.
     #[builder(default)]

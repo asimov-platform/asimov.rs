@@ -30,6 +30,12 @@ impl Indexer {
         let mut executor = Executor::new(program);
         executor
             .command()
+            .args(if let Some(ref input) = options.input {
+                vec![format!("--input={}", input)]
+            } else {
+                vec![]
+            })
+            .args(&options.other)
             .stdin(input.as_stdio())
             .stdout(Stdio::null())
             .stderr(Stdio::piped());

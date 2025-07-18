@@ -35,6 +35,12 @@ impl Adapter {
         let mut executor = Executor::new(program);
         executor
             .command()
+            .args(if let Some(ref output) = options.output {
+                vec![format!("--output={}", output)]
+            } else {
+                vec![]
+            })
+            .args(&options.other)
             .stdin(input.as_stdio())
             .stdout(output.as_stdio())
             .stderr(Stdio::piped());

@@ -35,6 +35,14 @@ impl Runner {
         let mut executor = Executor::new(program);
         executor
             .command()
+            .args(
+                &options
+                    .define
+                    .iter()
+                    .map(|(k, v)| format!("--define={}={}", k, v))
+                    .collect::<Vec<_>>(),
+            )
+            .args(&options.other)
             .stdin(input.as_stdio())
             .stdout(output.as_stdio())
             .stderr(Stdio::piped());

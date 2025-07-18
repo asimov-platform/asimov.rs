@@ -36,6 +36,22 @@ impl Prompter {
 
         executor
             .command()
+            .args(if let Some(ref input) = options.input {
+                vec![format!("--input={}", input)]
+            } else {
+                vec![]
+            })
+            .args(if let Some(ref output) = options.output {
+                vec![format!("--output={}", output)]
+            } else {
+                vec![]
+            })
+            .args(if let Some(ref model) = options.model {
+                vec![format!("--model={}", model)]
+            } else {
+                vec![]
+            })
+            .args(&options.other)
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::piped());
