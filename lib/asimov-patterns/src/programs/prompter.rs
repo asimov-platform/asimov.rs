@@ -2,7 +2,7 @@
 
 use crate::Execute;
 use alloc::{string::String, vec::Vec};
-use typed_builder::TypedBuilder;
+use bon::Builder;
 
 /// LLM inference provider. Consumes prompt input, produces response output.
 ///
@@ -28,7 +28,7 @@ pub trait Prompter<T, E>: Execute<T, E> {}
 ///     .build();
 ///
 /// ```
-#[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd, TypedBuilder)]
+#[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd, Builder)]
 pub struct PrompterOptions {
     /// The input format.
     pub input: Option<String>,

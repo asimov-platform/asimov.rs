@@ -2,7 +2,7 @@
 
 use crate::Execute;
 use alloc::{string::String, vec::Vec};
-use typed_builder::TypedBuilder;
+use bon::Builder;
 
 /// RDF dataset importer. Consumes some input, produces RDF output.
 ///
@@ -18,7 +18,7 @@ pub trait Reader<T, E>: Execute<T, E> {}
 ///
 /// let options = ReaderOptions::builder().build();
 /// ```
-#[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd, TypedBuilder)]
+#[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd, Builder)]
 pub struct ReaderOptions {
     /// The input format.
     pub input: Option<String>,

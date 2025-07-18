@@ -28,7 +28,7 @@ tracing = []
 unstable = []
 
 [dependencies]
+bon.workspace = true
 derive_more = { workspace = true, features = ["display", "from", "from_str"] }
 dogma.workspace = true
 openai = { workspace = true, optional = true }
-typed-builder.workspace = true

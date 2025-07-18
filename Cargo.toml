@@ -61,6 +61,7 @@ async-stream = "0.3"
 async-trait = "0.1"
 axum = { version = "0.8", features = ["macros"] }
 axum-prometheus = { version = "0.8" }
+bon = "3.6"
 bs58 = "0.5"
 bytes = "1.10"
 cfg_aliases = "0.2"

@@ -2,7 +2,7 @@
 
 use crate::Execute;
 use alloc::{string::String, vec::Vec};
-use typed_builder::TypedBuilder;
+use bon::Builder;
 
 /// Graph iterator. Takes a URL input, produces RDF output.
 ///
@@ -18,7 +18,7 @@ pub trait Cataloger<T, E>: Execute<T, E> {}
 ///
 /// let options = CatalogerOptions::builder().build();
 /// ```
-#[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd, TypedBuilder)]
+#[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd, Builder)]
 pub struct CatalogerOptions {
     /// The maximum number of outputs.
     pub limit: Option<usize>,
