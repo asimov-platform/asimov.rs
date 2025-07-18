@@ -12,5 +12,5 @@ extern crate alloc;
 pub mod execute;
 pub use execute::*;
 
-pub mod program;
-pub use program::*;
+pub mod programs;
+pub use programs::*;

@@ -10,32 +10,5 @@ pub use asimov_patterns::Execute;
 pub use clientele::SysexitsError;
 pub use tokio::process::Command;
 
-mod adapter;
-pub use adapter::*;
-
-mod cataloger;
-pub use cataloger::*;
-
-mod emitter;
-pub use emitter::*;
-
-mod fetcher;
-pub use fetcher::*;
-
-mod prompter;
-pub use prompter::*;
-
-mod reader;
-pub use reader::*;
-
-mod reasoner;
-pub use reasoner::*;
-
-mod resolver;
-pub use resolver::*;
-
-mod runner;
-pub use runner::*;
-
-mod writer;
-pub use writer::*;
+pub mod programs;
+pub use programs::*;

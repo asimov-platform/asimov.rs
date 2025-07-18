@@ -9,6 +9,7 @@ default-members = [
     "lib/asimov-prompt",
     "lib/asimov-runner",
     "lib/asimov-server",
+    "lib/asimov-snapshot",
 ]
 resolver = "2"
 
