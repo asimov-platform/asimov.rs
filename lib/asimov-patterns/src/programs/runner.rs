@@ -2,7 +2,7 @@
 
 use crate::Execute;
 use alloc::{collections::btree_map::BTreeMap, string::String, vec::Vec};
-use typed_builder::TypedBuilder;
+use bon::Builder;
 
 /// Language runtime engine. Consumes text input conforming to a grammar,
 /// executes it, and produces the execution result as output.
@@ -19,7 +19,7 @@ pub trait Runner<T, E>: Execute<T, E> {}
 ///
 /// let options = RunnerOptions::builder().build();
 /// ```
-#[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd, TypedBuilder)]
+#[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd, Builder)]
 pub struct RunnerOptions {
     /// Define key/value pairs.
     pub define: Vec<BTreeMap<String, String>>,

@@ -2,7 +2,7 @@
 
 use crate::Execute;
 use alloc::{string::String, vec::Vec};
-use typed_builder::TypedBuilder;
+use bon::Builder;
 
 /// URI resolver. Takes a URI (that is, URN or URL) input, produces a resolved URL output.
 ///
@@ -18,7 +18,7 @@ pub trait Resolver<T, E>: Execute<T, E> {}
 ///
 /// let options = ResolverOptions::builder().build();
 /// ```
-#[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd, TypedBuilder)]
+#[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd, Builder)]
 pub struct ResolverOptions {
     /// The maximum number of outputs.
     pub limit: Option<usize>,

@@ -2,7 +2,7 @@
 
 use crate::Execute;
 use alloc::{string::String, vec::Vec};
-use typed_builder::TypedBuilder;
+use bon::Builder;
 
 /// URL resource materializer. Consumes a URL input, produces RDF output.
 ///
@@ -20,7 +20,7 @@ pub trait Fetcher<T, E>: Execute<T, E> {}
 ///     .input_url("https://crates.io/robots.txt".into())
 ///     .build();
 /// ```
-#[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd, TypedBuilder)]
+#[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd, Builder)]
 pub struct FetcherOptions {
     /// The output format.
     pub output: Option<String>,

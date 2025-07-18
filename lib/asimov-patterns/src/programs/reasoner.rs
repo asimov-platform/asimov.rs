@@ -2,7 +2,7 @@
 
 use crate::Execute;
 use alloc::{string::String, vec::Vec};
-use typed_builder::TypedBuilder;
+use bon::Builder;
 
 /// RDF dataset entailer. Consumes RDF input, produces entailed RDF output.
 ///
@@ -18,7 +18,7 @@ pub trait Reasoner<T, E>: Execute<T, E> {}
 ///
 /// let options = ReasonerOptions::builder().build();
 /// ```
-#[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd, TypedBuilder)]
+#[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd, Builder)]
 pub struct ReasonerOptions {
     /// The input format.
     pub input: Option<String>,

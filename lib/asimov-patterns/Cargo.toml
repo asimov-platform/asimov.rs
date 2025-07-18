@@ -22,5 +22,6 @@ unstable = []
 
 [dependencies]
 async-trait.workspace = true
+bon.workspace = true
 rdf-model.workspace = true
 typed-builder.workspace = true

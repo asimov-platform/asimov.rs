@@ -1,13 +1,13 @@
 // This is free and unencumbered software released into the public domain.
 
 use super::{prompt_message::PromptMessage, prompt_role::PromptRole};
+use bon::Builder;
 use dogma::{
     prelude::{FromStr, String, Vec, fmt},
     traits::Collection,
 };
-use typed_builder::TypedBuilder;
 
-#[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd, TypedBuilder)]
+#[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd, Builder)]
 pub struct Prompt {
     pub messages: Vec<PromptMessage>,
 }
