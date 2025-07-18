@@ -1,49 +1,62 @@
 // This is free and unencumbered software released into the public domain.
 
-use crate::{Runner, RunnerError};
+use crate::{Executor, ExecutorError, Input, TextOutput};
 use async_trait::async_trait;
-use std::{ffi::OsStr, io::Read, process::Stdio};
+use derive_more::Debug;
+use std::{
+    ffi::OsStr,
+    io::{Cursor, Read},
+    process::Stdio,
+};
+use tokio::io::{AsyncRead, AsyncWrite};
 
 pub use asimov_patterns::PrompterOptions;
 pub use asimov_prompt::{Prompt, PromptMessage, PromptRole};
 
-pub type ProviderResult = std::result::Result<String, RunnerError>;
+pub type PrompterResult = std::result::Result<String, ExecutorError>;
 
 /// See: https://asimov-specs.github.io/program-patterns/#prompter
+#[allow(unused)]
 #[derive(Debug)]
 pub struct Prompter {
-    runner: Runner,
-    prompt: Prompt,
-    #[allow(unused)]
+    executor: Executor,
     options: PrompterOptions,
+    input: Prompt,
+    output: TextOutput,
 }
 
 impl Prompter {
-    pub fn new(program: impl AsRef<OsStr>, prompt: Prompt, options: PrompterOptions) -> Self {
-        let mut runner = Runner::new(program);
+    pub fn new(
+        program: impl AsRef<OsStr>,
+        input: Prompt,
+        output: TextOutput,
+        options: PrompterOptions,
+    ) -> Self {
+        let mut executor = Executor::new(program);
 
-        runner
+        executor
             .command()
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::piped());
 
         Self {
-            runner,
-            prompt,
+            executor,
             options,
+            input,
+            output,
         }
     }
 }
 
-impl asimov_patterns::Prompter<String, RunnerError> for Prompter {}
+impl asimov_patterns::Prompter<String, ExecutorError> for Prompter {}
 
 #[async_trait]
-impl asimov_patterns::Execute<String, RunnerError> for Prompter {
-    async fn execute(&mut self) -> ProviderResult {
-        let mut process = self.runner.spawn().await?;
+impl asimov_patterns::Execute<String, ExecutorError> for Prompter {
+    async fn execute(&mut self) -> PrompterResult {
+        let mut process = self.executor.spawn().await?;
 
-        let prompt = self.prompt.clone();
+        let prompt = self.input.clone();
         let mut stdin = process.stdin.take().expect("should capture stdin");
         tokio::spawn(async move {
             use tokio::io::AsyncWriteExt;
@@ -53,7 +66,7 @@ impl asimov_patterns::Execute<String, RunnerError> for Prompter {
                 .expect("should write to stdin");
         });
 
-        let mut stdout = self.runner.wait(process).await?;
+        let mut stdout = self.executor.wait(process).await?;
         let mut result = String::new();
         stdout.read_to_string(&mut result)?;
 
@@ -68,7 +81,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_execute() {
-        let mut runner = Prompter::new(
+        let mut prompter = Prompter::new(
             "cat",
             Prompt::builder()
                 .messages(vec![PromptMessage(
@@ -76,9 +89,10 @@ mod tests {
                     "Hello, world!".into(),
                 )])
                 .build(),
+            TextOutput::Ignored,
             PrompterOptions::default(),
         );
-        let result = runner.execute().await;
+        let result = prompter.execute().await;
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), String::from("user: Hello, world!\n"));
     }

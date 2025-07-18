@@ -1,46 +1,60 @@
 // This is free and unencumbered software released into the public domain.
 
-use crate::{Runner, RunnerError};
+use crate::{Executor, ExecutorError, GraphOutput, Input};
 use async_trait::async_trait;
-use std::{ffi::OsStr, io::Cursor, process::Stdio};
+use derive_more::Debug;
+use std::{
+    ffi::OsStr,
+    io::{Cursor, Read},
+    process::Stdio,
+};
+use tokio::io::{AsyncRead, AsyncWrite};
 
 pub use asimov_patterns::FetcherOptions;
 
-pub type FetcherResult = std::result::Result<Cursor<Vec<u8>>, RunnerError>; // TODO
+/// See: https://asimov-specs.github.io/program-patterns/#fetcher
+pub type FetcherResult = std::result::Result<Cursor<Vec<u8>>, ExecutorError>; // TODO
 
 /// See: https://asimov-specs.github.io/program-patterns/#fetcher
-#[derive(Debug)]
 #[allow(unused)]
+#[derive(Debug)]
 pub struct Fetcher {
-    runner: Runner,
+    executor: Executor,
     options: FetcherOptions,
+    input: String,
+    output: GraphOutput,
 }
 
 impl Fetcher {
     pub fn new(
         program: impl AsRef<OsStr>,
-        input_url: impl AsRef<OsStr>,
+        input: impl AsRef<str>,
+        output: GraphOutput,
         options: FetcherOptions,
     ) -> Self {
-        let mut runner = Runner::new(program);
-
-        runner
+        let mut executor = Executor::new(program);
+        executor
             .command()
-            .arg(input_url)
+            .arg(input.as_ref())
             .stdin(Stdio::null())
             .stdout(Stdio::piped())
             .stderr(Stdio::piped());
 
-        Self { runner, options }
+        Self {
+            executor,
+            options,
+            input: input.as_ref().to_string(),
+            output,
+        }
     }
 }
 
-impl asimov_patterns::Fetcher<Cursor<Vec<u8>>, RunnerError> for Fetcher {}
+impl asimov_patterns::Fetcher<Cursor<Vec<u8>>, ExecutorError> for Fetcher {}
 
 #[async_trait]
-impl asimov_patterns::Execute<Cursor<Vec<u8>>, RunnerError> for Fetcher {
+impl asimov_patterns::Execute<Cursor<Vec<u8>>, ExecutorError> for Fetcher {
     async fn execute(&mut self) -> FetcherResult {
-        let stdout = self.runner.execute().await?;
+        let stdout = self.executor.execute().await?;
         Ok(stdout)
     }
 }
@@ -52,12 +66,13 @@ mod tests {
 
     #[tokio::test]
     async fn test_execute() {
-        let mut runner = Fetcher::new(
+        let mut fetcher = Fetcher::new(
             "curl",
             "https://www.google.com/robots.txt",
+            GraphOutput::Ignored,
             FetcherOptions::default(),
         );
-        let result = runner.execute().await;
+        let result = fetcher.execute().await;
         assert!(result.is_ok());
     }
 }

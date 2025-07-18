@@ -2,7 +2,7 @@
 
 #![allow(unused_imports)]
 
-use asimov_runner::RunnerError;
+use asimov_runner::ExecutorError;
 use axum::{
     Json,
     http::StatusCode,
@@ -22,7 +22,7 @@ pub enum CompletionError {
     UnimplementedFeature(String),
 
     #[error("execution failed: {0}")]
-    FailedExecute(#[from] RunnerError),
+    FailedExecute(#[from] ExecutorError),
 }
 
 impl IntoResponse for CompletionError {

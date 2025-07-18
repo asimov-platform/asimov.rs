@@ -26,6 +26,7 @@ asimov-patterns.workspace = true
 asimov-prompt.workspace = true
 async-trait.workspace = true
 clientele.workspace = true
+derive_more = { workspace = true, features = ["debug"] }
 dogma.workspace = true
 stability.workspace = true
 tokio = { workspace = true, features = ["process"] }
