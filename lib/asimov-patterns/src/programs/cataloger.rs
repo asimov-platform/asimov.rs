@@ -16,9 +16,13 @@ pub trait Cataloger<T, E>: Execute<T, E> {}
 /// ```rust
 /// use asimov_patterns::CatalogerOptions;
 ///
-/// let options = CatalogerOptions::builder().build();
+/// let options = CatalogerOptions::builder()
+///     .limit(100)
+///     .output("jsonld")
+///     .build();
 /// ```
 #[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd, Builder)]
+#[builder(on(String, into))]
 pub struct CatalogerOptions {
     /// The maximum number of outputs.
     pub limit: Option<usize>,
@@ -27,5 +31,6 @@ pub struct CatalogerOptions {
     pub output: Option<String>,
 
     /// Extended nonstandard cataloger options.
+    #[builder(default)]
     pub other: Vec<String>,
 }

@@ -16,9 +16,13 @@ pub trait Reader<T, E>: Execute<T, E> {}
 /// ```rust
 /// use asimov_patterns::ReaderOptions;
 ///
-/// let options = ReaderOptions::builder().build();
+/// let options = ReaderOptions::builder()
+///     .input("jsonld")
+///     .output("jsonld")
+///     .build();
 /// ```
 #[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd, Builder)]
+#[builder(on(String, into))]
 pub struct ReaderOptions {
     /// The input format.
     pub input: Option<String>,
@@ -27,5 +31,6 @@ pub struct ReaderOptions {
     pub output: Option<String>,
 
     /// Extended nonstandard reader options.
+    #[builder(default)]
     pub other: Vec<String>,
 }

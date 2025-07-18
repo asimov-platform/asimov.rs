@@ -16,9 +16,13 @@ pub trait Reasoner<T, E>: Execute<T, E> {}
 /// ```rust
 /// use asimov_patterns::ReasonerOptions;
 ///
-/// let options = ReasonerOptions::builder().build();
+/// let options = ReasonerOptions::builder()
+///     .input("jsonld")
+///     .output("jsonld")
+///     .build();
 /// ```
 #[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd, Builder)]
+#[builder(on(String, into))]
 pub struct ReasonerOptions {
     /// The input format.
     pub input: Option<String>,
@@ -27,5 +31,6 @@ pub struct ReasonerOptions {
     pub output: Option<String>,
 
     /// Extended nonstandard reasoner options.
+    #[builder(default)]
     pub other: Vec<String>,
 }

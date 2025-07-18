@@ -16,13 +16,17 @@ pub trait Emitter<T, E>: Execute<T, E> {}
 /// ```rust
 /// use asimov_patterns::EmitterOptions;
 ///
-/// let options = EmitterOptions::builder().build();
+/// let options = EmitterOptions::builder()
+///     .output("jsonld")
+///     .build();
 /// ```
 #[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd, Builder)]
+#[builder(on(String, into))]
 pub struct EmitterOptions {
     /// The output format.
     pub output: Option<String>,
 
     /// Extended nonstandard emitter options.
+    #[builder(default)]
     pub other: Vec<String>,
 }
