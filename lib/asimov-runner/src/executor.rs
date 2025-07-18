@@ -4,7 +4,6 @@ use crate::{Command, ExecutorError, ExecutorResult, Input};
 use std::{
     ffi::OsStr,
     io::{Cursor, ErrorKind},
-    os::fd::AsFd,
     process::Stdio,
 };
 use tokio::{io::AsyncReadExt, process::Child};
