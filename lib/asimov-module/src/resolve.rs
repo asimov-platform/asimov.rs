@@ -2,14 +2,15 @@
 
 use crate::models::ModuleManifest;
 use alloc::{
-    boxed::Box,
     collections::{btree_map::BTreeMap, btree_set::BTreeSet},
-    format,
     rc::Rc,
     string::{String, ToString},
     vec::Vec,
 };
-use core::{borrow::Borrow, error::Error};
+use core::{borrow::Borrow, convert::Infallible};
+use error::UrlParseError;
+
+pub mod error;
 
 #[derive(Clone, Debug, Default)]
 pub struct Resolver {
@@ -24,7 +25,7 @@ impl Resolver {
         Resolver::default()
     }
 
-    pub fn resolve(&self, url: &str) -> Result<Vec<Rc<Module>>, Box<dyn Error>> {
+    pub fn resolve(&self, url: &str) -> Result<Vec<Rc<Module>>, UrlParseError> {
         let input = split_url(url)?;
 
         let mut results: BTreeSet<Rc<Module>> = BTreeSet::new();
@@ -86,7 +87,7 @@ impl Resolver {
         &mut self,
         module: &str,
         file_extension: &str,
-    ) -> Result<(), Box<dyn Error>> {
+    ) -> Result<(), Infallible> {
         let module = self.add_module(module);
 
         self.file_extensions
@@ -96,9 +97,9 @@ impl Resolver {
 
         Ok(())
     }
-    pub fn insert_manifest(&mut self, manifest: &ModuleManifest) -> Result<(), Box<dyn Error>> {
+    pub fn insert_manifest(&mut self, manifest: &ModuleManifest) -> Result<(), UrlParseError> {
         for protocol in &manifest.handles.url_protocols {
-            self.insert_protocol(&manifest.name, protocol)?;
+            self.insert_protocol(&manifest.name, protocol).ok();
         }
         for prefix in &manifest.handles.url_prefixes {
             self.insert_prefix(&manifest.name, prefix)?;
@@ -107,11 +108,12 @@ impl Resolver {
             self.insert_pattern(&manifest.name, pattern)?;
         }
         for file_extension in &manifest.handles.file_extensions {
-            self.insert_file_extension(&manifest.name, file_extension)?;
+            self.insert_file_extension(&manifest.name, file_extension)
+                .ok();
         }
         Ok(())
     }
-    pub fn insert_protocol(&mut self, module: &str, protocol: &str) -> Result<(), Box<dyn Error>> {
+    pub fn insert_protocol(&mut self, module: &str, protocol: &str) -> Result<(), Infallible> {
         let path = &[Sect::Protocol(protocol.to_string()), Sect::FreeMove];
         let module = self.add_module(module);
         let node_idx = self.get_or_create_node(path);
@@ -122,7 +124,7 @@ impl Resolver {
 
         Ok(())
     }
-    pub fn insert_prefix(&mut self, module: &str, prefix: &str) -> Result<(), Box<dyn Error>> {
+    pub fn insert_prefix(&mut self, module: &str, prefix: &str) -> Result<(), UrlParseError> {
         let mut path = split_url(prefix)?;
         // Add a `FreeMove` node at the end of the path to separate the prefix from
         // patterns at the same node
@@ -137,7 +139,7 @@ impl Resolver {
 
         Ok(())
     }
-    pub fn insert_pattern(&mut self, module: &str, pattern: &str) -> Result<(), Box<dyn Error>> {
+    pub fn insert_pattern(&mut self, module: &str, pattern: &str) -> Result<(), UrlParseError> {
         let path: Vec<Sect> = split_url(pattern)?
             .into_iter()
             .map(Sect::into_pattern)
@@ -150,14 +152,61 @@ impl Resolver {
         Ok(())
     }
 
-    pub fn try_from_iter<I, T>(mut iter: I) -> Result<Self, Box<dyn Error>>
+    #[cfg(feature = "std")]
+    pub fn try_from_dir(path: impl AsRef<std::path::Path>) -> Result<Self, error::FromDirError> {
+        use error::FromDirError;
+
+        let path = path.as_ref();
+
+        let dir = std::fs::read_dir(path).map_err(|source| FromDirError::ManifestDirIo {
+            path: path.into(),
+            source,
+        })?;
+
+        let mut resolver = Resolver::new();
+
+        for entry in dir {
+            let entry = entry.map_err(|source| FromDirError::ManifestDirIo {
+                path: path.into(),
+                source,
+            })?;
+            if !entry.file_type().map(|ft| ft.is_file()).unwrap_or(false) {
+                continue;
+            }
+            let filename = entry.file_name();
+            let filename = filename.to_string_lossy();
+            if !filename.ends_with(".yaml") && !filename.ends_with(".yml") {
+                continue;
+            }
+            let path = entry.path();
+            let file = std::fs::File::open(&path).map_err(|source| FromDirError::ManifestIo {
+                path: path.clone(),
+                source,
+            })?;
+
+            let manifest = serde_yml::from_reader(file).map_err(|source| FromDirError::Parse {
+                path: path.clone(),
+                source,
+            })?;
+            resolver
+                .insert_manifest(&manifest)
+                .map_err(|source| FromDirError::Insert {
+                    path: path.clone(),
+                    source,
+                })?;
+        }
+
+        Ok(resolver)
+    }
+
+    pub fn try_from_iter<I, T>(mut iter: I) -> Result<Self, UrlParseError>
     where
         I: Iterator<Item = T>,
         T: Borrow<ModuleManifest>,
     {
-        iter.try_fold(Resolver::default(), |mut b, m| {
-            b.insert_manifest(m.borrow())?;
-            Ok(b)
+        iter.try_fold(Resolver::default(), |mut r, m| {
+            r.insert_manifest(m.borrow())?;
+            Ok(r)
         })
     }
 
@@ -198,7 +247,7 @@ impl Resolver {
 }
 
 impl TryFrom<&[ModuleManifest]> for Resolver {
-    type Error = Box<dyn Error>;
+    type Error = UrlParseError;
 
     fn try_from(value: &[ModuleManifest]) -> Result<Self, Self::Error> {
         Resolver::try_from_iter(value.iter())
@@ -267,9 +316,9 @@ impl Sect {
 }
 
 /// Split and URL into sections that we care about. This is effectively a tokenizer.
-fn split_url(url: &str) -> Result<Vec<Sect>, Box<dyn Error>> {
+fn split_url(url: &str) -> Result<Vec<Sect>, UrlParseError> {
     if url.is_empty() {
-        return Err("URL cannot be empty".into());
+        return Err(UrlParseError::EmptyUrl);
     }
 
     let mut res = Vec::new();
@@ -279,9 +328,10 @@ fn split_url(url: &str) -> Result<Vec<Sect>, Box<dyn Error>> {
         return Ok(res);
     }
 
-    let url: url::Url = url
-        .parse()
-        .map_err(|e| format!("Unable to handle URL {url:?}: {e}"))?;
+    let url: url::Url = url.parse().map_err(|e| UrlParseError::InvalidUrl {
+        url: url.to_string(),
+        source: e,
+    })?;
 
     let proto = url.scheme();
     res.push(Sect::Protocol(proto.into()));
