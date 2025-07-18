@@ -53,7 +53,7 @@ impl asimov_patterns::Reader<Cursor<Vec<u8>>, ExecutorError> for Reader {}
 #[async_trait]
 impl asimov_patterns::Execute<Cursor<Vec<u8>>, ExecutorError> for Reader {
     async fn execute(&mut self) -> ReaderResult {
-        let stdout = self.executor.execute().await?;
+        let stdout = self.executor.execute_with_input(&mut self.input).await?;
         Ok(stdout)
     }
 }

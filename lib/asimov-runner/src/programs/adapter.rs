@@ -1,6 +1,7 @@
 // This is free and unencumbered software released into the public domain.
 
 use crate::{Executor, ExecutorError, GraphOutput, QueryInput};
+use async_trait::async_trait;
 use derive_more::Debug;
 use std::{
     ffi::OsStr,
@@ -10,6 +11,9 @@ use std::{
 use tokio::io::{AsyncRead, AsyncWrite};
 
 pub use asimov_patterns::AdapterOptions;
+
+/// See: https://asimov-specs.github.io/program-patterns/#adapter
+pub type AdapterResult = std::result::Result<Cursor<Vec<u8>>, ExecutorError>; // TODO
 
 /// See: https://asimov-specs.github.io/program-patterns/#adapter
 #[allow(unused)]
@@ -44,15 +48,15 @@ impl Adapter {
     }
 }
 
-// impl asimov_patterns::Adapter<String, ExecutorError> for Adapter {}
+impl asimov_patterns::Adapter<Cursor<Vec<u8>>, ExecutorError> for Adapter {}
 
-// #[async_trait]
-// impl asimov_patterns::Adapter<Cursor<Vec<u8>>, ExecutorError> for Adapter {
-//     async fn execute(&mut self) -> FetcherResult {
-//         let stdout = self.executor.execute().await?;
-//         Ok(stdout)
-//     }
-// }
+#[async_trait]
+impl asimov_patterns::Execute<Cursor<Vec<u8>>, ExecutorError> for Adapter {
+    async fn execute(&mut self) -> AdapterResult {
+        let stdout = self.executor.execute_with_input(&mut self.input).await?;
+        Ok(stdout)
+    }
+}
 
 #[cfg(test)]
 mod tests {

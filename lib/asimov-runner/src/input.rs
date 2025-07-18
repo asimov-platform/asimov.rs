@@ -13,7 +13,7 @@ pub type TextInput = Input;
 #[derive(Debug)]
 pub enum Input {
     Ignored,
-    AsyncRead(#[debug(skip)] Box<dyn AsyncRead + Send + Sync>),
+    AsyncRead(#[debug(skip)] Box<dyn AsyncRead + Send + Sync + Unpin>),
 }
 
 impl Input {

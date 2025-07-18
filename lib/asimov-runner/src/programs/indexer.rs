@@ -48,7 +48,7 @@ impl asimov_patterns::Indexer<ExecutorError> for Indexer {}
 #[async_trait]
 impl asimov_patterns::Execute<(), ExecutorError> for Indexer {
     async fn execute(&mut self) -> IndexerResult {
-        let _stdout = self.executor.execute().await?;
+        let _stdout = self.executor.execute_with_input(&mut self.input).await?;
         Ok(())
     }
 }

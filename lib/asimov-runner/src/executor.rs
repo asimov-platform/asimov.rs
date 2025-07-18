@@ -1,6 +1,6 @@
 // This is free and unencumbered software released into the public domain.
 
-use crate::{Command, ExecutorError, ExecutorResult};
+use crate::{Command, ExecutorError, ExecutorResult, Input};
 use std::{
     ffi::OsStr,
     io::{Cursor, ErrorKind},
@@ -49,6 +49,18 @@ impl Executor {
 
     pub async fn execute(&mut self) -> ExecutorResult {
         let process = self.spawn().await?;
+        self.wait(process).await
+    }
+
+    pub async fn execute_with_input(&mut self, input: &mut Input) -> ExecutorResult {
+        let mut process = self.spawn().await?;
+        match input {
+            Input::Ignored => {},
+            Input::AsyncRead(reader) => {
+                let mut stdin = process.stdin.take().expect("should capture stdin");
+                tokio::io::copy(&mut *reader, &mut stdin).await?;
+            },
+        }
         self.wait(process).await
     }
 

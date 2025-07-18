@@ -32,18 +32,19 @@ impl Fetcher {
         output: GraphOutput,
         options: FetcherOptions,
     ) -> Self {
+        let input = input.as_ref().to_string();
         let mut executor = Executor::new(program);
         executor
             .command()
-            .arg(input.as_ref())
+            .arg(&input)
             .stdin(Stdio::null())
-            .stdout(Stdio::piped())
+            .stdout(output.as_stdio())
             .stderr(Stdio::piped());
 
         Self {
             executor,
             options,
-            input: input.as_ref().to_string(),
+            input,
             output,
         }
     }

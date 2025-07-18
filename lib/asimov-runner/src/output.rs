@@ -14,7 +14,7 @@ pub type TextOutput = Output;
 pub enum Output {
     Ignored,
     Captured,
-    AsyncWrite(#[debug(skip)] Box<dyn AsyncWrite + Send + Sync>),
+    AsyncWrite(#[debug(skip)] Box<dyn AsyncWrite + Send + Sync + Unpin>),
 }
 
 impl Output {

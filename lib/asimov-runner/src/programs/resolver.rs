@@ -32,9 +32,11 @@ impl Resolver {
         output: Output,
         options: ResolverOptions,
     ) -> Self {
+        let input = input.as_ref().to_string();
         let mut executor = Executor::new(program);
         executor
             .command()
+            .arg(&input)
             .stdin(Stdio::null())
             .stdout(output.as_stdio())
             .stderr(Stdio::piped());
@@ -42,7 +44,7 @@ impl Resolver {
         Self {
             executor,
             options,
-            input: input.as_ref().to_string(),
+            input,
             output,
         }
     }
