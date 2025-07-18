@@ -31,6 +31,19 @@ pub enum FromDirError {
     },
 }
 
+impl From<FromDirError> for clientele::SysexitsError {
+    fn from(value: FromDirError) -> Self {
+        use FromDirError::*;
+        use clientele::SysexitsError::*;
+        match value {
+            ManifestDirIo { .. } => EX_IOERR,
+            ManifestIo { .. } => EX_IOERR,
+            Parse { .. } => EX_CONFIG,
+            Insert { source, .. } => source.into(),
+        }
+    }
+}
+
 #[derive(Clone, Debug, thiserror::Error)]
 pub enum UrlParseError {
     #[error("URL can't be empty")]
@@ -41,4 +54,10 @@ pub enum UrlParseError {
         #[source]
         source: url::ParseError,
     },
+}
+
+impl From<UrlParseError> for clientele::SysexitsError {
+    fn from(_value: UrlParseError) -> Self {
+        clientele::SysexitsError::EX_USAGE
+    }
 }
