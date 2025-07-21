@@ -79,13 +79,7 @@ impl super::Storage for Fs {
         let current_link_path = url_dir.join("current");
 
         tracing::debug!(source = ?current_link_path, "Removing old `current` symlink");
-        self.root.remove_file(&current_link_path).or_else(|e| {
-            if e.kind() == std::io::ErrorKind::NotFound {
-                Ok(())
-            } else {
-                Err(e)
-            }
-        })?;
+        self.delete_current_version(&url)?;
 
         let ts = timestamp.format(TIMESTAMP_FORMAT_STRING);
         let snapshot_name = format!("{ts}.jsonld");
@@ -205,15 +199,34 @@ impl super::Storage for Fs {
             return Ok(());
         }
 
+        tracing::debug!("Deleted snapshot was `current`, searching for new `current`...");
+
         let versions = self.list_snapshots(&url)?;
 
-        let Some(new_current) = versions.into_iter().max() else {
-            return Ok(());
-        };
+        if let Some(new_current) = versions.into_iter().max() {
+            tracing::debug!(?new_current, "Updating `current`");
+            self.set_current_version(url, new_current)
+        } else {
+            tracing::debug!("Last snapshot deleted, removing `current`");
+            self.delete_current_version(&url)
+        }
+    }
+}
 
-        self.set_current_version(url, new_current)?;
+impl Fs {
+    fn delete_current_version(&self, url: impl AsRef<str>) -> Result<()> {
+        let url_hash = hex::encode(sha256(url.as_ref()));
+        let url_dir = std::path::Path::new(&url_hash);
 
-        Ok(())
+        let current_link_path = url_dir.join("current");
+
+        self.root.remove_file(&current_link_path).or_else(|e| {
+            if e.kind() == std::io::ErrorKind::NotFound {
+                Ok(())
+            } else {
+                Err(e)
+            }
+        })
     }
 }
 
