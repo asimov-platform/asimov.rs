@@ -51,7 +51,7 @@ impl super::Storage for Fs {
             .map(|m| m.is_symlink())
             .unwrap_or(false)
         {
-            tracing::debug!(source = ?url_link, target = url.as_ref(), "Creating url metadata symlink");
+            tracing::debug!(source = ?url_link, target = url.as_ref(), "Creating `url` metadata file");
             self.root.write(&url_link, url.as_ref())?;
         }
 
@@ -119,7 +119,7 @@ impl super::Storage for Fs {
 
             let url_link = std::path::Path::new(&url_hash).join(".url");
 
-            tracing::debug!(hash = ?url_hash, path=?url_link, "Reading url metadata symlink");
+            tracing::debug!(hash = ?url_hash, path=?url_link, "Reading `url` metadata file");
             let url = match self.root.read_to_string(&url_link) {
                 Ok(url) => url,
                 Err(err) if err.kind() == std::io::ErrorKind::NotFound => continue,
