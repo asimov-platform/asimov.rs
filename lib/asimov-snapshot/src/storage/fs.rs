@@ -97,10 +97,14 @@ impl super::Storage for Fs {
         tracing::debug!(path = ?link_path, "Reading `current` symlink");
         let current = self.root.read_link(link_path)?;
 
-        // TODO: error msg
         let stem = current
             .file_stem()
-            .ok_or_else(|| std::io::Error::other("Malformed file"))?
+            .ok_or_else(|| {
+                std::io::Error::other(format!(
+                    "Malformed file: `{}` does not have a valid file stem",
+                    current.display()
+                ))
+            })?
             .to_string_lossy();
 
         NaiveDateTime::parse_from_str(&stem, TIMESTAMP_PARSE_STRING)
@@ -149,10 +153,14 @@ impl super::Storage for Fs {
             let filename = entry.file_name();
             let filename = std::path::Path::new(&filename);
 
-            // TODO: error msg
             let stem = filename
                 .file_stem()
-                .ok_or_else(|| std::io::Error::other("Malformed file"))?
+                .ok_or_else(|| {
+                    std::io::Error::other(format!(
+                        "Malformed file: `{}` does not have a valid file stem",
+                        filename.display()
+                    ))
+                })?
                 .to_string_lossy();
 
             if stem == "current" {
