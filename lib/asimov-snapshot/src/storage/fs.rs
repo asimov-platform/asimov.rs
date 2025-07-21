@@ -84,7 +84,12 @@ impl super::Storage for Fs {
         let snapshot_name = format!("{ts}.jsonld");
 
         tracing::debug!(source = ?current_link_path, target = ?snapshot_name, "Creating new `current` symlink");
-        self.root.symlink(&snapshot_name, current_link_path)
+
+        #[cfg(unix)]
+        return self.root.symlink(&snapshot_name, current_link_path);
+
+        #[cfg(windows)]
+        return self.root.symlink_file(&snapshot_name, current_link_path);
     }
 
     #[tracing::instrument(skip(self), fields(url = url.as_ref()))]
