@@ -15,8 +15,8 @@ categories.workspace = true
 publish.workspace = true
 
 [features]
-default = ["all", "std", "storage-fs"]
-all = ["tracing"]
+default = ["all", "std"]
+all = ["tracing", "storage-fs"]
 std = ["chrono/std", "dogma/std", "hex/std", "tracing/std"]
 storage-fs = ["dep:cap-std", "dep:hex", "dep:sha2", "std"]
 tracing = []
