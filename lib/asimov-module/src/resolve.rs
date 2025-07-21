@@ -152,7 +152,7 @@ impl Resolver {
         Ok(())
     }
 
-    #[cfg(feature = "std")]
+    #[cfg(all(feature = "std", feature = "serde"))]
     pub fn try_from_dir(path: impl AsRef<std::path::Path>) -> Result<Self, error::FromDirError> {
         use error::FromDirError;
 
