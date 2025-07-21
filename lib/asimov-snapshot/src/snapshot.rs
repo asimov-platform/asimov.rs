@@ -3,7 +3,7 @@
 use asimov_env::paths::asimov_root;
 use asimov_module::resolve::Resolver;
 use asimov_runner::{FetcherOptions, GraphOutput};
-use chrono::{DateTime, prelude::*};
+use jiff::Timestamp;
 use std::{io::Result, string::String, vec::Vec};
 
 pub struct Snapshotter<S> {
@@ -33,11 +33,11 @@ impl<S: crate::storage::Storage> Snapshotter<S> {
         let module = self
             .resolver
             .resolve(url)
-            .map_err(|e| std::io::Error::other(e))?
+            .map_err(std::io::Error::other)?
             .first()
             .cloned()
             .ok_or_else(|| std::io::Error::other("No module found for fetch operation"))?;
-        let timestamp = Utc::now();
+        let timestamp = Timestamp::now();
         let program = std::format!("asimov-{}-fetcher", module.name);
         let options = FetcherOptions::builder().output("jsonld").build();
         let data = asimov_runner::Fetcher::new(program, url, GraphOutput::Captured, options)
@@ -49,12 +49,12 @@ impl<S: crate::storage::Storage> Snapshotter<S> {
     }
 
     #[tracing::instrument(skip(self))]
-    pub async fn list(&self) -> Result<Vec<(String, DateTime<Utc>)>> {
+    pub async fn list(&self) -> Result<Vec<(String, Timestamp)>> {
         self.storage.list_urls()
     }
 
     #[tracing::instrument(skip(self))]
-    pub async fn log(&self, url: &str) -> Result<Vec<DateTime<Utc>>> {
+    pub async fn log(&self, url: &str) -> Result<Vec<Timestamp>> {
         self.storage.list_snapshots(url)
     }
 

@@ -5,14 +5,14 @@ mod fs;
 #[cfg(feature = "storage-fs")]
 pub use fs::*;
 
-use chrono::{DateTime, prelude::*};
+use jiff::Timestamp;
 use std::{io::Result, string::String, vec::Vec};
 
 pub trait Storage {
     fn save(
         &self,
         url: impl AsRef<str>,
-        timestamp: DateTime<chrono::Utc>,
+        timestamp: Timestamp,
         data: impl AsRef<[u8]>,
     ) -> Result<()> {
         self.save_timestamp(&url, timestamp, data)?;
@@ -30,24 +30,24 @@ pub trait Storage {
     fn save_timestamp(
         &self,
         _url: impl AsRef<str>,
-        _timestamp: DateTime<Utc>,
+        _timestamp: Timestamp,
         _data: impl AsRef<[u8]>,
     ) -> Result<()>;
 
-    fn read(&self, _url: impl AsRef<str>, _timestamp: DateTime<Utc>) -> Result<Vec<u8>>;
+    fn read(&self, _url: impl AsRef<str>, _timestamp: Timestamp) -> Result<Vec<u8>>;
 
     fn read_current(&self, url: impl AsRef<str>) -> Result<Vec<u8>> {
         let ts = self.current_version(&url)?;
         self.read(&url, ts)
     }
 
-    fn set_current_version(&self, _url: impl AsRef<str>, _timestamp: DateTime<Utc>) -> Result<()>;
+    fn set_current_version(&self, _url: impl AsRef<str>, _timestamp: Timestamp) -> Result<()>;
 
-    fn current_version(&self, _url: impl AsRef<str>) -> Result<DateTime<Utc>>;
+    fn current_version(&self, _url: impl AsRef<str>) -> Result<Timestamp>;
 
-    fn list_urls(&self) -> Result<Vec<(String, DateTime<Utc>)>>;
+    fn list_urls(&self) -> Result<Vec<(String, Timestamp)>>;
 
-    fn list_snapshots(&self, _url: impl AsRef<str>) -> Result<Vec<DateTime<Utc>>>;
+    fn list_snapshots(&self, _url: impl AsRef<str>) -> Result<Vec<Timestamp>>;
 
-    fn delete(&self, _url: impl AsRef<str>, _timestamp: DateTime<Utc>) -> Result<()>;
+    fn delete(&self, _url: impl AsRef<str>, _timestamp: Timestamp) -> Result<()>;
 }

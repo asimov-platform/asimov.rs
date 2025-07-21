@@ -1,10 +1,9 @@
 // This is free and unencumbered software released into the public domain.
 
-use chrono::{DateTime, prelude::*};
+use jiff::Timestamp;
 use std::{format, io::Result, string::String, vec::Vec};
 
 const TIMESTAMP_FORMAT_STRING: &str = "%Y%m%dT%H%M%SZ";
-const TIMESTAMP_PARSE_STRING: &str = "%Y%m%dT%H%M%SZ";
 
 pub struct Fs {
     root: cap_std::fs::Dir,
@@ -26,7 +25,7 @@ impl super::Storage for Fs {
     fn save_timestamp(
         &self,
         url: impl AsRef<str>,
-        timestamp: DateTime<Utc>,
+        timestamp: Timestamp,
         data: impl AsRef<[u8]>,
     ) -> Result<()> {
         let url_hash = hex::encode(sha256(url.as_ref()));
@@ -35,7 +34,7 @@ impl super::Storage for Fs {
         tracing::debug!(hash = url_hash, "Creating directory for url");
         self.root.create_dir_all(url_dir)?;
 
-        let ts = timestamp.format(TIMESTAMP_FORMAT_STRING);
+        let ts = timestamp.strftime(TIMESTAMP_FORMAT_STRING);
         let filename = format!("{ts}.jsonld");
 
         let snapshot_path = url_dir.join(filename);
@@ -59,10 +58,10 @@ impl super::Storage for Fs {
     }
 
     #[tracing::instrument(skip(self), fields(url = url.as_ref()))]
-    fn read(&self, url: impl AsRef<str>, timestamp: DateTime<Utc>) -> Result<Vec<u8>> {
+    fn read(&self, url: impl AsRef<str>, timestamp: Timestamp) -> Result<Vec<u8>> {
         let url_hash = hex::encode(sha256(url.as_ref()));
 
-        let ts = timestamp.format(TIMESTAMP_FORMAT_STRING);
+        let ts = timestamp.strftime(TIMESTAMP_FORMAT_STRING);
         let filename = format!("{ts}.jsonld");
 
         let file_path = std::path::Path::new(&url_hash).join(filename);
@@ -72,7 +71,7 @@ impl super::Storage for Fs {
     }
 
     #[tracing::instrument(skip(self), fields(url = url.as_ref()))]
-    fn set_current_version(&self, url: impl AsRef<str>, timestamp: DateTime<Utc>) -> Result<()> {
+    fn set_current_version(&self, url: impl AsRef<str>, timestamp: Timestamp) -> Result<()> {
         let url_hash = hex::encode(sha256(url.as_ref()));
         let url_dir = std::path::Path::new(&url_hash);
 
@@ -81,7 +80,7 @@ impl super::Storage for Fs {
         tracing::debug!(source = ?current_link_path, "Removing old `current` symlink");
         self.delete_current_version(&url)?;
 
-        let ts = timestamp.format(TIMESTAMP_FORMAT_STRING);
+        let ts = timestamp.strftime(TIMESTAMP_FORMAT_STRING);
         let snapshot_name = format!("{ts}.jsonld");
 
         tracing::debug!(source = ?current_link_path, target = ?snapshot_name, "Creating new `current` symlink");
@@ -89,7 +88,7 @@ impl super::Storage for Fs {
     }
 
     #[tracing::instrument(skip(self), fields(url = url.as_ref()))]
-    fn current_version(&self, url: impl AsRef<str>) -> Result<DateTime<Utc>> {
+    fn current_version(&self, url: impl AsRef<str>) -> Result<Timestamp> {
         let url_hash = hex::encode(sha256(url.as_ref()));
 
         let link_path = std::path::Path::new(&url_hash).join("current");
@@ -107,13 +106,12 @@ impl super::Storage for Fs {
             })?
             .to_string_lossy();
 
-        NaiveDateTime::parse_from_str(&stem, TIMESTAMP_PARSE_STRING)
+        stem.parse()
             .map_err(|e| std::io::Error::other(format!("Invalid timestamp `{stem}`: {e}")))
-            .map(|ts| ts.and_utc())
     }
 
     #[tracing::instrument(skip(self))]
-    fn list_urls(&self) -> Result<Vec<(String, DateTime<Utc>)>> {
+    fn list_urls(&self) -> Result<Vec<(String, Timestamp)>> {
         let mut urls = Vec::new();
 
         let read_dir = self.root.read_dir("./")?;
@@ -139,7 +137,7 @@ impl super::Storage for Fs {
     }
 
     #[tracing::instrument(skip(self), fields(url = url.as_ref()))]
-    fn list_snapshots(&self, url: impl AsRef<str>) -> Result<Vec<DateTime<Utc>>> {
+    fn list_snapshots(&self, url: impl AsRef<str>) -> Result<Vec<Timestamp>> {
         let url_hash = hex::encode(sha256(url.as_ref()));
         let url_dir = std::path::Path::new(&url_hash);
 
@@ -170,9 +168,9 @@ impl super::Storage for Fs {
                 continue;
             }
 
-            let ts = NaiveDateTime::parse_from_str(&stem, TIMESTAMP_PARSE_STRING)
-                .map_err(|e| std::io::Error::other(format!("Invalid timestamp `{stem}`: {e}")))?
-                .and_utc();
+            let ts: Timestamp = stem
+                .parse()
+                .map_err(|e| std::io::Error::other(format!("Invalid timestamp `{stem}`: {e}")))?;
 
             tss.push(ts)
         }
@@ -181,11 +179,11 @@ impl super::Storage for Fs {
     }
 
     #[tracing::instrument(skip(self), fields(url = url.as_ref()))]
-    fn delete(&self, url: impl AsRef<str>, timestamp: DateTime<Utc>) -> Result<()> {
+    fn delete(&self, url: impl AsRef<str>, timestamp: Timestamp) -> Result<()> {
         let url_hash = hex::encode(sha256(url.as_ref()));
         let url_dir = std::path::Path::new(&url_hash);
 
-        let ts = timestamp.format(TIMESTAMP_FORMAT_STRING);
+        let ts = timestamp.strftime(TIMESTAMP_FORMAT_STRING);
         let filename = format!("{ts}.jsonld");
 
         let snapshot_path = url_dir.join(filename);
@@ -245,11 +243,11 @@ fn sha256(data: impl AsRef<[u8]>) -> sha2::digest::Output<sha2::Sha256> {
 
 #[cfg(test)]
 mod tests {
+    use jiff::{ToSpan, Unit};
+
     use super::*;
     use crate::storage::Storage;
     use std::{eprintln, io::Result, string::ToString};
-
-    use chrono::{Days, DurationRound, TimeDelta};
 
     #[test]
     fn storage() -> Result<()> {
@@ -266,17 +264,17 @@ mod tests {
         let fs = Fs { root };
 
         let url = "http://example.org/";
-        let first_ts = Utc::now().duration_trunc(TimeDelta::seconds(1)).unwrap();
+        let first_ts = Timestamp::now().round(Unit::Second).unwrap();
 
         fs.save(url, first_ts, r"v1")?;
 
         let current = fs.current_version(url)?;
         assert_eq!(current, first_ts);
 
-        let second_ts = Utc::now()
-            .duration_trunc(TimeDelta::seconds(1))
+        let second_ts = Timestamp::now()
+            .round(Unit::Second)
             .unwrap()
-            .checked_sub_days(Days::new(1))
+            .checked_sub(1.hour())
             .unwrap();
 
         fs.save(url, second_ts, r"v2")?;
@@ -287,10 +285,10 @@ mod tests {
             "Saving older timestamps should not affect the `current` link"
         );
 
-        let third_ts = Utc::now()
-            .duration_trunc(TimeDelta::seconds(1))
+        let third_ts = Timestamp::now()
+            .round(Unit::Second)
             .unwrap()
-            .checked_add_days(Days::new(1))
+            .checked_add(1.hour())
             .unwrap();
 
         fs.save(url, third_ts, r"v3")?;

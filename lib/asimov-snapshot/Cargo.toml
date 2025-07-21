@@ -17,7 +17,7 @@ publish.workspace = true
 [features]
 default = ["all", "std"]
 all = ["tracing", "storage-fs"]
-std = ["chrono/std", "dogma/std", "hex/std", "tracing/std"]
+std = ["dogma/std", "hex/std", "jiff/std", "tracing/std"]
 storage-fs = ["dep:cap-std", "dep:hex", "dep:sha2", "std"]
 tracing = []
 unstable = []
@@ -29,8 +29,8 @@ asimov-patterns.workspace = true
 asimov-runner.workspace = true
 async-trait.workspace = true
 cap-std = { version = "3.4", optional = true }
-chrono = { version = "0.4", default-features = false, features = ["now"] }
 dogma.workspace = true
+jiff.workspace = true
 hex = { version = "0.4", optional = true, default-features = false }
 stability.workspace = true
 sha2 = { version = "0.10", optional = true }
