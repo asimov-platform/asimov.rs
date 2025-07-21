@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 25.0.0-dev.16 - 2025-07-21
+### Added
+- Implement a snapshot service (#20 by @SamuelSarle)
+### Changed
+- Improve builder usability (by @artob)
+- Pass program options through the executor (by @artob)
+
 ## 25.0.0-dev.15 - 2025-07-18
 ### Changed
 - Enhance the module resolver (#18 by @SamuelSarle)
