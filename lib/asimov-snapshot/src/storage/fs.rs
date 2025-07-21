@@ -293,6 +293,22 @@ mod tests {
         assert!(snapshots.contains(&second_ts));
         assert!(snapshots.contains(&third_ts));
 
+        fs.delete(&url, third_ts)?;
+        assert_eq!(fs.list_snapshots(&url)?.len(), 2);
+        assert_eq!(fs.current_version(&url)?, first_ts);
+
+        fs.delete(&url, first_ts)?;
+        assert_eq!(fs.current_version(&url)?, second_ts);
+        assert_eq!(fs.list_snapshots(&url)?.len(), 1);
+
+        fs.delete(&url, second_ts)?;
+        assert_eq!(fs.list_snapshots(&url)?.len(), 0);
+
+        assert_eq!(
+            fs.current_version(&url).unwrap_err().kind(),
+            std::io::ErrorKind::NotFound
+        );
+
         Ok(())
     }
 }
