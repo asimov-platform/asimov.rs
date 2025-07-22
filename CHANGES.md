@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 25.0.0-dev.17 - 2025-07-22
+### Added
+- Add read methods to the snapshotter. (#21 by @SamuelSarle)
+### Fixed
+- Fix `asimov-snapshot` on Windows (by @imunproductive)
+
 ## 25.0.0-dev.16 - 2025-07-21
 ### Added
 - Implement a snapshot service (#20 by @SamuelSarle)
