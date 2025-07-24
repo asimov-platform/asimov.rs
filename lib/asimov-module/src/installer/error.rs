@@ -22,24 +22,12 @@ pub enum CreateFileTreeError {
 
 #[derive(Debug, Error)]
 pub enum ReadError {
-    #[error("failed to read directory for installed modules `{path}`: {source}")]
-    InstallDirIo {
-        path: PathBuf,
-        #[source]
-        source: io::Error,
-    },
-    #[error("failed to read directory for enabled modules `{path}`: {source}")]
-    EnableDirIo {
-        path: PathBuf,
-        #[source]
-        source: io::Error,
-    },
-    #[error("failed to read symlink for enabled module at `{path}`: {source}")]
-    EnabledLinkIo {
-        path: PathBuf,
-        #[source]
-        source: io::Error,
-    },
+    #[error("failed to read directory for installed modules `{0}`: {1}")]
+    InstallDirIo(PathBuf, #[source] io::Error),
+    #[error("failed to read directory for enabled modules `{0}`: {1}")]
+    EnableDirIo(PathBuf, #[source] io::Error),
+    #[error("failed to read symlink for enabled module at `{0}`: {1}")]
+    EnabledLinkIo(PathBuf, #[source] io::Error),
     #[error("failed to read manifest at `{}`: {}", .0.display(), .1)]
     ReadManifestError(PathBuf, #[source] ReadManifestError),
 }

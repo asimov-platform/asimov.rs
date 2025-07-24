@@ -66,24 +66,16 @@ impl Installer {
     pub async fn installed_modules(&self) -> Result<Vec<InstalledModuleManifest>, ReadError> {
         let installed_dir = self.install_dir();
 
-        let mut read_dir =
-            tokio::fs::read_dir(&installed_dir)
-                .await
-                .map_err(|e| ReadError::InstallDirIo {
-                    path: installed_dir.clone(),
-                    source: e,
-                })?;
+        let mut read_dir = tokio::fs::read_dir(&installed_dir)
+            .await
+            .map_err(|e| ReadError::InstallDirIo(installed_dir.clone(), e))?;
 
         let mut modules = Vec::new();
 
-        while let Some(entry) =
-            read_dir
-                .next_entry()
-                .await
-                .map_err(|e| ReadError::InstallDirIo {
-                    path: installed_dir.clone(),
-                    source: e,
-                })?
+        while let Some(entry) = read_dir
+            .next_entry()
+            .await
+            .map_err(|e| ReadError::InstallDirIo(installed_dir.clone(), e))?
         {
             let path = entry.path();
 
@@ -108,23 +100,16 @@ impl Installer {
     pub async fn enabled_modules(&self) -> Result<Vec<InstalledModuleManifest>, ReadError> {
         let enabled_dir = self.enable_dir();
 
-        let mut read_dir =
-            tokio::fs::read_dir(&enabled_dir)
-                .await
-                .map_err(|e| ReadError::InstallDirIo {
-                    path: enabled_dir.clone(),
-                    source: e,
-                })?;
+        let mut read_dir = tokio::fs::read_dir(&enabled_dir)
+            .await
+            .map_err(|e| ReadError::InstallDirIo(enabled_dir.clone(), e))?;
 
         let mut modules = Vec::new();
 
         while let Some(entry) = read_dir
             .next_entry()
             .await
-            .map_err(|e| ReadError::EnableDirIo {
-                path: enabled_dir.clone(),
-                source: e,
-            })?
+            .map_err(|e| ReadError::EnableDirIo(enabled_dir.clone(), e))?
         {
             let path = entry.path();
 
@@ -163,7 +148,7 @@ impl Installer {
         tokio::fs::metadata(&path)
             .await
             .map(|md| md.is_symlink())
-            .map_err(|e| ReadError::EnabledLinkIo { path, source: e })
+            .map_err(|e| ReadError::EnabledLinkIo(path, e))
     }
 
     pub async fn fetch_latest_release(
