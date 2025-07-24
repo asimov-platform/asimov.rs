@@ -147,7 +147,13 @@ impl Installer {
         tokio::fs::metadata(&path)
             .await
             .map(|md| md.is_symlink())
-            .map_err(|e| ReadError::EnabledLinkIo(path, e))
+            .or_else(|e| {
+                if e.kind() == io::ErrorKind::NotFound {
+                    Ok(false)
+                } else {
+                    Err(ReadError::EnabledLinkIo(path, e))
+                }
+            })
     }
 
     pub async fn fetch_latest_release(
