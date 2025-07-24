@@ -1,10 +1,11 @@
 // This is free and unencumbered software released into the public domain.
 
-use std::{io::Result, string::String, vec::Vec};
+use std::{string::String, vec::Vec};
 
 use crate::{models::InstalledModuleManifest, tracing};
 
 pub mod error;
+use error::*;
 
 #[derive(Clone, Debug)]
 pub struct Installer {
@@ -33,27 +34,39 @@ impl Installer {
         }
     }
 
-    pub async fn installed_modules(&self) -> Result<Vec<InstalledModuleManifest>> {
+    pub async fn installed_modules(&self) -> Result<Vec<InstalledModuleManifest>, ReadError> {
         todo!();
     }
 
-    pub async fn enabled_modules(&self) -> Result<Vec<InstalledModuleManifest>> {
+    pub async fn enabled_modules(&self) -> Result<Vec<InstalledModuleManifest>, ReadError> {
         todo!();
     }
 
-    pub async fn is_module_installed(&self, _module_name: impl AsRef<str>) -> Result<bool> {
+    pub async fn is_module_installed(
+        &self,
+        _module_name: impl AsRef<str>,
+    ) -> Result<bool, ReadError> {
         todo!();
     }
 
-    pub async fn is_module_enabled(&self, _module_name: impl AsRef<str>) -> Result<bool> {
+    pub async fn is_module_enabled(
+        &self,
+        _module_name: impl AsRef<str>,
+    ) -> Result<bool, ReadError> {
         todo!();
     }
 
-    pub async fn fetch_latest_release(&self, _module_name: impl AsRef<str>) -> Result<String> {
+    pub async fn fetch_latest_release(
+        &self,
+        _module_name: impl AsRef<str>,
+    ) -> Result<String, FetchError> {
         todo!();
     }
 
-    pub async fn module_version(&self, _module_name: impl AsRef<str>) -> Result<Option<String>> {
+    pub async fn module_version(
+        &self,
+        _module_name: impl AsRef<str>,
+    ) -> Result<Option<String>, ReadError> {
         todo!();
     }
 
@@ -61,19 +74,22 @@ impl Installer {
         &self,
         _module_name: impl AsRef<str>,
         _version: impl AsRef<str>,
-    ) -> Result<()> {
+    ) -> Result<(), InstallError> {
         todo!();
     }
 
-    pub async fn uninstall_module(&self, _module_name: impl AsRef<str>) -> Result<()> {
+    pub async fn uninstall_module(
+        &self,
+        _module_name: impl AsRef<str>,
+    ) -> Result<(), UninstallError> {
         todo!();
     }
 
-    pub async fn enable_module(&self, _module_name: impl AsRef<str>) -> Result<()> {
+    pub async fn enable_module(&self, _module_name: impl AsRef<str>) -> Result<(), EnableError> {
         todo!();
     }
 
-    pub async fn disable_module(&self, _module_name: impl AsRef<str>) -> Result<()> {
+    pub async fn disable_module(&self, _module_name: impl AsRef<str>) -> Result<(), DisableError> {
         todo!();
     }
 }
