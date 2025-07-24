@@ -213,49 +213,58 @@ pub async fn download_asset(
     Ok(asset_path)
 }
 
-pub async fn install_binaries(
-    install_dir: &Path,
-    src_asset: &Path,
+pub async fn extract_files(
+    src_archive: impl AsRef<Path>,
+    dst_dir: impl AsRef<Path>,
 ) -> Result<(), tokio::io::Error> {
-    tokio::task::spawn_blocking({
-        let src_asset = src_asset.to_owned();
-        let src_name = src_asset.to_string_lossy().into_owned();
-        let dst = install_dir.clone();
-        use std::io::{Error, Result};
-        move || -> Result<()> {
-            let asset_file = std::fs::File::open(&src_asset)?;
-            if src_name.ends_with(".tar.gz") {
-                let gz = flate2::read::GzDecoder::new(asset_file);
-                let mut archive = tar::Archive::new(gz);
-                archive.unpack(&dst)?;
-            } else if src_name.ends_with(".zip") {
-                let mut archive = zip::ZipArchive::new(asset_file)?;
-                archive.extract(&dst)?;
-            } else {
-                return Err(Error::other("Unsupported format"));
-            }
-            Ok(())
+    use std::io::{Error, Result};
+
+    let src_archive = src_archive.as_ref().to_owned();
+    let dst = dst_dir.as_ref().to_owned();
+
+    let Some(src_name) = src_archive
+        .file_name()
+        .and_then(std::ffi::OsStr::to_str)
+        .map(String::from)
+    else {
+        return Err(Error::other("Unsupported format"));
+    };
+
+    tokio::task::spawn_blocking(move || -> Result<()> {
+        let asset_file = std::fs::File::open(&src_archive)?;
+        if src_name.ends_with(".tar.gz") {
+            let gz = flate2::read::GzDecoder::new(asset_file);
+            let mut archive = tar::Archive::new(gz);
+            archive.unpack(&dst)?;
+        } else if src_name.ends_with(".zip") {
+            let mut archive = zip::ZipArchive::new(asset_file)?;
+            archive.extract(&dst)?;
+        } else {
+            return Err(Error::other("Unsupported format"));
         }
+        Ok(())
     })
     .await??;
 
-    let mut read_dir = tokio::fs::read_dir(&temp_extract_dir).await?;
+    Ok(())
+}
 
-    while let Some(entry) = read_dir.next_entry().await? {
-        if !entry.file_type().await?.is_file() {
-            continue;
-        }
-        let name = entry.file_name();
-        let mut src = tokio::fs::File::open(entry.path()).await?;
-        let dst_path = install_dir.join(&name);
-        let mut dst = tokio::fs::File::create(&dst_path).await?;
-        tokio::io::copy(&mut src, &mut dst).await?;
+pub async fn install_binaries(
+    manifest: &ModuleManifest,
+    extract_dir: &Path,
+    install_dir: &Path,
+) -> Result<(), tokio::io::Error> {
+    for program in &manifest.provides.programs {
+        let src = extract_dir.join(&program);
+        let dst = install_dir.join(&program);
+
+        tokio::fs::copy(&src, &dst).await?;
 
         #[cfg(unix)]
         {
             use std::fs::Permissions;
             use std::os::unix::fs::PermissionsExt;
-            tokio::fs::set_permissions(&dst_path, Permissions::from_mode(0o755)).await?;
+            tokio::fs::set_permissions(&dst, Permissions::from_mode(0o755)).await?;
         }
     }
 

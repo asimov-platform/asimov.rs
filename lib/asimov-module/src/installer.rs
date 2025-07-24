@@ -8,7 +8,7 @@ use std::{
 };
 use tokio::io;
 
-use crate::models::InstalledModuleManifest;
+use crate::{models::InstalledModuleManifest, tracing};
 
 pub mod error;
 use error::*;
@@ -173,6 +173,16 @@ impl Installer {
         module_name: impl AsRef<str>,
         version: impl AsRef<str>,
     ) -> Result<(), InstallError> {
+        let install_dir = self.install_dir();
+        tokio::fs::create_dir_all(&install_dir)
+            .await
+            .map_err(InstallError::CreateManifestDir)?;
+
+        let exec_dir = self.exec_dir();
+        tokio::fs::create_dir_all(&install_dir)
+            .await
+            .map_err(InstallError::CreateExecDir)?;
+
         let platform = platform::detect_platform();
 
         let release = github::fetch_release(&self.client, module_name.as_ref(), version.as_ref())
@@ -193,7 +203,7 @@ impl Installer {
         let temp_dir = tempfile::Builder::new()
             .prefix("asimov-module-installer")
             .tempdir()
-            .map_err(InstallError::CreateTempIo)?;
+            .map_err(InstallError::CreateTempDir)?;
 
         let download = github::download_asset(&self.client, asset, temp_dir.path()).await?;
 
@@ -205,29 +215,30 @@ impl Installer {
             Err(err) => Err(err)?,
         }
 
-        let install_dir = self.install_dir();
-        tokio::fs::create_dir_all(&install_dir)
+        let extract_dir = temp_dir.path().join("extract");
+        tokio::fs::create_dir(&extract_dir)
             .await
-            .map_err(InstallError::CreateManifestDir)?;
+            .map_err(InstallError::CreateExtractDir)?;
 
-        let exec_dir = self.exec_dir();
-        tokio::fs::create_dir_all(&install_dir)
+        github::extract_files(&download, &extract_dir)
             .await
-            .map_err(InstallError::CreateExecDir)?;
-
-        github::install_binaries(&exec_dir, &download)
-            .await
-            .unwrap();
+            .map_err(InstallError::Extract)?;
 
         let manifest_path = install_dir.join(module_name.as_ref());
+
+        github::install_binaries(&manifest, &extract_dir, &exec_dir)
+            .await
+            .map_err(InstallError::BinaryInstall)?;
 
         let manifest = InstalledModuleManifest {
             version: Some(version.as_ref().into()),
             manifest,
         };
-        let manifest = serde_json::to_string_pretty(&manifest).unwrap();
+        let manifest = serde_json::to_string_pretty(&manifest)?;
 
-        tokio::fs::write(&manifest_path, &manifest).await.unwrap();
+        tokio::fs::write(&manifest_path, &manifest)
+            .await
+            .map_err(InstallError::SaveManifest)?;
 
         Ok(())
     }

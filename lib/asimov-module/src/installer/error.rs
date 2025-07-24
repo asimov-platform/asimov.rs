@@ -130,22 +130,37 @@ pub enum ReadModuleVersionError {
 
 #[derive(Debug, Error)]
 pub enum InstallError {
-    #[error(transparent)]
-    Download(#[from] DownloadError),
-    #[error("no binaries available for platform `{}-{}{}`", .0.os, .0.arch, if let Some(ref libc) = .0.libc { "-".to_string() + libc } else { "".to_string() })]
-    NotAvailable(PlatformInfo),
-    #[error("failed to create directory for downloading: {0}")]
-    CreateTempIo(io::Error),
-    #[error("failed to fetch module manifest: {0}")]
-    FetchManifest(FetchError),
-    #[error(transparent)]
-    FetchChecksum(#[from] FetchChecksumError),
-    #[error(transparent)]
-    VerifyChecksum(#[from] VerifyChecksumError),
     #[error("failed to create directory for installed manifests: {0}")]
     CreateManifestDir(io::Error),
     #[error("failed to create directory for installed binaries: {0}")]
     CreateExecDir(io::Error),
+    #[error("failed to create directory for downloading: {0}")]
+    CreateTempDir(io::Error),
+    #[error("failed to create directory for extracting: {0}")]
+    CreateExtractDir(io::Error),
+
+    #[error("no binaries available for platform `{}-{}{}`", .0.os, .0.arch, if let Some(ref libc) = .0.libc { "-".to_string() + libc } else { "".to_string() })]
+    NotAvailable(PlatformInfo),
+
+    #[error(transparent)]
+    Download(#[from] DownloadError),
+    #[error("failed to fetch module manifest: {0}")]
+    FetchManifest(FetchError),
+
+    #[error(transparent)]
+    FetchChecksum(#[from] FetchChecksumError),
+    #[error(transparent)]
+    VerifyChecksum(#[from] VerifyChecksumError),
+
+    #[error("failed to extract archive: {0}")]
+    Extract(io::Error),
+    #[error("failed to install binaries: {0}")]
+    BinaryInstall(io::Error),
+    #[error("failed to serialize module manifest: {0}")]
+    SerializeManifest(#[from] serde_json::Error),
+    #[error("failed to save module manifest: {0}")]
+    SaveManifest(io::Error),
+}
 }
 
 #[derive(Debug, Error)]
