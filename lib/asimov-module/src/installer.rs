@@ -7,7 +7,10 @@ use std::{
 };
 use tokio::io;
 
-use crate::{models::InstalledModuleManifest, tracing};
+use crate::{
+    models::{InstalledModuleManifest, ModuleManifest},
+    tracing,
+};
 
 pub mod error;
 use error::*;
@@ -182,64 +185,21 @@ impl Installer {
         module_name: impl AsRef<str>,
         version: impl AsRef<str>,
     ) -> Result<(), InstallError> {
-        let platform = platform::detect_platform();
-
-        let release = github::fetch_release(&self.client, module_name.as_ref(), version.as_ref())
-            .await
-            .unwrap();
-
-        let Some(asset) =
-            github::find_matching_asset(&release.assets, module_name.as_ref(), &platform)
-        else {
-            return Err(InstallError::NotAvailable(platform));
-        };
-
-        let manifest =
-            github::fetch_module_manifest(&self.client, module_name.as_ref(), version.as_ref())
-                .await
-                .map_err(InstallError::FetchManifest)?;
-
         let temp_dir = tempfile::Builder::new()
             .prefix("asimov-module-installer")
             .tempdir()
             .map_err(InstallError::CreateTempDir)?;
 
-        let download = github::download_asset(&self.client, asset, temp_dir.path()).await?;
-
-        match github::fetch_checksum(&self.client, asset).await {
-            Ok(None) => {},
-            Ok(Some(checksum)) => {
-                github::verify_checksum(&download, &checksum).await?;
-            },
-            Err(err) => Err(err)?,
-        }
-
-        let extract_dir = temp_dir.path().join("extract");
-        tokio::fs::create_dir(&extract_dir)
-            .await
-            .map_err(InstallError::CreateExtractDir)?;
-
-        github::extract_files(&download, &extract_dir)
-            .await
-            .map_err(InstallError::Extract)?;
-
-        let manifest_path = self
-            .install_dir()
-            .join(std::format!("{}.json", module_name.as_ref()));
-
-        github::install_binaries(&manifest, &extract_dir, &self.exec_dir())
-            .await
-            .map_err(InstallError::BinaryInstall)?;
-
-        let manifest = InstalledModuleManifest {
-            version: Some(version.as_ref().into()),
+        let manifest = self
+            .preinstall(module_name.as_ref(), version.as_ref(), temp_dir.path())
+            .await?;
+        self.finish_install(
+            module_name.as_ref(),
+            version.as_ref(),
             manifest,
-        };
-        let manifest = serde_json::to_string_pretty(&manifest)?;
-
-        tokio::fs::write(&manifest_path, &manifest)
-            .await
-            .map_err(InstallError::SaveManifest)?;
+            temp_dir.path(),
+        )
+        .await?;
 
         Ok(())
     }
@@ -252,87 +212,34 @@ impl Installer {
         let module_name = module_name.as_ref();
         let version = version.as_ref();
 
-        if !self.is_module_installed(module_name).await? {
+        if !self
+            .is_module_installed(module_name)
+            .await
+            .map_err(UpgradeError::Read)?
+        {
             return Err(UpgradeError::NotInstalled);
         }
 
         // check if currently enabled, have to re-enable after upgrade
         let was_enabled = self.is_module_enabled(module_name).await.unwrap_or(false);
 
-        let platform = platform::detect_platform();
-
-        let release = github::fetch_release(&self.client, module_name, version)
-            .await
-            .map_err(|e| {
-                UpgradeError::Predownload(InstallError::CreateManifestDir(std::io::Error::other(
-                    std::format!("Failed to fetch release: {}", e),
-                )))
-            })?;
-
-        let Some(asset) = github::find_matching_asset(&release.assets, module_name, &platform)
-        else {
-            return Err(UpgradeError::Predownload(InstallError::NotAvailable(
-                platform,
-            )));
-        };
-
-        let manifest = github::fetch_module_manifest(&self.client, module_name, version)
-            .await
-            .map_err(|e| UpgradeError::Predownload(InstallError::FetchManifest(e)))?;
-
         let temp_dir = tempfile::Builder::new()
             .prefix("asimov-module-installer")
             .tempdir()
             .map_err(|e| UpgradeError::Predownload(InstallError::CreateTempDir(e)))?;
 
-        let download = github::download_asset(&self.client, asset, temp_dir.path())
+        let manifest = self
+            .preinstall(module_name, version, temp_dir.path())
             .await
-            .map_err(|e| UpgradeError::Predownload(InstallError::Download(e)))?;
-
-        match github::fetch_checksum(&self.client, asset).await {
-            Ok(None) => {},
-            Ok(Some(checksum)) => {
-                github::verify_checksum(&download, &checksum)
-                    .await
-                    .map_err(|e| UpgradeError::Predownload(InstallError::VerifyChecksum(e)))?;
-            },
-            Err(err) => {
-                return Err(UpgradeError::Predownload(InstallError::FetchChecksum(err)));
-            },
-        }
-
-        let extract_dir = temp_dir.path().join("extract");
-        tokio::fs::create_dir(&extract_dir)
-            .await
-            .map_err(|e| UpgradeError::Predownload(InstallError::CreateExtractDir(e)))?;
-
-        github::extract_files(&download, &extract_dir)
-            .await
-            .map_err(|e| UpgradeError::Predownload(InstallError::Extract(e)))?;
+            .map_err(UpgradeError::Predownload)?;
 
         // now ok to uninstall old version
         self.uninstall_module(module_name).await?;
 
-        let manifest_path = self
-            .install_dir()
-            .join(std::format!("{}.json", module_name));
-
-        github::install_binaries(&manifest, &extract_dir, &self.exec_dir())
+        self.finish_install(module_name, version, manifest, temp_dir.path())
             .await
-            .map_err(|e| UpgradeError::Install(InstallError::BinaryInstall(e)))?;
+            .map_err(UpgradeError::Install)?;
 
-        let installed_manifest = InstalledModuleManifest {
-            version: Some(version.into()),
-            manifest,
-        };
-        let manifest_json = serde_json::to_string_pretty(&installed_manifest)
-            .map_err(|e| UpgradeError::Install(InstallError::SerializeManifest(e)))?;
-
-        tokio::fs::write(&manifest_path, &manifest_json)
-            .await
-            .map_err(|e| UpgradeError::Install(InstallError::SaveManifest(e)))?;
-
-        // Re-enable the module if it was previously enabled
         if was_enabled {
             self.enable_module(module_name).await.map_err(|e| {
                 UpgradeError::Install(InstallError::CreateManifestDir(std::io::Error::other(
@@ -476,6 +383,81 @@ impl Installer {
         }
 
         Ok(None)
+    }
+
+    async fn preinstall(
+        &self,
+        module_name: &str,
+        version: &str,
+        temp_dir: &Path,
+    ) -> Result<ModuleManifest, InstallError> {
+        let platform = platform::detect_platform();
+
+        let release = github::fetch_release(&self.client, module_name, version)
+            .await
+            .map_err(|_| {
+                InstallError::CreateManifestDir(std::io::Error::other("Failed to fetch release"))
+            })?;
+
+        let Some(asset) = github::find_matching_asset(&release.assets, module_name, &platform)
+        else {
+            return Err(InstallError::NotAvailable(platform));
+        };
+
+        let manifest = github::fetch_module_manifest(&self.client, module_name, version)
+            .await
+            .map_err(InstallError::FetchManifest)?;
+
+        let download = github::download_asset(&self.client, asset, temp_dir).await?;
+
+        match github::fetch_checksum(&self.client, asset).await {
+            Ok(None) => {},
+            Ok(Some(checksum)) => {
+                github::verify_checksum(&download, &checksum).await?;
+            },
+            Err(err) => Err(err)?,
+        }
+
+        let extract_dir = temp_dir.join("extract");
+        tokio::fs::create_dir(&extract_dir)
+            .await
+            .map_err(InstallError::CreateExtractDir)?;
+
+        github::extract_files(&download, &extract_dir)
+            .await
+            .map_err(InstallError::Extract)?;
+
+        Ok(manifest)
+    }
+
+    async fn finish_install(
+        &self,
+        module_name: &str,
+        version: &str,
+        manifest: ModuleManifest,
+        temp_dir: &Path,
+    ) -> Result<(), InstallError> {
+        let extract_dir = temp_dir.join("extract");
+
+        let manifest_path = self
+            .install_dir()
+            .join(std::format!("{}.json", module_name));
+
+        github::install_binaries(&manifest, &extract_dir, &self.exec_dir())
+            .await
+            .map_err(InstallError::BinaryInstall)?;
+
+        let installed_manifest = InstalledModuleManifest {
+            version: Some(version.into()),
+            manifest,
+        };
+        let manifest_json = serde_json::to_string_pretty(&installed_manifest)?;
+
+        tokio::fs::write(&manifest_path, &manifest_json)
+            .await
+            .map_err(InstallError::SaveManifest)?;
+
+        Ok(())
     }
 
     fn install_dir(&self) -> PathBuf {
