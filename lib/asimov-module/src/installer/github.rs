@@ -117,7 +117,9 @@ pub async fn verify_checksum(
 
     let mut hasher = Sha256::new();
     let mut file = tokio::fs::File::open(binary_path).await?;
-    let mut buf = std::vec![0u8; 10 * 1024];
+
+    const READ_BUFFER_SIZE: usize = 10 * 1024;
+    let mut buf = std::vec![0u8; READ_BUFFER_SIZE];
 
     loop {
         let n = file.read(&mut buf).await?;
