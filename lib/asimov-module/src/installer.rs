@@ -501,7 +501,7 @@ async fn read_manifest(
                 .await
                 .map_err(ReadManifestError::InstalledManifestIo)?;
 
-            serde_yml::from_slice::<'_, InstalledModuleManifest>(&content)?
+            serde_json::from_slice::<'_, InstalledModuleManifest>(&content)?
         },
         ext => Err(ReadManifestError::UnknownManifestFormat(
             ext.map(Into::into),

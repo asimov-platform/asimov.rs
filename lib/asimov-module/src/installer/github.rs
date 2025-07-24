@@ -81,7 +81,7 @@ pub async fn fetch_module_manifest(
 
     let response = client.get(&url).send().await?;
 
-    if response.status().is_success() {
+    if !response.status().is_success() {
         Err(HttpError::NotSuccess(response.status()))?;
     }
 
