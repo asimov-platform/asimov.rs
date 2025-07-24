@@ -179,14 +179,21 @@ impl Installer {
         &self,
         module_name: impl AsRef<str>,
     ) -> Result<Option<String>, ModuleVersionError> {
+        self.manifest(module_name)
+            .await
+            .map(|manifest| manifest.version)
+            .map_err(Into::into)
+    }
+
+    pub async fn manifest(
+        &self,
+        module_name: impl AsRef<str>,
+    ) -> Result<InstalledModuleManifest, ManifestError> {
         let path = self
             .find_manifest_file(module_name)
             .await?
-            .ok_or(ModuleVersionError::NotInstalled)?;
-
-        let manifest = read_manifest(&path).await?;
-
-        Ok(manifest.version)
+            .ok_or(ManifestError::NotInstalled)?;
+        read_manifest(path).await.map_err(Into::into)
     }
 
     pub async fn install_module(

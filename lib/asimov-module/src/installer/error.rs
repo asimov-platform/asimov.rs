@@ -46,7 +46,11 @@ pub struct IsModuleInstalledError(#[from] FindManifestError);
 pub struct IsModuleEnabledError(#[from] io::Error);
 
 #[derive(Debug, Error)]
-pub enum ModuleVersionError {
+#[error(transparent)]
+pub struct ModuleVersionError(#[from] ManifestError);
+
+#[derive(Debug, Error)]
+pub enum ManifestError {
     #[error("module is not installed")]
     NotInstalled,
     #[error("error while searching for manifest file: {0}")]
