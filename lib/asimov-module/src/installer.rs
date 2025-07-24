@@ -44,6 +44,25 @@ impl Installer {
         }
     }
 
+    pub async fn create_file_tree(&self) -> Result<(), CreateFileTreeError> {
+        let install_dir = self.install_dir();
+        tokio::fs::create_dir_all(&install_dir)
+            .await
+            .map_err(|e| CreateFileTreeError::InstallDir(install_dir, e))?;
+
+        let enable_dir = self.enable_dir();
+        tokio::fs::create_dir_all(&enable_dir)
+            .await
+            .map_err(|e| CreateFileTreeError::EnableDir(enable_dir, e))?;
+
+        let exec_dir = self.exec_dir();
+        tokio::fs::create_dir_all(&exec_dir)
+            .await
+            .map_err(|e| CreateFileTreeError::ExecDir(exec_dir, e))?;
+
+        Ok(())
+    }
+
     pub async fn installed_modules(&self) -> Result<Vec<InstalledModuleManifest>, ReadError> {
         let installed_dir = self.install_dir();
 

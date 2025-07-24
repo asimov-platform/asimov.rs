@@ -11,6 +11,16 @@ use thiserror::Error;
 use super::platform::PlatformInfo;
 
 #[derive(Debug, Error)]
+pub enum CreateFileTreeError {
+    #[error("failed to create directory for installed modules `{0}`: {1}")]
+    InstallDir(PathBuf, #[source] io::Error),
+    #[error("failed to create directory for enabled modules `{0}`: {1}")]
+    EnableDir(PathBuf, #[source] io::Error),
+    #[error("failed to create directory for module binaries `{0}`: {1}")]
+    ExecDir(PathBuf, #[source] io::Error),
+}
+
+#[derive(Debug, Error)]
 pub enum ReadError {
     #[error("failed to read directory for installed modules `{path}`: {source}")]
     InstallDirIo {
