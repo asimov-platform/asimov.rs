@@ -342,24 +342,24 @@ impl Installer {
         let src_path = self.enable_dir().join(module_name.as_ref());
 
         #[cfg(unix)]
-        let res = tokio::fs::symlink(&target_path, &src_path).await;
+        let fut = tokio::fs::symlink(&target_path, &src_path);
 
         #[cfg(windows)]
-        let res = std::fs::symlink_file(&target_path, &src_path);
+        let fut = tokio::fs::symlink_file(&target_path, &src_path);
 
-        match res {
+        match fut.await {
             Ok(_) => Ok(()),
             Err(err) if err.kind() == io::ErrorKind::AlreadyExists => {
                 // disable and retry enabling one more time
                 let _ = self.disable_module(module_name).await;
 
                 #[cfg(unix)]
-                return tokio::fs::symlink(&target_path, &src_path)
-                    .await
-                    .map_err(EnableError::Io);
+                let fut = tokio::fs::symlink(&target_path, &src_path);
 
                 #[cfg(windows)]
-                return std::fs::symlink_file(&target_path, &src_path).map_err(EnableError::Io);
+                let fut = tokio::fs::symlink_file(&target_path, &src_path);
+
+                fut.await.map_err(EnableError::Io)
             },
             Err(err) => Err(EnableError::Io(err)),
         }
