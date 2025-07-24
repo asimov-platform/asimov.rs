@@ -81,7 +81,14 @@ pub enum ReadModuleVersionError {
 pub enum InstallError {}
 
 #[derive(Debug, Error)]
-pub enum UninstallError {}
+pub enum UninstallError {
+    #[error("unable to read module manifest: {0}")]
+    Manifest(#[from] ReadManifestError),
+    #[error("unable to remove installed module file `{}`: {}", .0.display(), .1)]
+    Io(PathBuf, #[source] io::Error),
+    #[error("module is not installed")]
+    NotInstalled,
+}
 
 #[derive(Debug, Error)]
 pub enum EnableError {

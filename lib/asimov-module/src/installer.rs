@@ -1,6 +1,7 @@
 // This is free and unencumbered software released into the public domain.
 
 use std::{
+    format,
     path::{Path, PathBuf},
     string::String,
     vec::Vec,
@@ -14,6 +15,10 @@ use error::*;
 
 mod github;
 use github::*;
+
+mod platform;
+use platform::*;
+
 #[derive(Clone, Debug)]
 pub struct Installer {
     client: reqwest::Client,
@@ -190,9 +195,43 @@ impl Installer {
 
     pub async fn uninstall_module(
         &self,
-        _module_name: impl AsRef<str>,
+        module_name: impl AsRef<str>,
     ) -> Result<(), UninstallError> {
-        todo!();
+        let manifest_path = self
+            .find_manifest_file(module_name.as_ref())
+            .await?
+            .ok_or(UninstallError::NotInstalled)?;
+
+        let manifest = read_manifest(&manifest_path).await?;
+
+        self.disable_module(&module_name)
+            .await
+            .map_err(|DisableError::Io(e)| {
+                UninstallError::Io(self.enable_dir().join(module_name.as_ref()), e)
+            })?;
+
+        tokio::fs::remove_file(&manifest_path).await.or_else(|e| {
+            if e.kind() == io::ErrorKind::NotFound {
+                Ok(())
+            } else {
+                Err(UninstallError::Io(manifest_path, e))
+            }
+        })?;
+
+        let exec_dir = self.exec_dir();
+
+        for program in manifest.manifest.provides.programs {
+            let path = exec_dir.join(program);
+            tokio::fs::remove_file(&path).await.or_else(|e| {
+                if e.kind() == io::ErrorKind::NotFound {
+                    Ok(())
+                } else {
+                    Err(UninstallError::Io(path, e))
+                }
+            })?;
+        }
+
+        Ok(())
     }
 
     pub async fn enable_module(&self, module_name: impl AsRef<str>) -> Result<(), EnableError> {
