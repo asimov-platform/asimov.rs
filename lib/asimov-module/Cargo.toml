@@ -19,7 +19,7 @@ default = ["all", "std"]
 all = ["cli", "installer", "tracing", "serde"]
 cli = ["std", "dep:clientele", "clientele?/clap"]
 installer = ["dep:reqwest", "dep:thiserror", "dep:tokio", "serde", "std"]
-serde = ["dep:serde", "dep:serde_yml"]
+serde = ["dep:serde", "dep:serde_json", "dep:serde_yml"]
 std = [
 	"dep:asimov-env",
 	"dep:getenv",
@@ -28,6 +28,7 @@ std = [
 	"dogma/std",
 	"getenv?/std",
 	"serde?/std",
+	"serde_json?/std",
 	"slab/std",
 	"tracing?/std",
 	"tracing-subscriber?/fmt",
@@ -36,6 +37,7 @@ std = [
 ]
 tracing = ["dep:tracing", "dep:tracing-subscriber", "clientele?/tracing"]
 unstable = []
+serde_json = ["dep:serde_json"]
 
 [dependencies]
 asimov-env = { workspace = true, optional = true }
@@ -52,10 +54,13 @@ serde = { version = "1.0", optional = true, default-features = false, features =
 	"alloc",
 	"derive",
 ] }
+serde_json = { version = "1.0", default-features = false, optional = true, features = [
+	"alloc",
+] }
 serde_yml = { version = "0.0.12", default-features = false, optional = true }
 slab = { version = "0.4.10", default-features = false }
 thiserror = { workspace = true, optional = true }
-tokio = { workspace = true, optional = true }
+tokio = { workspace = true, optional = true, features = ["fs"] }
 tracing = { workspace = true, optional = true }
 tracing-subscriber = { workspace = true, optional = true }
 url = { version = "2.5", default-features = false }
