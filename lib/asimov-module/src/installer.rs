@@ -118,7 +118,7 @@ impl Installer {
         {
             let path = entry.path();
 
-            if !tokio::fs::metadata(&path)
+            if !tokio::fs::symlink_metadata(&path)
                 .await
                 .map(|md| md.is_symlink())
                 .unwrap_or(false)
@@ -156,7 +156,7 @@ impl Installer {
     ) -> Result<bool, IsModuleEnabledError> {
         let path = self.enable_dir().join(module_name.as_ref());
 
-        tokio::fs::metadata(&path)
+        tokio::fs::symlink_metadata(&path)
             .await
             .map(|md| md.is_symlink())
             .or_else(|e| {
