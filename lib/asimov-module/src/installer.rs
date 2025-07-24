@@ -16,7 +16,6 @@ pub mod error;
 use error::*;
 
 mod github;
-
 mod platform;
 
 #[derive(Clone, Debug)]
@@ -65,19 +64,21 @@ impl Installer {
         Ok(())
     }
 
-    pub async fn installed_modules(&self) -> Result<Vec<InstalledModuleManifest>, ReadError> {
+    pub async fn installed_modules(
+        &self,
+    ) -> Result<Vec<InstalledModuleManifest>, InstalledModulesError> {
         let installed_dir = self.install_dir();
 
         let mut read_dir = tokio::fs::read_dir(&installed_dir)
             .await
-            .map_err(|e| ReadError::InstallDirIo(installed_dir.clone(), e))?;
+            .map_err(|e| InstalledModulesError::DirIo(installed_dir.clone(), e))?;
 
         let mut modules = Vec::new();
 
         while let Some(entry) = read_dir
             .next_entry()
             .await
-            .map_err(|e| ReadError::InstallDirIo(installed_dir.clone(), e))?
+            .map_err(|e| InstalledModulesError::DirIo(installed_dir.clone(), e))?
         {
             let path = entry.path();
 
@@ -91,7 +92,7 @@ impl Installer {
 
             let manifest = read_manifest(&path)
                 .await
-                .map_err(|e| ReadError::ReadManifestError(path, e))?;
+                .map_err(|e| InstalledModulesError::ReadManifestError(path, e))?;
 
             modules.push(manifest)
         }
@@ -99,19 +100,21 @@ impl Installer {
         Ok(modules)
     }
 
-    pub async fn enabled_modules(&self) -> Result<Vec<InstalledModuleManifest>, ReadError> {
+    pub async fn enabled_modules(
+        &self,
+    ) -> Result<Vec<InstalledModuleManifest>, EnabledModulesError> {
         let enabled_dir = self.enable_dir();
 
         let mut read_dir = tokio::fs::read_dir(&enabled_dir)
             .await
-            .map_err(|e| ReadError::InstallDirIo(enabled_dir.clone(), e))?;
+            .map_err(|e| EnabledModulesError::DirIo(enabled_dir.clone(), e))?;
 
         let mut modules = Vec::new();
 
         while let Some(entry) = read_dir
             .next_entry()
             .await
-            .map_err(|e| ReadError::EnableDirIo(enabled_dir.clone(), e))?
+            .map_err(|e| EnabledModulesError::DirIo(enabled_dir.clone(), e))?
         {
             let path = entry.path();
 
@@ -123,11 +126,13 @@ impl Installer {
                 continue;
             }
 
-            let manifest_path = tokio::fs::read_link(&path).await.unwrap();
+            let manifest_path = tokio::fs::read_link(&path)
+                .await
+                .map_err(|e| EnabledModulesError::LinkIo(path.clone(), e))?;
 
             let manifest = read_manifest(&manifest_path)
                 .await
-                .map_err(|e| ReadError::ReadManifestError(path, e))?;
+                .map_err(|e| EnabledModulesError::ReadManifestError(path, e))?;
 
             modules.push(manifest)
         }
@@ -138,13 +143,17 @@ impl Installer {
     pub async fn is_module_installed(
         &self,
         module_name: impl AsRef<str>,
-    ) -> Result<bool, ReadManifestError> {
+    ) -> Result<bool, IsModuleInstalledError> {
         self.find_manifest_file(module_name)
             .await
             .map(|path| path.is_some())
+            .map_err(Into::into)
     }
 
-    pub async fn is_module_enabled(&self, module_name: impl AsRef<str>) -> Result<bool, ReadError> {
+    pub async fn is_module_enabled(
+        &self,
+        module_name: impl AsRef<str>,
+    ) -> Result<bool, IsModuleEnabledError> {
         let path = self.enable_dir().join(module_name.as_ref());
 
         tokio::fs::metadata(&path)
@@ -154,7 +163,7 @@ impl Installer {
                 if e.kind() == io::ErrorKind::NotFound {
                     Ok(false)
                 } else {
-                    Err(ReadError::EnabledLinkIo(path, e))
+                    Err(e.into())
                 }
             })
     }
@@ -169,11 +178,11 @@ impl Installer {
     pub async fn module_version(
         &self,
         module_name: impl AsRef<str>,
-    ) -> Result<Option<String>, ReadModuleVersionError> {
+    ) -> Result<Option<String>, ModuleVersionError> {
         let path = self
             .find_manifest_file(module_name)
             .await?
-            .ok_or(ReadModuleVersionError::NotInstalled)?;
+            .ok_or(ModuleVersionError::NotInstalled)?;
 
         let manifest = read_manifest(&path).await?;
 
@@ -213,8 +222,9 @@ impl Installer {
         let module_name = module_name.as_ref();
         let version = version.as_ref();
 
-        if !self.is_module_installed(module_name).await? {
-            return Err(UpgradeError::NotInstalled);
+        let current_version = self.module_version(module_name).await?;
+        if current_version.is_some_and(|current| current == version) {
+            return Ok(());
         }
 
         let temp_dir = tempfile::Builder::new()
@@ -253,17 +263,13 @@ impl Installer {
 
         let manifest = read_manifest(&manifest_path).await?;
 
-        self.disable_module(&module_name)
-            .await
-            .map_err(|DisableError::Io(e)| {
-                UninstallError::Io(self.enable_dir().join(module_name.as_ref()), e)
-            })?;
+        self.disable_module(&module_name).await?;
 
         tokio::fs::remove_file(&manifest_path).await.or_else(|e| {
             if e.kind() == io::ErrorKind::NotFound {
                 Ok(())
             } else {
-                Err(UninstallError::Io(manifest_path, e))
+                Err(UninstallError::Delete(manifest_path, e))
             }
         })?;
 
@@ -275,7 +281,7 @@ impl Installer {
                 if e.kind() == io::ErrorKind::NotFound {
                     Ok(())
                 } else {
-                    Err(UninstallError::Io(path, e))
+                    Err(UninstallError::Delete(path, e))
                 }
             })?;
         }
@@ -322,7 +328,7 @@ impl Installer {
     async fn find_manifest_file(
         &self,
         module_name: impl AsRef<str>,
-    ) -> Result<Option<PathBuf>, ReadManifestError> {
+    ) -> Result<Option<PathBuf>, FindManifestError> {
         let install_dir = self.install_dir();
 
         let module_name = module_name.as_ref();
@@ -338,7 +344,7 @@ impl Installer {
             match tokio::fs::try_exists(&path).await {
                 Ok(exists) if exists => return Ok(Some(path)),
                 Err(err) if err.kind() != io::ErrorKind::NotFound => {
-                    return Err(ReadManifestError::InstalledManifestIo(err));
+                    return Err(FindManifestError(path, err));
                 },
                 _ => continue,
             }
@@ -367,7 +373,7 @@ impl Installer {
                         .or(Some(path)));
                 },
                 Err(err) if err.kind() != io::ErrorKind::NotFound => {
-                    return Err(ReadManifestError::InstalledManifestIo(err));
+                    return Err(FindManifestError(path, err));
                 },
                 _ => continue,
             }
