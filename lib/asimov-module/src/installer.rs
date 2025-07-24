@@ -7,11 +7,13 @@ use std::{
 };
 use tokio::io;
 
-use crate::{models::InstalledModuleManifest, tracing};
+use crate::models::InstalledModuleManifest;
 
 pub mod error;
 use error::*;
 
+mod github;
+use github::*;
 #[derive(Clone, Debug)]
 pub struct Installer {
     client: reqwest::Client,
@@ -144,9 +146,24 @@ impl Installer {
 
     pub async fn fetch_latest_release(
         &self,
-        _module_name: impl AsRef<str>,
-    ) -> Result<String, FetchError> {
-        todo!();
+        module_name: impl AsRef<str>,
+    ) -> Result<String, FetchReleaseError> {
+        let url = format!(
+            "https://api.github.com/repos/asimov-modules/asimov-{}-module/releases/latest",
+            module_name.as_ref()
+        );
+
+        let response = self.client.get(url).send().await?;
+
+        if response.status() != 200 {
+            return Err(FetchReleaseError::NotSuccess(response.status()));
+        }
+
+        response
+            .json::<GitHubRelease>()
+            .await
+            .map_err(FetchReleaseError::Deserialize)
+            .map(|release| release.name)
     }
 
     pub async fn module_version(

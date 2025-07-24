@@ -2,6 +2,7 @@
 
 use std::{io, path::PathBuf, string::String};
 
+use reqwest::StatusCode;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -59,7 +60,14 @@ pub enum DeserializeError {
 }
 
 #[derive(Debug, Error)]
-pub enum FetchError {}
+pub enum FetchReleaseError {
+    #[error("HTTP request failed: {0}")]
+    Http(#[from] reqwest::Error),
+    #[error("HTTP status code was not successful: {0}")]
+    NotSuccess(StatusCode),
+    #[error("unable to deserialize GitHub API response: {0}")]
+    Deserialize(reqwest::Error),
+}
 
 #[derive(Debug, Error)]
 pub enum ReadModuleVersionError {
