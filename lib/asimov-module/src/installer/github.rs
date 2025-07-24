@@ -31,8 +31,7 @@ pub async fn fetch_release(
     version: &str,
 ) -> Result<GitHubRelease, FetchError> {
     let url = format!(
-        "https://api.github.com/repos/asimov-modules/asimov-{}-module/releases/tags/{}",
-        module_name, version
+        "https://api.github.com/repos/asimov-modules/asimov-{module_name}-module/releases/tags/{version}",
     );
 
     let response = client.get(&url).send().await?;
@@ -75,8 +74,7 @@ pub async fn fetch_module_manifest(
     version: &str,
 ) -> Result<ModuleManifest, FetchError> {
     let url = format!(
-        "https://raw.githubusercontent.com/asimov-modules/asimov-{}-module/{}/.asimov/module.yaml",
-        module_name, version
+        "https://raw.githubusercontent.com/asimov-modules/asimov-{module_name}-module/{version}/.asimov/module.yaml",
     );
 
     let response = client.get(&url).send().await?;
@@ -257,8 +255,8 @@ pub async fn install_binaries(
     install_dir: &Path,
 ) -> Result<(), tokio::io::Error> {
     for program in &manifest.provides.programs {
-        let src = extract_dir.join(&program);
-        let dst = install_dir.join(&program);
+        let src = extract_dir.join(program);
+        let dst = install_dir.join(program);
 
         tokio::fs::copy(&src, &dst).await?;
 

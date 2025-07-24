@@ -369,7 +369,7 @@ impl Installer {
                             )
                         })
                         .is_ok()
-                        .then(|| dst)
+                        .then_some(dst)
                         .or(Some(path)));
                 },
                 Err(err) if err.kind() != io::ErrorKind::NotFound => {
@@ -436,9 +436,7 @@ impl Installer {
     ) -> Result<(), FinishInstallError> {
         let extract_dir = temp_dir.join("extract");
 
-        let manifest_path = self
-            .install_dir()
-            .join(std::format!("{}.json", module_name));
+        let manifest_path = self.install_dir().join(std::format!("{module_name}.json"));
 
         github::install_binaries(&manifest, &extract_dir, &self.exec_dir())
             .await
