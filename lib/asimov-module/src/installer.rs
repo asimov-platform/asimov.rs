@@ -14,10 +14,8 @@ pub mod error;
 use error::*;
 
 mod github;
-use github::*;
 
 mod platform;
-use platform::*;
 
 #[derive(Clone, Debug)]
 pub struct Installer {
@@ -152,23 +150,8 @@ impl Installer {
     pub async fn fetch_latest_release(
         &self,
         module_name: impl AsRef<str>,
-    ) -> Result<String, FetchReleaseError> {
-        let url = format!(
-            "https://api.github.com/repos/asimov-modules/asimov-{}-module/releases/latest",
-            module_name.as_ref()
-        );
-
-        let response = self.client.get(url).send().await?;
-
-        if response.status() != 200 {
-            return Err(FetchReleaseError::NotSuccess(response.status()));
-        }
-
-        response
-            .json::<GitHubRelease>()
-            .await
-            .map_err(FetchReleaseError::Deserialize)
-            .map(|release| release.name)
+    ) -> Result<String, FetchError> {
+        github::fetch_latest_release(&self.client, module_name).await
     }
 
     pub async fn module_version(
@@ -187,10 +170,66 @@ impl Installer {
 
     pub async fn install_module(
         &self,
-        _module_name: impl AsRef<str>,
-        _version: impl AsRef<str>,
+        module_name: impl AsRef<str>,
+        version: impl AsRef<str>,
     ) -> Result<(), InstallError> {
-        todo!();
+        let platform = platform::detect_platform();
+
+        let release = github::fetch_release(&self.client, module_name.as_ref(), version.as_ref())
+            .await
+            .unwrap();
+
+        let Some(asset) =
+            github::find_matching_asset(&release.assets, module_name.as_ref(), &platform)
+        else {
+            return Err(InstallError::NotAvailable(platform));
+        };
+
+        let manifest =
+            github::fetch_module_manifest(&self.client, module_name.as_ref(), version.as_ref())
+                .await
+                .map_err(InstallError::FetchManifest)?;
+
+        let temp_dir = tempfile::Builder::new()
+            .prefix("asimov-module-installer")
+            .tempdir()
+            .map_err(InstallError::CreateTempIo)?;
+
+        let download = github::download_asset(&self.client, asset, temp_dir.path()).await?;
+
+        match github::fetch_checksum(&self.client, asset).await {
+            Ok(None) => {},
+            Ok(Some(checksum)) => {
+                github::verify_checksum(&download, &checksum).await?;
+            },
+            Err(err) => Err(err)?,
+        }
+
+        let install_dir = self.install_dir();
+        tokio::fs::create_dir_all(&install_dir)
+            .await
+            .map_err(InstallError::CreateManifestDir)?;
+
+        let exec_dir = self.exec_dir();
+        tokio::fs::create_dir_all(&install_dir)
+            .await
+            .map_err(InstallError::CreateExecDir)?;
+
+        github::install_binaries(&exec_dir, &download)
+            .await
+            .unwrap();
+
+        let manifest_path = install_dir.join(module_name.as_ref());
+
+        let manifest = InstalledModuleManifest {
+            version: Some(version.as_ref().into()),
+            manifest,
+        };
+        let manifest = serde_json::to_string_pretty(&manifest).unwrap();
+
+        tokio::fs::write(&manifest_path, &manifest).await.unwrap();
+
+        Ok(())
     }
 
     pub async fn uninstall_module(

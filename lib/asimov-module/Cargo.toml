@@ -18,7 +18,18 @@ publish.workspace = true
 default = ["all", "std"]
 all = ["cli", "installer", "tracing", "serde"]
 cli = ["std", "dep:clientele", "clientele?/clap"]
-installer = ["dep:reqwest", "dep:thiserror", "dep:tokio", "serde", "std"]
+installer = [
+	"dep:flate2",
+	"dep:reqwest",
+	"dep:sha2",
+	"dep:tar",
+	"dep:tempfile",
+	"dep:thiserror",
+	"dep:tokio",
+	"dep:zip",
+	"serde",
+	"std",
+]
 serde = ["dep:serde", "dep:serde_json", "dep:serde_yml"]
 std = [
 	"dep:asimov-env",
@@ -29,6 +40,7 @@ std = [
 	"getenv?/std",
 	"serde?/std",
 	"serde_json?/std",
+	"sha2?/std",
 	"slab/std",
 	"tracing?/std",
 	"tracing-subscriber?/fmt",
@@ -62,9 +74,15 @@ serde_json = { version = "1.0", default-features = false, optional = true, featu
 	"alloc",
 ] }
 serde_yml = { version = "0.0.12", default-features = false, optional = true }
+sha2 = { version = "0.10.9", default-features = false, optional = true }
 slab = { version = "0.4.10", default-features = false }
+tempfile = { version = "3.20", default-features = false, optional = true }
 thiserror = { workspace = true, optional = true }
 tokio = { workspace = true, optional = true, features = ["fs"] }
 tracing = { workspace = true, optional = true }
 tracing-subscriber = { workspace = true, optional = true }
 url = { version = "2.5", default-features = false }
+
+zip = { version = "4", optional = true }
+flate2 = { version = "1", optional = true }
+tar = { version = "0.4", optional = true }
