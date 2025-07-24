@@ -161,6 +161,15 @@ pub enum InstallError {
     #[error("failed to save module manifest: {0}")]
     SaveManifest(io::Error),
 }
+
+#[derive(Debug, Error)]
+pub enum UpgradeError {
+    #[error(transparent)]
+    Predownload(InstallError),
+    #[error(transparent)]
+    Uninstall(InstallError),
+    #[error(transparent)]
+    Install(InstallError),
 }
 
 #[derive(Debug, Error)]
