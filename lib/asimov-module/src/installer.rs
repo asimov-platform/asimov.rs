@@ -69,6 +69,41 @@ impl Installer {
     ) -> Result<Vec<InstalledModuleManifest>, InstalledModulesError> {
         let installed_dir = self.install_dir();
 
+        if let Ok(mut read_dir) = tokio::fs::read_dir(self.dir.join("modules")).await {
+            while let Ok(Some(entry)) = read_dir.next_entry().await {
+                let path = entry.path();
+                if !tokio::fs::metadata(&path)
+                    .await
+                    .map(|md| md.is_file())
+                    .unwrap_or(false)
+                {
+                    continue;
+                }
+
+                let Some(file_name) = path.file_name().and_then(|n| n.to_str()) else {
+                    continue;
+                };
+
+                if let Ok(_manifest) = read_manifest(&path).await {
+                    tracing::debug!(?path, "found a legacy manifest file, migrating...");
+
+                    let dst = installed_dir.join(file_name);
+
+                    tokio::fs::rename(&path, &dst)
+                        .await
+                        .inspect_err(|e| {
+                            tracing::debug!(
+                            from = ?path,
+                            to = ?dst,
+                            "failed to migrate legacy manifest file: {e}",
+
+                            )
+                        })
+                        .ok();
+                }
+            }
+        }
+
         let mut read_dir = tokio::fs::read_dir(&installed_dir)
             .await
             .map_err(|e| InstalledModulesError::DirIo(installed_dir.clone(), e))?;
