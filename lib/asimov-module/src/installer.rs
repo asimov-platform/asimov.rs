@@ -193,6 +193,7 @@ impl Installer {
         let manifest = self
             .preinstall(module_name.as_ref(), version.as_ref(), temp_dir.path())
             .await?;
+
         self.finish_install(
             module_name.as_ref(),
             version.as_ref(),
@@ -212,40 +213,30 @@ impl Installer {
         let module_name = module_name.as_ref();
         let version = version.as_ref();
 
-        if !self
-            .is_module_installed(module_name)
-            .await
-            .map_err(UpgradeError::Read)?
-        {
+        if !self.is_module_installed(module_name).await? {
             return Err(UpgradeError::NotInstalled);
         }
-
-        // check if currently enabled, have to re-enable after upgrade
-        let was_enabled = self.is_module_enabled(module_name).await.unwrap_or(false);
 
         let temp_dir = tempfile::Builder::new()
             .prefix("asimov-module-installer")
             .tempdir()
-            .map_err(|e| UpgradeError::Predownload(InstallError::CreateTempDir(e)))?;
+            .map_err(UpgradeError::CreateTempDir)?;
+
+        // check if currently enabled, have to re-enable after upgrade
+        let was_enabled = self.is_module_enabled(module_name).await?;
 
         let manifest = self
             .preinstall(module_name, version, temp_dir.path())
-            .await
-            .map_err(UpgradeError::Predownload)?;
+            .await?;
 
         // now ok to uninstall old version
         self.uninstall_module(module_name).await?;
 
         self.finish_install(module_name, version, manifest, temp_dir.path())
-            .await
-            .map_err(UpgradeError::Install)?;
+            .await?;
 
         if was_enabled {
-            self.enable_module(module_name).await.map_err(|e| {
-                UpgradeError::Install(InstallError::CreateManifestDir(std::io::Error::other(
-                    std::format!("Failed to re-enable module: {}", e),
-                )))
-            })?;
+            self.enable_module(module_name).await?;
         }
 
         Ok(())
@@ -390,23 +381,23 @@ impl Installer {
         module_name: &str,
         version: &str,
         temp_dir: &Path,
-    ) -> Result<ModuleManifest, InstallError> {
+    ) -> Result<ModuleManifest, PreinstallError> {
         let platform = platform::detect_platform();
 
         let release = github::fetch_release(&self.client, module_name, version)
             .await
             .map_err(|_| {
-                InstallError::CreateManifestDir(std::io::Error::other("Failed to fetch release"))
+                PreinstallError::CreateManifestDir(std::io::Error::other("Failed to fetch release"))
             })?;
 
         let Some(asset) = github::find_matching_asset(&release.assets, module_name, &platform)
         else {
-            return Err(InstallError::NotAvailable(platform));
+            return Err(PreinstallError::NotAvailable(platform));
         };
 
         let manifest = github::fetch_module_manifest(&self.client, module_name, version)
             .await
-            .map_err(InstallError::FetchManifest)?;
+            .map_err(PreinstallError::FetchManifest)?;
 
         let download = github::download_asset(&self.client, asset, temp_dir).await?;
 
@@ -421,11 +412,11 @@ impl Installer {
         let extract_dir = temp_dir.join("extract");
         tokio::fs::create_dir(&extract_dir)
             .await
-            .map_err(InstallError::CreateExtractDir)?;
+            .map_err(PreinstallError::CreateExtractDir)?;
 
         github::extract_files(&download, &extract_dir)
             .await
-            .map_err(InstallError::Extract)?;
+            .map_err(PreinstallError::Extract)?;
 
         Ok(manifest)
     }
@@ -436,7 +427,7 @@ impl Installer {
         version: &str,
         manifest: ModuleManifest,
         temp_dir: &Path,
-    ) -> Result<(), InstallError> {
+    ) -> Result<(), FinishInstallError> {
         let extract_dir = temp_dir.join("extract");
 
         let manifest_path = self
@@ -445,7 +436,7 @@ impl Installer {
 
         github::install_binaries(&manifest, &extract_dir, &self.exec_dir())
             .await
-            .map_err(InstallError::BinaryInstall)?;
+            .map_err(FinishInstallError::BinaryInstall)?;
 
         let installed_manifest = InstalledModuleManifest {
             version: Some(version.into()),
@@ -455,7 +446,7 @@ impl Installer {
 
         tokio::fs::write(&manifest_path, &manifest_json)
             .await
-            .map_err(InstallError::SaveManifest)?;
+            .map_err(FinishInstallError::SaveManifest)?;
 
         Ok(())
     }

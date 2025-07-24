@@ -128,12 +128,20 @@ pub enum ReadModuleVersionError {
 
 #[derive(Debug, Error)]
 pub enum InstallError {
+    #[error("failed to create directory for downloading: {0}")]
+    CreateTempDir(io::Error),
+    #[error(transparent)]
+    Preinstall(#[from] PreinstallError),
+    #[error(transparent)]
+    Finish(#[from] FinishInstallError),
+}
+
+#[derive(Debug, Error)]
+pub enum PreinstallError {
     #[error("failed to create directory for installed manifests: {0}")]
     CreateManifestDir(io::Error),
     #[error("failed to create directory for installed binaries: {0}")]
     CreateExecDir(io::Error),
-    #[error("failed to create directory for downloading: {0}")]
-    CreateTempDir(io::Error),
     #[error("failed to create directory for extracting: {0}")]
     CreateExtractDir(io::Error),
 
@@ -152,6 +160,10 @@ pub enum InstallError {
 
     #[error("failed to extract archive: {0}")]
     Extract(io::Error),
+}
+
+#[derive(Debug, Error)]
+pub enum FinishInstallError {
     #[error("failed to install binaries: {0}")]
     BinaryInstall(io::Error),
     #[error("failed to serialize module manifest: {0}")]
@@ -166,12 +178,18 @@ pub enum UpgradeError {
     Read(#[from] ReadManifestError),
     #[error("module is not installed")]
     NotInstalled,
+    #[error("failed to create directory for downloading: {0}")]
+    CreateTempDir(io::Error),
     #[error(transparent)]
-    Predownload(InstallError),
+    CheckEnabled(#[from] ReadError),
+    #[error(transparent)]
+    Preinstall(#[from] PreinstallError),
     #[error(transparent)]
     Uninstall(#[from] UninstallError),
     #[error(transparent)]
-    Install(InstallError),
+    Install(#[from] FinishInstallError),
+    #[error("failed to re-enable module: {0}")]
+    ReEnable(#[from] EnableError),
 }
 
 #[derive(Debug, Error)]
