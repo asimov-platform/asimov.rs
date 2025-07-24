@@ -230,9 +230,11 @@ impl Installer {
         let version = version.as_ref();
 
         let current_version = self.module_version(module_name).await?;
-        if current_version.is_some_and(|current| current == version) {
-            return Ok(());
-        }
+        match current_version {
+            Some(current) if current == version => return Ok(()),
+            Some(_) => (),
+            None => tracing::debug!(module_name, "installed module does not define a version"),
+        };
 
         let temp_dir = tempfile::Builder::new()
             .prefix("asimov-module-installer")
