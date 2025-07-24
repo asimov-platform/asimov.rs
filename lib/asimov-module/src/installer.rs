@@ -334,10 +334,37 @@ impl Installer {
             std::format!("{module_name}.yml"),
         ];
 
-        for file in files {
+        for file in &files {
             let path = install_dir.join(file);
             match tokio::fs::try_exists(&path).await {
                 Ok(exists) if exists => return Ok(Some(path)),
+                Err(err) if err.kind() != io::ErrorKind::NotFound => {
+                    return Err(ReadManifestError::InstalledManifestIo(err));
+                },
+                _ => continue,
+            }
+        }
+
+        let legacy_dir = install_dir.parent().unwrap();
+        for file in &files {
+            let path = legacy_dir.join(file);
+            match tokio::fs::try_exists(&path).await {
+                Ok(exists) if exists => {
+                    let dst = install_dir.join(file);
+                    return Ok(tokio::fs::rename(&path, &dst)
+                        .await
+                        .inspect_err(|err| {
+                            tracing::debug!(
+                                from = ?path,
+                                to = ?dst,
+                                ?err,
+                                "tried to move module manifest from legacy path but failed"
+                            )
+                        })
+                        .is_ok()
+                        .then(|| dst)
+                        .or(Some(path)));
+                },
                 Err(err) if err.kind() != io::ErrorKind::NotFound => {
                     return Err(ReadManifestError::InstalledManifestIo(err));
                 },
