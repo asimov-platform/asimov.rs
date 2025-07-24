@@ -177,16 +177,6 @@ impl Installer {
         module_name: impl AsRef<str>,
         version: impl AsRef<str>,
     ) -> Result<(), InstallError> {
-        let install_dir = self.install_dir();
-        tokio::fs::create_dir_all(&install_dir)
-            .await
-            .map_err(InstallError::CreateManifestDir)?;
-
-        let exec_dir = self.exec_dir();
-        tokio::fs::create_dir_all(&install_dir)
-            .await
-            .map_err(InstallError::CreateExecDir)?;
-
         let platform = platform::detect_platform();
 
         let release = github::fetch_release(&self.client, module_name.as_ref(), version.as_ref())
@@ -228,9 +218,11 @@ impl Installer {
             .await
             .map_err(InstallError::Extract)?;
 
-        let manifest_path = install_dir.join(module_name.as_ref());
+        let manifest_path = self
+            .install_dir()
+            .join(std::format!("{}.json", module_name.as_ref()));
 
-        github::install_binaries(&manifest, &extract_dir, &exec_dir)
+        github::install_binaries(&manifest, &extract_dir, &self.exec_dir())
             .await
             .map_err(InstallError::BinaryInstall)?;
 
@@ -349,7 +341,9 @@ impl Installer {
             }
         }
 
-        let legacy_dir = install_dir.parent().unwrap();
+        let legacy_dir = install_dir
+            .parent()
+            .expect("should never panic, self.install_dir() has >=2 path segments");
         for file in &files {
             let path = legacy_dir.join(file);
             match tokio::fs::try_exists(&path).await {
