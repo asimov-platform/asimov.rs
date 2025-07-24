@@ -163,9 +163,13 @@ pub enum InstallError {
 #[derive(Debug, Error)]
 pub enum UpgradeError {
     #[error(transparent)]
+    Read(#[from] ReadManifestError),
+    #[error("module is not installed")]
+    NotInstalled,
+    #[error(transparent)]
     Predownload(InstallError),
     #[error(transparent)]
-    Uninstall(InstallError),
+    Uninstall(#[from] UninstallError),
     #[error(transparent)]
     Install(InstallError),
 }

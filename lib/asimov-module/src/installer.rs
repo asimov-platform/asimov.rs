@@ -1,7 +1,6 @@
 // This is free and unencumbered software released into the public domain.
 
 use std::{
-    format,
     path::{Path, PathBuf},
     string::String,
     vec::Vec,
@@ -235,6 +234,106 @@ impl Installer {
         tokio::fs::write(&manifest_path, &manifest)
             .await
             .map_err(InstallError::SaveManifest)?;
+
+        Ok(())
+    }
+
+    pub async fn upgrade_module(
+        &self,
+        module_name: impl AsRef<str>,
+        version: impl AsRef<str>,
+    ) -> Result<(), UpgradeError> {
+        let module_name = module_name.as_ref();
+        let version = version.as_ref();
+
+        if !self.is_module_installed(module_name).await? {
+            return Err(UpgradeError::NotInstalled);
+        }
+
+        // check if currently enabled, have to re-enable after upgrade
+        let was_enabled = self.is_module_enabled(module_name).await.unwrap_or(false);
+
+        let platform = platform::detect_platform();
+
+        let release = github::fetch_release(&self.client, module_name, version)
+            .await
+            .map_err(|e| {
+                UpgradeError::Predownload(InstallError::CreateManifestDir(std::io::Error::other(
+                    std::format!("Failed to fetch release: {}", e),
+                )))
+            })?;
+
+        let Some(asset) = github::find_matching_asset(&release.assets, module_name, &platform)
+        else {
+            return Err(UpgradeError::Predownload(InstallError::NotAvailable(
+                platform,
+            )));
+        };
+
+        let manifest = github::fetch_module_manifest(&self.client, module_name, version)
+            .await
+            .map_err(|e| UpgradeError::Predownload(InstallError::FetchManifest(e)))?;
+
+        let temp_dir = tempfile::Builder::new()
+            .prefix("asimov-module-installer")
+            .tempdir()
+            .map_err(|e| UpgradeError::Predownload(InstallError::CreateTempDir(e)))?;
+
+        let download = github::download_asset(&self.client, asset, temp_dir.path())
+            .await
+            .map_err(|e| UpgradeError::Predownload(InstallError::Download(e)))?;
+
+        match github::fetch_checksum(&self.client, asset).await {
+            Ok(None) => {},
+            Ok(Some(checksum)) => {
+                github::verify_checksum(&download, &checksum)
+                    .await
+                    .map_err(|e| UpgradeError::Predownload(InstallError::VerifyChecksum(e)))?;
+            },
+            Err(err) => {
+                return Err(UpgradeError::Predownload(InstallError::FetchChecksum(err)));
+            },
+        }
+
+        let extract_dir = temp_dir.path().join("extract");
+        tokio::fs::create_dir(&extract_dir)
+            .await
+            .map_err(|e| UpgradeError::Predownload(InstallError::CreateExtractDir(e)))?;
+
+        github::extract_files(&download, &extract_dir)
+            .await
+            .map_err(|e| UpgradeError::Predownload(InstallError::Extract(e)))?;
+
+        // now ok to uninstall old version
+        self.uninstall_module(module_name).await?;
+
+        let manifest_path = self
+            .install_dir()
+            .join(std::format!("{}.json", module_name));
+
+        github::install_binaries(&manifest, &extract_dir, &self.exec_dir())
+            .await
+            .map_err(|e| UpgradeError::Install(InstallError::BinaryInstall(e)))?;
+
+        let installed_manifest = InstalledModuleManifest {
+            version: Some(version.into()),
+            manifest,
+        };
+        let manifest_json = serde_json::to_string_pretty(&installed_manifest)
+            .map_err(|e| UpgradeError::Install(InstallError::SerializeManifest(e)))?;
+
+        tokio::fs::write(&manifest_path, &manifest_json)
+            .await
+            .map_err(|e| UpgradeError::Install(InstallError::SaveManifest(e)))?;
+
+        // Re-enable the module if it was previously enabled
+        if was_enabled {
+            self.enable_module(module_name).await.map_err(|e| {
+                UpgradeError::Install(InstallError::CreateManifestDir(std::io::Error::other(
+                    std::format!("Failed to re-enable module: {}", e),
+                )))
+            })?;
+        }
 
         Ok(())
     }
