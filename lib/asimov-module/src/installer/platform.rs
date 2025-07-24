@@ -31,9 +31,9 @@ pub fn detect_platform() -> PlatformInfo {
     #[cfg(not(any(target_env = "musl", target_env = "gnu")))]
     let libc = None;
     #[cfg(target_env = "musl")]
-    let libc = Some("musl".to_string());
+    let libc = Some("musl".into());
     #[cfg(target_env = "gnu")]
-    let libc = Some("gnu".to_string());
+    let libc = Some("gnu".into());
 
     PlatformInfo {
         os: os.into(),
