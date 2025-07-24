@@ -30,7 +30,7 @@ pub enum ReadError {
 
 #[derive(Debug, Error)]
 pub enum ReadManifestError {
-    #[error("failed to read installed module manifest: {0}")]
+    #[error("failed to access module manifest file: {0}")]
     InstalledManifestIo(#[from] io::Error),
     #[error("failed to deserialize module manifest: {0}")]
     ManifestDeserialize(#[from] DeserializeError),
@@ -76,7 +76,17 @@ pub enum InstallError {}
 pub enum UninstallError {}
 
 #[derive(Debug, Error)]
-pub enum EnableError {}
+pub enum EnableError {
+    #[error(transparent)]
+    ReadError(#[from] ReadManifestError),
+    #[error("module is not installed")]
+    NotInstalled,
+    #[error("failed to enable module: {0}")]
+    Io(#[from] io::Error),
+}
 
 #[derive(Debug, Error)]
-pub enum DisableError {}
+pub enum DisableError {
+    #[error("failed to disable module: {0}")]
+    Io(#[from] io::Error),
+}

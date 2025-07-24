@@ -1,17 +1,16 @@
 // This is free and unencumbered software released into the public domain.
 
 use std::{
-    borrow::ToOwned,
     path::{Path, PathBuf},
     string::String,
     vec::Vec,
 };
+use tokio::io;
 
 use crate::{models::InstalledModuleManifest, tracing};
 
 pub mod error;
 use error::*;
-use tokio::io;
 
 #[derive(Clone, Debug)]
 pub struct Installer {
@@ -179,12 +178,40 @@ impl Installer {
         todo!();
     }
 
-    pub async fn enable_module(&self, _module_name: impl AsRef<str>) -> Result<(), EnableError> {
-        todo!();
+    pub async fn enable_module(&self, module_name: impl AsRef<str>) -> Result<(), EnableError> {
+        let target_path = self
+            .find_manifest_file(&module_name)
+            .await?
+            .ok_or(EnableError::NotInstalled)?;
+
+        let src_path = self.enable_dir().join(module_name.as_ref());
+
+        match tokio::fs::symlink(&target_path, &src_path).await {
+            Ok(_) => Ok(()),
+            Err(err) if err.kind() == io::ErrorKind::AlreadyExists => {
+                // disable and retry enabling one more time
+                let _ = self.disable_module(module_name).await;
+                tokio::fs::symlink(&target_path, &src_path)
+                    .await
+                    .map_err(EnableError::Io)
+            },
+            Err(err) => Err(EnableError::Io(err)),
+        }
     }
 
-    pub async fn disable_module(&self, _module_name: impl AsRef<str>) -> Result<(), DisableError> {
-        todo!();
+    pub async fn disable_module(&self, module_name: impl AsRef<str>) -> Result<(), DisableError> {
+        let path = self.enable_dir().join(module_name.as_ref());
+
+        tokio::fs::remove_file(&path)
+            .await
+            .or_else(|err| {
+                if err.kind() == io::ErrorKind::NotFound {
+                    Ok(())
+                } else {
+                    Err(err)
+                }
+            })
+            .map_err(Into::into)
     }
 
     async fn find_manifest_file(
