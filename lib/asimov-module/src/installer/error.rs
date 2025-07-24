@@ -24,29 +24,30 @@ pub enum ReadError {
         #[source]
         source: io::Error,
     },
-    #[error(transparent)]
-    ReadManifestError(#[from] ReadManifestError),
+    #[error("failed to read manifest at `{}`: {}", .0.display(), .1)]
+    ReadManifestError(PathBuf, #[source] ReadManifestError),
 }
 
 #[derive(Debug, Error)]
 pub enum ReadManifestError {
-    #[error("failed to read installed module manifest at `{path}`: {source}")]
-    InstalledManifestIo {
-        path: PathBuf,
-        #[source]
-        source: io::Error,
-    },
-    #[error("failed to deserialize module manifest at `{path}`: {source}")]
-    ManifestDeserialize {
-        path: PathBuf,
-        #[source]
-        source: DeserializeError,
-    },
-    #[error("unknown manifest format at `{path}`: {}", extension.as_deref().unwrap_or("no file extension"))]
-    UnknownManifestFormat {
-        path: PathBuf,
-        extension: Option<String>,
-    },
+    #[error("failed to read installed module manifest: {0}")]
+    InstalledManifestIo(#[from] io::Error),
+    #[error("failed to deserialize module manifest: {0}")]
+    ManifestDeserialize(#[from] DeserializeError),
+    #[error("unknown manifest format: {}", .0.as_deref().unwrap_or("no file extension"))]
+    UnknownManifestFormat(Option<String>),
+}
+
+impl From<serde_json::Error> for ReadManifestError {
+    fn from(value: serde_json::Error) -> Self {
+        ReadManifestError::ManifestDeserialize(DeserializeError::Json(value))
+    }
+}
+
+impl From<serde_yml::Error> for ReadManifestError {
+    fn from(value: serde_yml::Error) -> Self {
+        ReadManifestError::ManifestDeserialize(DeserializeError::Yaml(value))
+    }
 }
 
 #[derive(Debug, Error)]
@@ -63,7 +64,9 @@ pub enum FetchError {}
 #[derive(Debug, Error)]
 pub enum ReadModuleVersionError {
     #[error(transparent)]
-    ReadError(#[from] ReadError),
+    ReadError(#[from] ReadManifestError),
+    #[error("module is not installed")]
+    NotInstalled,
 }
 
 #[derive(Debug, Error)]

@@ -72,7 +72,9 @@ impl Installer {
                 continue;
             }
 
-            let manifest = read_manifest(&path).await?;
+            let manifest = read_manifest(&path)
+                .await
+                .map_err(|e| ReadError::ReadManifestError(path, e))?;
 
             modules.push(manifest)
         }
@@ -113,7 +115,9 @@ impl Installer {
 
             let manifest_path = tokio::fs::read_link(&path).await.unwrap();
 
-            let manifest = read_manifest(&manifest_path).await?;
+            let manifest = read_manifest(&manifest_path)
+                .await
+                .map_err(|e| ReadError::ReadManifestError(path, e))?;
 
             modules.push(manifest)
         }
@@ -149,10 +153,11 @@ impl Installer {
     pub async fn module_version(
         &self,
         module_name: impl AsRef<str>,
-    ) -> Result<Option<String>, ReadManifestError> {
-        let Some(path) = self.find_manifest_file(module_name).await? else {
-            return Ok(None);
-        };
+    ) -> Result<Option<String>, ReadModuleVersionError> {
+        let path = self
+            .find_manifest_file(module_name)
+            .await?
+            .ok_or(ReadModuleVersionError::NotInstalled)?;
 
         let manifest = read_manifest(&path).await?;
 
@@ -201,7 +206,7 @@ impl Installer {
             match tokio::fs::try_exists(&path).await {
                 Ok(exists) if exists => return Ok(Some(path)),
                 Err(err) if err.kind() != io::ErrorKind::NotFound => {
-                    return Err(ReadManifestError::InstalledManifestIo { path, source: err });
+                    return Err(ReadManifestError::InstalledManifestIo(err));
                 },
                 _ => continue,
             }
@@ -226,40 +231,24 @@ impl Installer {
 async fn read_manifest(
     path: impl AsRef<Path>,
 ) -> Result<InstalledModuleManifest, ReadManifestError> {
-    match path.as_ref().extension().and_then(|ext| ext.to_str()) {
+    let manifest = match path.as_ref().extension().and_then(|ext| ext.to_str()) {
         Some("yaml") | Some("yml") => {
-            let content = tokio::fs::read(&path).await.map_err(|e| {
-                ReadManifestError::InstalledManifestIo {
-                    path: path.as_ref().to_owned(),
-                    source: e,
-                }
-            })?;
+            let content = tokio::fs::read(&path)
+                .await
+                .map_err(ReadManifestError::InstalledManifestIo)?;
 
-            serde_yml::from_slice::<'_, InstalledModuleManifest>(&content).map_err(|e| {
-                ReadManifestError::ManifestDeserialize {
-                    path: path.as_ref().to_owned(),
-                    source: e.into(),
-                }
-            })
+            serde_yml::from_slice::<'_, InstalledModuleManifest>(&content)?
         },
         Some("json") => {
-            let content = tokio::fs::read(&path).await.map_err(|e| {
-                ReadManifestError::InstalledManifestIo {
-                    path: path.as_ref().to_owned(),
-                    source: e,
-                }
-            })?;
+            let content = tokio::fs::read(&path)
+                .await
+                .map_err(ReadManifestError::InstalledManifestIo)?;
 
-            serde_yml::from_slice::<'_, InstalledModuleManifest>(&content).map_err(|e| {
-                ReadManifestError::ManifestDeserialize {
-                    path: path.as_ref().to_owned(),
-                    source: e.into(),
-                }
-            })
+            serde_yml::from_slice::<'_, InstalledModuleManifest>(&content)?
         },
-        ext => Err(ReadManifestError::UnknownManifestFormat {
-            path: path.as_ref().to_owned(),
-            extension: ext.map(Into::into),
-        }),
-    }
+        ext => Err(ReadManifestError::UnknownManifestFormat(
+            ext.map(Into::into),
+        ))?,
+    };
+    Ok(manifest)
 }
