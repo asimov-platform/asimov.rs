@@ -19,6 +19,7 @@ default = ["all", "std"]
 all = ["cli", "installer", "tracing", "serde"]
 cli = ["std", "dep:clientele", "clientele?/clap"]
 installer = [
+	"dep:bon",
 	"dep:flate2",
 	"dep:reqwest",
 	"dep:sha2",
@@ -53,6 +54,7 @@ serde_json = ["dep:serde_json"]
 
 [dependencies]
 asimov-env = { workspace = true, optional = true }
+bon = { workspace = true, optional = true }
 clientele = { workspace = true, features = [
 	"argfile",
 	"dotenv",

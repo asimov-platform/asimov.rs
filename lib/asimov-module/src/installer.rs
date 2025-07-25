@@ -18,10 +18,33 @@ use error::*;
 mod github;
 mod platform;
 
+#[derive(Clone, Debug, bon::Builder)]
+pub struct Options {
+    /// Controls whether to search for module manifests from a legacy location.
+    /// The legacy (previous) location by default is `~/.asimov/modules/*.yaml`.
+    #[builder(default = true)]
+    pub search_legacy_path: bool,
+    /// Controls whether to automatically move module manifests from a legacy location.
+    /// The legacy (previous) location by default is `~/.asimov/modules/*.yaml`.
+    /// The new and current location by default is `~/.asimov/modules/installed/*.{yaml,json}`.
+    #[builder(default = true)]
+    pub auto_migrate_legacy_path: bool,
+}
+
+impl Default for Options {
+    fn default() -> Self {
+        Self {
+            search_legacy_path: true,
+            auto_migrate_legacy_path: true,
+        }
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct Installer {
     client: reqwest::Client,
     dir: std::path::PathBuf,
+    options: Options,
 }
 
 impl Default for Installer {
@@ -33,15 +56,21 @@ impl Default for Installer {
             .build()
             .expect("Failed to build HTTP client");
         let dir = asimov_env::paths::asimov_root();
-        Self::new(client, dir)
+        let options = Options::default();
+        Self::new(client, dir, options)
     }
 }
 
 impl Installer {
-    pub fn new(client: reqwest::Client, asimov_dir: impl Into<std::path::PathBuf>) -> Self {
+    pub fn new(
+        client: reqwest::Client,
+        asimov_dir: impl Into<std::path::PathBuf>,
+        options: Options,
+    ) -> Self {
         Self {
             client,
             dir: asimov_dir.into(),
+            options,
         }
     }
 
@@ -69,37 +98,40 @@ impl Installer {
     ) -> Result<Vec<InstalledModuleManifest>, InstalledModulesError> {
         let installed_dir = self.install_dir();
 
-        if let Ok(mut read_dir) = tokio::fs::read_dir(self.dir.join("modules")).await {
-            while let Ok(Some(entry)) = read_dir.next_entry().await {
-                let path = entry.path();
-                if !tokio::fs::metadata(&path)
-                    .await
-                    .map(|md| md.is_file())
-                    .unwrap_or(false)
-                {
-                    continue;
-                }
+        let mut modules = Vec::new();
 
-                let Some(file_name) = path.file_name().and_then(|n| n.to_str()) else {
-                    continue;
-                };
-
-                if let Ok(_manifest) = read_manifest(&path).await {
-                    tracing::debug!(?path, "found a legacy manifest file, migrating...");
-
-                    let dst = installed_dir.join(file_name);
-
-                    tokio::fs::rename(&path, &dst)
+        if self.options.search_legacy_path || self.options.auto_migrate_legacy_path {
+            if let Ok(mut read_dir) = tokio::fs::read_dir(self.dir.join("modules")).await {
+                while let Ok(Some(entry)) = read_dir.next_entry().await {
+                    let path = entry.path();
+                    if !tokio::fs::metadata(&path)
                         .await
-                        .inspect_err(|e| {
-                            tracing::debug!(
-                            from = ?path,
-                            to = ?dst,
-                            "failed to migrate legacy manifest file: {e}",
+                        .map(|md| md.is_file())
+                        .unwrap_or(false)
+                    {
+                        continue;
+                    }
 
-                            )
-                        })
-                        .ok();
+                    let Some(file_name) = path.file_name().and_then(|n| n.to_str()) else {
+                        continue;
+                    };
+
+                    if let Ok(manifest) = read_manifest(&path).await {
+                        if self.options.auto_migrate_legacy_path {
+                            tracing::debug!(?path, "found a legacy manifest file, migrating...");
+
+                            let dst = installed_dir.join(file_name);
+
+                            tokio::fs::rename(&path, &dst)
+                                .await
+                                .inspect_err(|e| {
+                                    tracing::debug!(from = ?path, to = ?dst, "failed to migrate legacy manifest file: {e}")
+                                })
+                                .ok();
+                        } else {
+                            modules.push(manifest);
+                        }
+                    }
                 }
             }
         }
@@ -107,8 +139,6 @@ impl Installer {
         let mut read_dir = tokio::fs::read_dir(&installed_dir)
             .await
             .map_err(|e| InstalledModulesError::DirIo(installed_dir.clone(), e))?;
-
-        let mut modules = Vec::new();
 
         while let Some(entry) = read_dir
             .next_entry()
@@ -405,6 +435,10 @@ impl Installer {
             }
         }
 
+        if !self.options.search_legacy_path {
+            return Ok(None);
+        }
+
         let legacy_dir = install_dir
             .parent()
             .expect("should never panic, self.install_dir() has >=2 path segments");
@@ -412,20 +446,25 @@ impl Installer {
             let path = legacy_dir.join(file);
             match tokio::fs::try_exists(&path).await {
                 Ok(exists) if exists => {
-                    let dst = install_dir.join(file);
-                    return Ok(tokio::fs::rename(&path, &dst)
-                        .await
-                        .inspect_err(|err| {
-                            tracing::debug!(
-                                from = ?path,
-                                to = ?dst,
-                                ?err,
-                                "tried to move module manifest from legacy path but failed"
-                            )
-                        })
-                        .is_ok()
-                        .then_some(dst)
-                        .or(Some(path)));
+                    if self.options.auto_migrate_legacy_path {
+                        tracing::debug!(?path, "found a legacy manifest file, migrating...");
+                        let dst = install_dir.join(file);
+                        return Ok(tokio::fs::rename(&path, &dst)
+                            .await
+                            .inspect_err(|err| {
+                                tracing::debug!(
+                                    from = ?path,
+                                    to = ?dst,
+                                    ?err,
+                                    "tried to move module manifest from legacy path but failed"
+                                )
+                            })
+                            .is_ok()
+                            .then_some(dst)
+                            .or(Some(path)));
+                    } else {
+                        return Ok(Some(path));
+                    }
                 },
                 Err(err) if err.kind() != io::ErrorKind::NotFound => {
                     return Err(FindManifestError(path, err));
