@@ -4,6 +4,7 @@
 members = ["lib/*"]
 default-members = [
     "lib/asimov-env",
+    "lib/asimov-installer",
     "lib/asimov-module",
     "lib/asimov-patterns",
     "lib/asimov-prompt",
@@ -40,6 +41,7 @@ asimov-directory = "25.0.0-dev.17"
 asimov-env = "25.0.0-dev.17"
 asimov-flow = "25.0.0-dev.17"
 asimov-graph = "25.0.0-dev.17"
+asimov-installer = "25.0.0-dev.17"
 asimov-ledger = "25.0.0-dev.17"
 asimov-module = "25.0.0-dev.17"
 asimov-ontology = "25.0.0-dev.17"
@@ -132,6 +134,7 @@ asimov-directory = { path = "lib/asimov-directory" }
 asimov-env = { path = "lib/asimov-env" }
 asimov-flow = { path = "lib/asimov-flow" }
 asimov-graph = { path = "lib/asimov-graph" }
+asimov-installer = { path = "lib/asimov-installer" }
 asimov-ledger = { path = "lib/asimov-ledger" }
 asimov-module = { path = "lib/asimov-module" }
 asimov-ontology = { path = "lib/asimov-ontology" }
@@ -145,6 +148,7 @@ asimov-runner = { path = "lib/asimov-runner" }
 asimov-runtime = { path = "lib/asimov-runtime" }
 asimov-sdk = { path = "lib/asimov-sdk" }
 asimov-server = { path = "lib/asimov-server" }
+asimov-snapshot = { path = "lib/asimov-snapshot" }
 asimov-sys = { path = "lib/asimov-sys" }
 asimov-token = { path = "lib/asimov-token" }
 asimov-universe = { path = "lib/asimov-universe" }
