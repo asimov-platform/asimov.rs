@@ -31,6 +31,7 @@ pub enum FromDirError {
     },
 }
 
+#[cfg(feature = "std")]
 impl From<FromDirError> for clientele::SysexitsError {
     fn from(value: FromDirError) -> Self {
         use FromDirError::*;

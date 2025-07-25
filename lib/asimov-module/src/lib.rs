@@ -45,3 +45,6 @@ pub fn init_tracing_subscriber(
 pub mod models;
 
 pub mod resolve;
+
+#[cfg(feature = "installer")]
+pub mod installer;
