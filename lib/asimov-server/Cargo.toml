@@ -76,7 +76,7 @@ rust-embed = { workspace = true, optional = true }
 serde = { workspace = true, features = ["derive"], optional = true }
 serde_json = { workspace = true, optional = true }
 tower-http = { workspace = true, features = ["cors"], optional = true }
-tracing = { workspace = true, optional = true }
+tracing = { workspace = true, features = ["attributes"], optional = true }
 
 [dev-dependencies]
 axum-test.workspace = true

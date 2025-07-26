@@ -31,7 +31,7 @@ pub enum FromDirError {
     },
 }
 
-#[cfg(feature = "std")]
+#[cfg(all(feature = "cli", feature = "std"))]
 impl From<FromDirError> for clientele::SysexitsError {
     fn from(value: FromDirError) -> Self {
         use FromDirError::*;
@@ -57,6 +57,7 @@ pub enum UrlParseError {
     },
 }
 
+#[cfg(all(feature = "cli", feature = "std"))]
 impl From<UrlParseError> for clientele::SysexitsError {
     fn from(_value: UrlParseError) -> Self {
         clientele::SysexitsError::EX_USAGE

@@ -30,7 +30,7 @@ asimov-runner.workspace = true
 async-trait.workspace = true
 dogma.workspace = true
 jiff.workspace = true
-tracing.workspace = true
+tracing = { workspace = true, features = ["attributes"] }
 
 # Optional dependencies:
 cap-std = { workspace = true, optional = true }
