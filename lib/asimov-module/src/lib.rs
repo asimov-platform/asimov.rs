@@ -42,9 +42,7 @@ pub fn init_tracing_subscriber(
         .try_init()
 }
 
-pub mod models;
+mod models;
+pub use models::*;
 
 pub mod resolve;
-
-#[cfg(feature = "installer")]
-pub mod installer;

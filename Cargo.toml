@@ -107,6 +107,13 @@ rust-embed = { version = "8.7", default-features = false, features = [
     "deterministic-timestamps",
 ] }
 secrecy = { version = "0.10", default-features = false }
+serde = { version = "1", default-features = false, features = [
+    "alloc",
+    "derive",
+] }
+serde_json = { version = "1", default-features = false, features = ["alloc"] }
+serde_yml = { version = "0.0.12", default-features = false }
+slab = { version = "0.4.10", default-features = false }
 stability = "0.2" # TODO: use instability
 thiserror = "2"
 tokio = { version = "1", default-features = false, features = [
@@ -120,6 +127,7 @@ tracing-subscriber = { version = "0.3", default-features = false, features = [
     "alloc",
     "tracing-log",
 ] }
+url = { version = "2.5", default-features = false }
 uuid = { version = "1.17", features = ["v4"] }
 
 [patch.crates-io]

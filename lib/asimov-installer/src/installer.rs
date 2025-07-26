@@ -1,16 +1,13 @@
 // This is free and unencumbered software released into the public domain.
 
+use crate::models::{InstalledModuleManifest, ModuleManifest};
+use asimov_module::tracing;
 use std::{
     path::{Path, PathBuf},
     string::String,
     vec::Vec,
 };
 use tokio::io;
-
-use crate::{
-    models::{InstalledModuleManifest, ModuleManifest},
-    tracing,
-};
 
 pub mod error;
 use error::*;
@@ -24,6 +21,7 @@ pub struct Options {
     /// The legacy (previous) location by default is `~/.asimov/modules/*.yaml`.
     #[builder(default = true)]
     pub search_legacy_path: bool,
+
     /// Controls whether to automatically move module manifests from a legacy location.
     /// The legacy (previous) location by default is `~/.asimov/modules/*.yaml`.
     /// The new and current location by default is `~/.asimov/modules/installed/*.{yaml,json}`.
