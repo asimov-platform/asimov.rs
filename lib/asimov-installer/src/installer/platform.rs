@@ -1,6 +1,6 @@
 // This is free and unencumbered software released into the public domain.
 
-use std::string::String;
+use alloc::string::String;
 
 #[derive(Debug)]
 pub struct PlatformInfo {

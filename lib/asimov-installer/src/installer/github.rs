@@ -1,16 +1,15 @@
 // This is free and unencumbered software released into the public domain.
 
 use crate::models::ModuleManifest;
-
 use super::error::{DownloadError, FetchChecksumError, FetchError, HttpError, VerifyChecksumError};
 use serde::Deserialize;
-use std::{
+use alloc::{
     borrow::ToOwned as _,
     format,
-    path::Path,
     string::{String, ToString as _},
     vec::Vec,
 };
+use std::path::Path;
 use tokio::io::{AsyncReadExt as _, AsyncWriteExt as _};
 
 #[derive(Debug, Deserialize)]

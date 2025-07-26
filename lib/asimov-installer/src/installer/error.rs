@@ -6,7 +6,6 @@ use std::{
     string::{String, ToString as _},
 };
 use thiserror::Error;
-
 use super::platform::PlatformInfo;
 
 #[derive(Debug, Error)]
