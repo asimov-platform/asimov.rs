@@ -2,7 +2,7 @@
 
 use std::io::Write;
 
-use asimov_module::{models::ModuleManifest, resolve::Resolver};
+use asimov_module::{ModuleManifest, resolve::Resolver};
 
 const YAMLS: &str = r#"
 name: near

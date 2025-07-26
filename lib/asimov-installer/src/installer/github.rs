@@ -1,14 +1,14 @@
 // This is free and unencumbered software released into the public domain.
 
-use asimov_module::ModuleManifest;
 use super::error::{DownloadError, FetchChecksumError, FetchError, HttpError, VerifyChecksumError};
-use serde::Deserialize;
 use alloc::{
     borrow::ToOwned as _,
     format,
     string::{String, ToString as _},
     vec::Vec,
 };
+use asimov_module::ModuleManifest;
+use serde::Deserialize;
 use std::path::Path;
 use tokio::io::{AsyncReadExt as _, AsyncWriteExt as _};
 

@@ -56,7 +56,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Update project links
 ### Added
-- `asimov_module::models::ModuleManifest` (#10)
+- `asimov_module::ModuleManifest` (#10)
 
 ## 25.0.0-dev.10 - 2025-06-18
 ### Changed

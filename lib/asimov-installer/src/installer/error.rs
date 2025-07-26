@@ -1,12 +1,12 @@
 // This is free and unencumbered software released into the public domain.
 
+use super::platform::PlatformInfo;
 use std::{
     io,
     path::PathBuf,
     string::{String, ToString as _},
 };
 use thiserror::Error;
-use super::platform::PlatformInfo;
 
 #[derive(Debug, Error)]
 pub enum CreateFileTreeError {

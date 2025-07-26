@@ -1,6 +1,6 @@
 // This is free and unencumbered software released into the public domain.
 
-use asimov_module::models::ModuleManifest;
+use asimov_module::ModuleManifest;
 use std::error::Error;
 
 fn main() -> Result<(), Box<dyn Error>> {

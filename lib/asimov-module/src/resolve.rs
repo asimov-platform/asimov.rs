@@ -1,6 +1,6 @@
 // This is free and unencumbered software released into the public domain.
 
-use crate::models::ModuleManifest;
+use crate::ModuleManifest;
 use alloc::{
     collections::{btree_map::BTreeMap, btree_set::BTreeSet},
     rc::Rc,
