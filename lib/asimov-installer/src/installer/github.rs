@@ -1,6 +1,6 @@
 // This is free and unencumbered software released into the public domain.
 
-use crate::models::ModuleManifest;
+use asimov_module::ModuleManifest;
 use super::error::{DownloadError, FetchChecksumError, FetchError, HttpError, VerifyChecksumError};
 use serde::Deserialize;
 use alloc::{

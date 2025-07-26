@@ -1,12 +1,8 @@
 // This is free and unencumbered software released into the public domain.
 
-use crate::models::{InstalledModuleManifest, ModuleManifest};
-use asimov_module::tracing;
-use std::{
-    path::{Path, PathBuf},
-    string::String,
-    vec::Vec,
-};
+use asimov_module::{tracing, InstalledModuleManifest, ModuleManifest};
+use alloc::{string::String, vec::Vec};
+use std::path::{Path, PathBuf};
 use tokio::io;
 
 pub mod error;
