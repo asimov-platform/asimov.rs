@@ -55,7 +55,7 @@ tar.workspace = true
 tempfile.workspace = true
 thiserror.workspace = true
 tokio = { workspace = true, features = ["fs"] }
-zip.workspace = true
+zip = { workspace = true, features = ["deflate"] }
 
 # Optional dependencies:
 asimov-env = { workspace = true, optional = true }

@@ -17,7 +17,7 @@ publish.workspace = true
 [features]
 default = ["all", "std"]
 all = ["app", "http", "tracing"]
-std = ["dogma/std", "jiff/std", "openai/std", "tracing?/std"]
+std = ["bs58/std", "dogma/std", "jiff/std", "openai/std", "tracing?/std"]
 tracing = ["dep:tracing", "tower-http/trace"]
 unstable = ["https", "mdns", "ssdp"]
 
