@@ -22,9 +22,5 @@ tracing = []
 unstable = []
 
 [dependencies]
-alloy = { version = "0.5", default-features = false, features = [
-    "contract",
-    "sol-types",
-] }
+alloy = { workspace = true, features = ["contract", "sol-types"] }
 dogma.workspace = true
-stability.workspace = true

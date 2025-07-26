@@ -31,4 +31,6 @@ unstable = []
 bon.workspace = true
 derive_more = { workspace = true, features = ["display", "from", "from_str"] }
 dogma.workspace = true
+
+# Optional dependencies:
 openai = { workspace = true, optional = true }

@@ -23,4 +23,3 @@ unstable = []
 
 [dependencies]
 dogma.workspace = true
-stability.workspace = true

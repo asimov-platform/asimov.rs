@@ -28,16 +28,15 @@ asimov-module.workspace = true
 asimov-patterns.workspace = true
 asimov-runner.workspace = true
 async-trait.workspace = true
-cap-std = { version = "3.4", optional = true }
 dogma.workspace = true
 jiff.workspace = true
-hex = { version = "0.4", optional = true, default-features = false }
-stability.workspace = true
-sha2 = { version = "0.10", optional = true }
 tracing.workspace = true
 
+# Optional dependencies:
+cap-std = { workspace = true, optional = true }
+hex = { workspace = true, optional = true }
+sha2 = { workspace = true, optional = true }
+
 [dev-dependencies]
-tempfile = { version = "3.20.0", default-features = false }
-tracing-subscriber = { version = "0.3", default-features = false, features = [
-	"fmt",
-] }
+tempfile.workspace = true
+tracing-subscriber = { workspace = true, features = ["fmt"] }

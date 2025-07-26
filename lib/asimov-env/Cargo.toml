@@ -22,10 +22,9 @@ tracing = []
 unstable = []
 
 [dependencies]
-cap-directories = { version = "3.4", default-features = false, optional = true }
-cap-std = { version = "3.4", default-features = false, features = [
-    "fs_utf8",
-], optional = true }
 dogma.workspace = true
 getenv.workspace = true
-#stability.workspace = true
+
+# Optional dependencies:
+cap-directories = { workspace = true, optional = true }
+cap-std = { workspace = true, optional = true }

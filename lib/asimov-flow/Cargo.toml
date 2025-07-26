@@ -29,6 +29,7 @@ yaml = ["serde", "dep:serde_yml"]
 asimov-core.workspace = true
 protoflow.workspace = true
 protoflow-blocks.workspace = true
-serde = { version = "1.0", default-features = false, optional = true }
-serde_yml = { version = "0.0.11", default-features = false, optional = true }
-stability.workspace = true
+
+# Optional dependencies:
+serde = { workspace = true, optional = true }
+serde_yml = { workspace = true, optional = true }

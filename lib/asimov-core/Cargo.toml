@@ -31,13 +31,12 @@ unstable = []
 
 [dependencies]
 asimov-sys.workspace = true
-cap-directories = { version = "3.2", default-features = false, optional = true }
-cap-std = { version = "3.2", default-features = false, features = [
-    "fs_utf8",
-], optional = true }
 dogma.workspace = true
 know.workspace = true
 protoflow-core.workspace = true
-serde = { version = "1.0", default-features = false, optional = true }
-stability.workspace = true
-tracing = { version = "0.1", default-features = false, optional = true }
+
+# Optional dependencies:
+cap-directories = { workspace = true, optional = true }
+cap-std = { workspace = true, features = ["fs_utf8"], optional = true }
+serde = { workspace = true, optional = true }
+tracing = { workspace = true, optional = true }

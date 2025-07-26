@@ -34,7 +34,9 @@ asimov-sys.workspace = true
 protoflow.workspace = true
 protoflow-blocks.workspace = true
 stability.workspace = true
-tokio = { version = "1.38", default-features = false, optional = true }
+
+# Optional dependencies:
+tokio = { workspace = true, optional = true }
 
 [target.'cfg(not(wasm))'.dependencies]
 

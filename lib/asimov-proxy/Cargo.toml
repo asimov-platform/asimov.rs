@@ -25,5 +25,4 @@ unstable = []
 dogma.workspace = true
 gofer.workspace = true
 miette.workspace = true
-stability.workspace = true
 thiserror.workspace = true
