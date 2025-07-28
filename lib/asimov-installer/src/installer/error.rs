@@ -28,7 +28,7 @@ pub enum InstalledModulesError {
 
 #[derive(Debug, Error)]
 pub enum EnabledModulesError {
-    #[error("failed to create directory for enabled modules `{0}`: {1}")]
+    #[error("failed to read directory for enabled modules `{0}`: {1}")]
     DirIo(PathBuf, #[source] io::Error),
     #[error("failed to read symlink for enabled module at `{0}`: {1}")]
     LinkIo(PathBuf, #[source] io::Error),
