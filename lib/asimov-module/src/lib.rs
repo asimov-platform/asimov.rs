@@ -46,3 +46,6 @@ mod models;
 pub use models::*;
 
 pub mod resolve;
+
+#[cfg(all(feature = "serde", feature = "json"))]
+pub mod json;
