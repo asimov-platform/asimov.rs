@@ -17,6 +17,7 @@ pub enum FromDirError {
         #[source]
         source: std::io::Error,
     },
+    #[cfg(feature = "yaml")]
     #[error("failed to parse manifest file `{path}`: {source}")]
     Parse {
         path: std::path::PathBuf,
@@ -39,6 +40,7 @@ impl From<FromDirError> for clientele::SysexitsError {
         match value {
             ManifestDirIo { .. } => EX_IOERR,
             ManifestIo { .. } => EX_IOERR,
+            #[cfg(feature = "yaml")]
             Parse { .. } => EX_CONFIG,
             Insert { source, .. } => source.into(),
         }
