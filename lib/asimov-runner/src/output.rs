@@ -1,7 +1,6 @@
 // This is free and unencumbered software released into the public domain.
 
 use derive_more::Debug;
-use std::process::Stdio;
 use tokio::io::AsyncWrite;
 
 pub type AnyOutput = Output;
@@ -19,7 +18,9 @@ pub enum Output {
 }
 
 impl Output {
-    pub fn as_stdio(&self) -> Stdio {
+    #[cfg(feature = "std")]
+    pub fn as_stdio(&self) -> std::process::Stdio {
+        use std::process::Stdio;
         match self {
             Output::Ignored => Stdio::null(),
             Output::Inherited => Stdio::inherit(),
@@ -29,8 +30,10 @@ impl Output {
     }
 }
 
-impl Into<Stdio> for Output {
-    fn into(self) -> Stdio {
+#[cfg(feature = "std")]
+impl Into<std::process::Stdio> for Output {
+    fn into(self) -> std::process::Stdio {
+        use std::process::Stdio;
         match self {
             Output::Ignored => Stdio::null(),
             Output::Inherited => Stdio::inherit(),

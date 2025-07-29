@@ -1,7 +1,6 @@
 // This is free and unencumbered software released into the public domain.
 
 use derive_more::Debug;
-use std::process::Stdio;
 use tokio::io::AsyncRead;
 
 pub type AnyInput = Input;
@@ -17,7 +16,9 @@ pub enum Input {
 }
 
 impl Input {
-    pub fn as_stdio(&self) -> Stdio {
+    #[cfg(feature = "std")]
+    pub fn as_stdio(&self) -> std::process::Stdio {
+        use std::process::Stdio;
         match self {
             Input::Ignored => Stdio::null(),
             Input::AsyncRead(_) => Stdio::piped(),
@@ -25,8 +26,10 @@ impl Input {
     }
 }
 
-impl Into<Stdio> for Input {
-    fn into(self) -> Stdio {
+#[cfg(feature = "std")]
+impl Into<std::process::Stdio> for Input {
+    fn into(self) -> std::process::Stdio {
+        use std::process::Stdio;
         match self {
             Input::Ignored => Stdio::null(),
             Input::AsyncRead(_) => Stdio::piped(),

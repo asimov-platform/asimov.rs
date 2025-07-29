@@ -2,11 +2,7 @@
 
 use crate::SysexitsError;
 use core::fmt;
-use std::{
-    ffi::OsString,
-    io::Cursor,
-    process::{ExitStatus, Output},
-};
+use std::{ffi::OsString, io::Cursor};
 
 pub type ExecutorResult = std::result::Result<Cursor<Vec<u8>>, ExecutorError>;
 
@@ -55,18 +51,16 @@ impl fmt::Display for ExecutorError {
     }
 }
 
-impl From<Output> for ExecutorError {
-    fn from(output: Output) -> Self {
-        let stderr = String::from_utf8(output.stderr).ok();
-        match SysexitsError::try_from(output.status) {
-            Ok(error) => Self::Failure(error, stderr),
-            Err(code) => Self::UnexpectedFailure(code, stderr),
-        }
+#[cfg(feature = "std")]
+impl From<std::io::Error> for ExecutorError {
+    fn from(error: std::io::Error) -> Self {
+        Self::UnexpectedOther(error)
     }
 }
 
-impl From<ExitStatus> for ExecutorError {
-    fn from(status: ExitStatus) -> Self {
+#[cfg(feature = "std")]
+impl From<std::process::ExitStatus> for ExecutorError {
+    fn from(status: std::process::ExitStatus) -> Self {
         match SysexitsError::try_from(status) {
             Ok(error) => Self::Failure(error, None),
             Err(code) => Self::UnexpectedFailure(code, None),
@@ -74,8 +68,13 @@ impl From<ExitStatus> for ExecutorError {
     }
 }
 
-impl From<std::io::Error> for ExecutorError {
-    fn from(error: std::io::Error) -> Self {
-        Self::UnexpectedOther(error)
+#[cfg(feature = "std")]
+impl From<std::process::Output> for ExecutorError {
+    fn from(output: std::process::Output) -> Self {
+        let stderr = String::from_utf8(output.stderr).ok();
+        match SysexitsError::try_from(output.status) {
+            Ok(error) => Self::Failure(error, stderr),
+            Err(code) => Self::UnexpectedFailure(code, stderr),
+        }
     }
 }
