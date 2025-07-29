@@ -17,14 +17,6 @@ impl<S> Snapshotter<S> {
     pub fn new(resolver: Resolver, storage: S) -> Self {
         Self { resolver, storage }
     }
-
-    pub fn new_fs() -> Result<Snapshotter<crate::storage::Fs>> {
-        let snapshot_dir = asimov_root().join("snapshots");
-        let storage = crate::storage::Fs::for_dir(snapshot_dir)?;
-        let manifest_dir = asimov_root().join("modules");
-        let resolver = Resolver::try_from_dir(manifest_dir).map_err(std::io::Error::other)?;
-        Ok(Snapshotter { resolver, storage })
-    }
 }
 
 impl<S: crate::storage::Storage> Snapshotter<S> {
