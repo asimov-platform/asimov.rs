@@ -31,4 +31,5 @@ jobs:
       contents: read
       pull-requests: write
     with:
+      build_whole_workspace: false
       check_lib_no_default_features: true
