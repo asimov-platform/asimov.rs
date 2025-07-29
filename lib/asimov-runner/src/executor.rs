@@ -13,7 +13,16 @@ pub struct Executor(Command);
 
 impl Executor {
     pub fn new(program: impl AsRef<OsStr>) -> Self {
-        let mut command = Command::new(program);
+        let libexec_path = asimov_env::paths::asimov_root()
+            .join("libexec")
+            .join(program.as_ref());
+
+        let mut command = if libexec_path.exists() {
+            Command::new(libexec_path)
+        } else {
+            Command::new(program)
+        };
+
         command.env("NO_COLOR", "1"); // See: https://no-color.org
         command.stdin(Stdio::null());
         command.stdout(Stdio::null());
