@@ -2,14 +2,18 @@
 
 //! JSON Utilities
 //!
-//! ```
-//! serde_json::to_string(&SkipNulls(serde_json::json!({
+//! See: https://github.com/serde-rs/json/issues/513
+//! ```rust
+//! use asimov_module::json::SkipNulls;
+//!
+//! let text = serde_json::to_string(&SkipNulls(serde_json::json!({
 //!     "a": 1,
 //!     "b": null,
 //!     "c": 3
-//! })))?;
+//! })));
 //!
-//! See: https://github.com/serde-rs/json/issues/513
+//! assert!(text.is_ok());
+//! assert_eq!(text.unwrap(), r#"{"a":1,"c":3}"#);
 //! ```
 
 use serde::{
