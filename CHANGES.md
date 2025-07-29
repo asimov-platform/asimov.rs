@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 25.0.0-dev.19 - 2025-07-29
+### Changed
+- asimov-runner: Use `$HOME/.asimov/libexec/` binaries (#23 by @SamuelSarle)
+### Added
+- Add a `SkipNulls` adapter for serde_json (by @artob)
+
 ## 25.0.0-dev.18 - 2025-07-26
 ### Added
 - asimov-installer: Implement a module installer (#22 by @SamuelSarle)
