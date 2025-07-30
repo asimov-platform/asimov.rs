@@ -22,7 +22,7 @@ impl MaybeLabeled for YamlFlowDefinition {}
 impl FlowDefinition for YamlFlowDefinition {}
 
 impl FromStr for YamlFlowDefinition {
-    type Err = serde_yml::Error;
+    type Err = serde_yaml_ng::Error;
 
     fn from_str(input: &str) -> Result<Self, Self::Err> {
         // TODO: consider using the `yaml-rust2` crate instead

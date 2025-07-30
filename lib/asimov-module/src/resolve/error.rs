@@ -22,7 +22,7 @@ pub enum FromDirError {
     Parse {
         path: std::path::PathBuf,
         #[source]
-        source: serde_yml::Error,
+        source: serde_yaml_ng::Error,
     },
     #[error("failed to add manifest file `{path}` to resolver: {source}")]
     Insert {

@@ -84,7 +84,7 @@ pub async fn fetch_module_manifest(
 
     let content = response.bytes().await?;
 
-    serde_yml::from_slice(&content).map_err(|e| FetchError::Deserialize(e.into()))
+    serde_yaml_ng::from_slice(&content).map_err(|e| FetchError::Deserialize(e.into()))
 }
 
 pub async fn fetch_checksum(

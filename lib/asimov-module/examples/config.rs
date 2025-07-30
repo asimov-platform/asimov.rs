@@ -25,7 +25,7 @@ config:
 "#;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let manifest: ModuleManifest = serde_yml::from_str(YAML)?;
+    let manifest: ModuleManifest = serde_yaml_ng::from_str(YAML)?;
 
     let api_key = manifest.variable("api_key", None).unwrap_or_default();
     if api_key.is_empty() {

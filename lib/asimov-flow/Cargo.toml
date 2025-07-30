@@ -23,7 +23,7 @@ std = ["asimov-core/std", "protoflow/std"]
 tokio = ["protoflow/tokio"]
 tracing = ["protoflow/tracing", "protoflow-blocks/tracing"]
 unstable = ["asimov-core/unstable"]
-yaml = ["serde", "dep:serde_yml"]
+yaml = ["serde", "dep:serde_yaml_ng"]
 
 [dependencies]
 asimov-core.workspace = true
@@ -32,4 +32,4 @@ protoflow-blocks.workspace = true
 
 # Optional dependencies:
 serde = { workspace = true, optional = true }
-serde_yml = { workspace = true, optional = true }
+serde_yaml_ng = { workspace = true, optional = true }
