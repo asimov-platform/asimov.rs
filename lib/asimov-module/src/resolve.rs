@@ -184,10 +184,11 @@ impl Resolver {
                 source,
             })?;
 
-            let manifest = serde_yml::from_reader(file).map_err(|source| FromDirError::Parse {
-                path: path.clone(),
-                source,
-            })?;
+            let manifest =
+                serde_yaml_ng::from_reader(file).map_err(|source| FromDirError::Parse {
+                    path: path.clone(),
+                    source,
+                })?;
             resolver
                 .insert_manifest(&manifest)
                 .map_err(|source| FromDirError::Insert {

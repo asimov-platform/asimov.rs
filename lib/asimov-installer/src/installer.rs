@@ -565,7 +565,7 @@ async fn read_manifest(
                 .await
                 .map_err(ReadManifestError::InstalledManifestIo)?;
 
-            serde_yml::from_slice::<'_, InstalledModuleManifest>(&content)?
+            serde_yaml_ng::from_slice::<'_, InstalledModuleManifest>(&content)?
         },
         Some("json") => {
             let content = tokio::fs::read(&path)

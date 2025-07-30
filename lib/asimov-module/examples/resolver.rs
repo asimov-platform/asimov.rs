@@ -115,7 +115,7 @@ handles:
 fn main() {
     let manifests = YAMLS
         .split("---")
-        .map(serde_yml::from_str::<'_, ModuleManifest>)
+        .map(serde_yaml_ng::from_str::<'_, ModuleManifest>)
         .map(Result::unwrap);
     let resolver = Resolver::try_from_iter(manifests).unwrap();
 

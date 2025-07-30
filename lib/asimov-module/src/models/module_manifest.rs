@@ -53,7 +53,7 @@ impl ModuleManifest {
             .join("modules")
             .join(std::format!("{module_name}.yaml"));
         let content = std::fs::read(&path)?;
-        serde_yml::from_slice(&content).map_err(std::io::Error::other)
+        serde_yaml_ng::from_slice(&content).map_err(std::io::Error::other)
     }
 
     #[cfg(feature = "std")]
