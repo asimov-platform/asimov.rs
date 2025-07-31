@@ -189,6 +189,12 @@ impl Installer {
                 .await
                 .map_err(|e| EnabledModulesError::LinkIo(path.clone(), e))?;
 
+            let manifest_path = if manifest_path.is_absolute() {
+                manifest_path
+            } else {
+                enabled_dir.join(&manifest_path)
+            };
+
             let manifest = read_manifest(&manifest_path)
                 .await
                 .map_err(|e| EnabledModulesError::ReadManifestError(path, e))?;
@@ -362,6 +368,16 @@ impl Installer {
             .find_manifest_file(&module_name)
             .await?
             .ok_or(EnableError::NotInstalled)?;
+
+        let target_path = if target_path.starts_with(&self.install_dir()) {
+            // manifest is in installed directory: ../installed/manifest.json
+            std::path::PathBuf::from("..")
+                .join("installed")
+                .join(target_path.file_name().unwrap())
+        } else {
+            // manifest is in legacy location: ../manifest.yaml
+            std::path::PathBuf::from("..").join(target_path.file_name().unwrap())
+        };
 
         let src_path = self.enable_dir().join(module_name.as_ref());
 
