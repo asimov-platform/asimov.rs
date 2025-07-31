@@ -1,6 +1,5 @@
 // This is free and unencumbered software released into the public domain.
 
-use asimov_env::paths::asimov_root;
 use asimov_module::resolve::Resolver;
 use asimov_runner::{FetcherOptions, GraphOutput};
 use jiff::Timestamp;

@@ -49,11 +49,33 @@ pub enum ReadVarError {
 impl ModuleManifest {
     #[cfg(all(feature = "std", feature = "serde"))]
     pub fn read_manifest(module_name: &str) -> std::io::Result<Self> {
-        let path = asimov_env::paths::asimov_root()
-            .join("modules")
-            .join(std::format!("{module_name}.yaml"));
-        let content = std::fs::read(&path)?;
-        serde_yaml_ng::from_slice(&content).map_err(std::io::Error::other)
+        let directory = asimov_env::paths::asimov_root().join("modules");
+        let search_paths = [
+            ("installed", "json"),
+            ("installed", "yaml"), // legacy, new installs are converted to JSON
+            ("", "yaml"),          // legacy, new installs go to `installed/`
+        ];
+
+        for (sub_dir, ext) in search_paths {
+            let file = std::path::PathBuf::from(sub_dir)
+                .join(module_name)
+                .with_extension(ext);
+
+            match std::fs::read(directory.join(&file)) {
+                Ok(content) if ext == "json" => {
+                    return serde_json::from_slice(&content).map_err(std::io::Error::other);
+                },
+                Ok(content) if ext == "yaml" => {
+                    return serde_yaml_ng::from_slice(&content).map_err(std::io::Error::other);
+                },
+                Ok(_) => unreachable!(),
+
+                Err(err) if err.kind() == std::io::ErrorKind::NotFound => continue,
+                Err(err) => return Err(err),
+            }
+        }
+
+        Err(std::io::ErrorKind::NotFound.into())
     }
 
     #[cfg(feature = "std")]
