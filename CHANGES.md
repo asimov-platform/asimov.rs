@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 25.0.0-dev.20 - 2025-08-02
+### Changed
+- Make enabled module symlinks relative (#26 by @SamuelSarle)
+- Support module manifests in both YAML and JSON format (#25 by @SamuelSarle)
+### Fixed
+- Use serde_yaml_ng instead of serde_yml (#24 by @imunproductive)
+
 ## 25.0.0-dev.19 - 2025-07-29
 ### Changed
 - asimov-runner: Use `$HOME/.asimov/libexec/` binaries (#23 by @SamuelSarle)
