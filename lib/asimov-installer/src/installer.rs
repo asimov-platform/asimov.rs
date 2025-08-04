@@ -550,7 +550,8 @@ impl Installer {
             version: Some(version.into()),
             manifest,
         };
-        let manifest_json = serde_json::to_string_pretty(&installed_manifest)?;
+        let mut manifest_json = serde_json::to_string_pretty(&installed_manifest)?;
+        manifest_json.push('\n'); // always newline-terminate text files
 
         tokio::fs::write(&manifest_path, &manifest_json)
             .await
