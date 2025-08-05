@@ -247,23 +247,22 @@ impl Fs {
     }
 
     fn delete_file(&self, path: impl AsRef<Path>) -> Result<()> {
+        // We call `std::fs::symlink_metadata` because the target file may
+        // be a symlink and this does not follow the symlink like
+        // `std::fs::metadata` does.
         #[cfg(windows)]
-        {
-            // We call `std::fs::symlink_metadata` because the target file may
-            // be a symlink and this does not follow the symlink like
-            // `std::fs::metadata` does.
-            match self.root.symlink_metadata(&path) {
-                Ok(md) => {
-                    let mut permissions = md.permissions();
-                    if permissions.readonly() {
-                        permissions.set_readonly(false);
-                        self.root.set_permissions(&path, permissions)?;
-                    }
-                },
-                Err(e) if e.kind() == std::io::ErrorKind::NotFound => (),
-                Err(e) => return Err(e),
-            };
-        }
+        match self.root.symlink_metadata(&path) {
+            Ok(md) => {
+                let mut permissions = md.permissions();
+                if permissions.readonly() {
+                    permissions.set_readonly(false);
+                    self.root.set_permissions(&path, permissions)?;
+                }
+            },
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => (),
+            Err(e) => return Err(e),
+        };
+
         self.root.remove_file(path).or_else(|e| {
             if e.kind() == std::io::ErrorKind::NotFound {
                 Ok(())
