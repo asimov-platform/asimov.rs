@@ -7,8 +7,8 @@ use std::{io::Result, string::String, vec::Vec};
 
 #[derive(Clone, Debug, Default, bon::Builder)]
 pub struct Options {
-    /// max_current_age controls maximum age of the "current" snapshot that is
-    /// allowed to be returned from `Snapshotter.read_current`.
+    /// Controls maximum age of the "current" snapshot that is allowed to be
+    /// returned from `Snapshotter.read_current`.
     #[builder(with = |duration: std::time::Duration| -> core::result::Result<_, jiff::Error> { Span::try_from(duration) })]
     pub max_current_age: Option<Span>,
 }
@@ -32,7 +32,7 @@ impl<S> Snapshotter<S> {
 }
 
 impl<S: crate::storage::Storage> Snapshotter<S> {
-    /// snapshot fetches the content from an URL and saves it to the snapshot storage.
+    /// Fetches the content from an URL and saves it to the snapshot storage.
     #[tracing::instrument(skip(self), fields(url = url.as_ref()))]
     pub async fn snapshot(&mut self, url: impl AsRef<str>) -> Result<()> {
         let module = self
@@ -54,13 +54,13 @@ impl<S: crate::storage::Storage> Snapshotter<S> {
         self.storage.save(url, timestamp, data.get_ref())
     }
 
-    /// read returns the snapshot content of an URL at the given timestamp.
+    /// Returns the snapshot content of an URL at the given timestamp.
     #[tracing::instrument(skip(self), fields(url = url.as_ref()))]
     pub async fn read(&self, url: impl AsRef<str>, timestamp: Timestamp) -> Result<Vec<u8>> {
         self.storage.read(url, timestamp)
     }
 
-    /// read_current returns the latest snapshot content of an URL.
+    /// Returns the latest snapshot content of an URL.
     ///
     /// A fresh snapshot is first created if [`Options::max_current_age`]
     /// is set and the latest snapshot is older than the maximum age.
@@ -96,21 +96,21 @@ impl<S: crate::storage::Storage> Snapshotter<S> {
         self.storage.read_current(url)
     }
 
-    /// list returns the list of snapshotted URLs along with their latest timestamps.
+    /// Returns the list of snapshotted URLs along with their latest timestamps.
     /// Entries can be read by [`Self::read`].
     #[tracing::instrument(skip(self))]
     pub async fn list(&self) -> Result<Vec<(String, Timestamp)>> {
         self.storage.list_urls()
     }
 
-    /// log returns the log of timestamps for a given URL.
+    /// Returns the log of timestamps for a given URL.
     /// Entries can be read by [`Self::read`].
     #[tracing::instrument(skip(self))]
     pub async fn log(&self, url: &str) -> Result<Vec<Timestamp>> {
         self.storage.list_snapshots(url)
     }
 
-    /// compact deletes old snapshots for a given URL.
+    /// Deletes old snapshots for a given URL.
     /// Currently everything but the latest snapshot is deleted.
     #[tracing::instrument(skip(self), fields(url = url.as_ref()))]
     pub async fn compact(&self, url: impl AsRef<str>) -> Result<()> {
