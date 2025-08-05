@@ -280,18 +280,18 @@ mod tests {
 
     use super::*;
     use crate::storage::Storage;
-    use std::{eprintln, io::Result, string::ToString};
+    use std::{eprintln, string::ToString};
 
     #[test]
-    fn storage() -> Result<()> {
+    fn storage() {
         unsafe { std::env::set_var("RUST_LOG", "trace") };
         tracing_subscriber::fmt::init();
 
-        let tmp_dir = tempfile::tempdir()?;
+        let tmp_dir = tempfile::tempdir().unwrap();
         let tmp_dir = tmp_dir.path().join("asimov-snapshot-cli-test");
         let auth = cap_std::ambient_authority();
-        cap_std::fs::Dir::create_ambient_dir_all(&tmp_dir, auth)?;
-        let root = cap_std::fs::Dir::open_ambient_dir(&tmp_dir, auth)?;
+        cap_std::fs::Dir::create_ambient_dir_all(&tmp_dir, auth).unwrap();
+        let root = cap_std::fs::Dir::open_ambient_dir(&tmp_dir, auth).unwrap();
 
         eprintln!("Testing directory: {tmp_dir:?}");
 
@@ -300,9 +300,9 @@ mod tests {
         let url = "http://example.org/";
         let first_ts = Timestamp::now().round(Unit::Second).unwrap();
 
-        fs.save(url, first_ts, r"v1")?;
+        fs.save(url, first_ts, r"v1").unwrap();
 
-        let current = fs.current_version(url)?;
+        let current = fs.current_version(url).unwrap();
         assert_eq!(current, first_ts);
 
         let second_ts = Timestamp::now()
@@ -311,9 +311,9 @@ mod tests {
             .checked_sub(1.hour())
             .unwrap();
 
-        fs.save(url, second_ts, r"v2")?;
+        fs.save(url, second_ts, r"v2").unwrap();
 
-        let current = fs.current_version(url)?;
+        let current = fs.current_version(url).unwrap();
         assert_eq!(
             current, first_ts,
             "Saving older timestamps should not affect the `current` link"
@@ -325,43 +325,41 @@ mod tests {
             .checked_add(1.hour())
             .unwrap();
 
-        fs.save(url, third_ts, r"v3")?;
+        fs.save(url, third_ts, r"v3").unwrap();
 
-        let current = fs.current_version(url)?;
+        let current = fs.current_version(url).unwrap();
         assert_eq!(
             current, third_ts,
             "Saving newer timestamps should update the `current` link"
         );
 
-        let urls = fs.list_urls()?;
+        let urls = fs.list_urls().unwrap();
         assert_eq!(
             urls.as_slice(),
             &[(url.to_string(), third_ts)],
             "A single URL should be returned"
         );
 
-        let snapshots = fs.list_snapshots(&url)?;
+        let snapshots = fs.list_snapshots(&url).unwrap();
         assert_eq!(snapshots.len(), 3);
         assert!(snapshots.contains(&first_ts));
         assert!(snapshots.contains(&second_ts));
         assert!(snapshots.contains(&third_ts));
 
-        fs.delete(&url, third_ts)?;
-        assert_eq!(fs.list_snapshots(&url)?.len(), 2);
-        assert_eq!(fs.current_version(&url)?, first_ts);
+        fs.delete(&url, third_ts).unwrap();
+        assert_eq!(fs.list_snapshots(&url).unwrap().len(), 2);
+        assert_eq!(fs.current_version(&url).unwrap(), first_ts);
 
-        fs.delete(&url, first_ts)?;
-        assert_eq!(fs.current_version(&url)?, second_ts);
-        assert_eq!(fs.list_snapshots(&url)?.len(), 1);
+        fs.delete(&url, first_ts).unwrap();
+        assert_eq!(fs.current_version(&url).unwrap(), second_ts);
+        assert_eq!(fs.list_snapshots(&url).unwrap().len(), 1);
 
-        fs.delete(&url, second_ts)?;
-        assert_eq!(fs.list_snapshots(&url)?.len(), 0);
+        fs.delete(&url, second_ts).unwrap();
+        assert_eq!(fs.list_snapshots(&url).unwrap().len(), 0);
 
         assert_eq!(
             fs.current_version(&url).unwrap_err().kind(),
             std::io::ErrorKind::NotFound
         );
-
-        Ok(())
     }
 }
