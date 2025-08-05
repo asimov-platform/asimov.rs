@@ -1,6 +1,5 @@
 // This is free and unencumbered software released into the public domain.
 
-use cap_std::fs::{Permissions, PermissionsExt as _};
 use jiff::Timestamp;
 use std::{
     format,
@@ -48,7 +47,11 @@ impl super::Storage for Fs {
         tracing::debug!("Writing snapshot");
         let mut snapshot_file = self.root.create(&snapshot_path)?;
         snapshot_file.write_all(data.as_ref())?;
-        snapshot_file.set_permissions(Permissions::from_mode(0o444))?;
+
+        tracing::debug!("Setting snapshot file permissions");
+        let mut permissions = snapshot_file.metadata()?.permissions();
+        permissions.set_readonly(true);
+        snapshot_file.set_permissions(permissions)?;
 
         let url_path = url_dir.join(".url");
 
@@ -61,7 +64,11 @@ impl super::Storage for Fs {
             tracing::debug!(path = ?url_path, "Creating `url` metadata file");
             let mut url_file = self.root.create(&url_path)?;
             url_file.write_all(url.as_ref().as_bytes())?;
-            url_file.set_permissions(Permissions::from_mode(0o444))?;
+
+            tracing::debug!("Setting `url` metadata file permissions");
+            let mut permissions = url_file.metadata()?.permissions();
+            permissions.set_readonly(true);
+            url_file.set_permissions(permissions)?;
         }
 
         Ok(())
