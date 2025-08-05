@@ -2,15 +2,24 @@
 
 use asimov_module::resolve::Resolver;
 use asimov_runner::{FetcherOptions, GraphOutput};
-use jiff::{Span, Timestamp};
+use jiff::{Span, Timestamp, ToSpan};
 use std::{io::Result, string::String, vec::Vec};
 
-#[derive(Clone, Debug, Default, bon::Builder)]
+#[derive(Clone, Debug, bon::Builder)]
 pub struct Options {
     /// Controls maximum age of the "current" snapshot that is allowed to be
     /// returned from `Snapshotter.read_current`.
-    #[builder(with = |duration: std::time::Duration| -> core::result::Result<_, jiff::Error> { Span::try_from(duration) })]
+    #[builder(required, default = Some(1.minute()))]
+    #[builder(with = |duration: std::time::Duration| -> core::result::Result<_, jiff::Error> { Span::try_from(duration).map(Option::Some) })]
     pub max_current_age: Option<Span>,
+}
+
+impl Default for Options {
+    fn default() -> Self {
+        Self {
+            max_current_age: Some(1.minute()),
+        }
+    }
 }
 
 pub struct Snapshotter<S> {
