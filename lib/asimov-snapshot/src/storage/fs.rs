@@ -246,23 +246,18 @@ impl Fs {
         self.delete_file(&current_link_path)
     }
 
-    #[cfg(unix)]
     fn delete_file(&self, path: impl AsRef<Path>) -> Result<()> {
-        self.root.remove_file(path).or_else(|e| {
-            if e.kind() == std::io::ErrorKind::NotFound {
-                Ok(())
-            } else {
-                Err(e)
+        #[cfg(windows)]
+        {
+            let mut permissions = match self.root.metadata(&path) {
+                Ok(md) => md.permissions(),
+                Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(()),
+                Err(e) => return Err(e),
+            };
+            if permissions.readonly() {
+                permissions.set_readonly(false);
+                self.root.set_permissions(&path, permissions)?;
             }
-        })
-    }
-
-    #[cfg(windows)]
-    fn delete_file(&self, path: impl AsRef<Path>) -> Result<()> {
-        let mut permissions = self.root.metadata(&path)?.permissions();
-        if permissions.readonly() {
-            permissions.set_readonly(false);
-            self.root.set_permissions(&path, permissions)?;
         }
         self.root.remove_file(path).or_else(|e| {
             if e.kind() == std::io::ErrorKind::NotFound {
