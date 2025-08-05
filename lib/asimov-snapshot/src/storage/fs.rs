@@ -249,7 +249,10 @@ impl Fs {
     fn delete_file(&self, path: impl AsRef<Path>) -> Result<()> {
         #[cfg(windows)]
         {
-            let mut permissions = match self.root.metadata(&path) {
+            // We call `std::fs::symlink_metadata` because the target file may
+            // be a symlink and this does not follow the symlink like
+            // `std::fs::metadata` does.
+            let mut permissions = match self.root.symlink_metadata(&path) {
                 Ok(md) => md.permissions(),
                 Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(()),
                 Err(e) => return Err(e),
