@@ -1,7 +1,13 @@
 // This is free and unencumbered software released into the public domain.
 
+use cap_std::fs::{Permissions, PermissionsExt as _};
 use jiff::Timestamp;
-use std::{format, io::Result, string::String, vec::Vec};
+use std::{
+    format,
+    io::{Result, Write},
+    string::String,
+    vec::Vec,
+};
 
 const TIMESTAMP_FORMAT_STRING: &str = "%Y%m%dT%H%M%SZ";
 
@@ -40,18 +46,22 @@ impl super::Storage for Fs {
         let snapshot_path = url_dir.join(filename);
 
         tracing::debug!("Writing snapshot");
-        self.root.write(&snapshot_path, data)?;
+        let mut snapshot_file = self.root.create(&snapshot_path)?;
+        snapshot_file.write_all(data.as_ref())?;
+        snapshot_file.set_permissions(Permissions::from_mode(0o444))?;
 
-        let url_link = url_dir.join(".url");
+        let url_path = url_dir.join(".url");
 
         if !self
             .root
-            .symlink_metadata(&url_link)
-            .map(|m| m.is_symlink())
+            .metadata(&url_path)
+            .map(|m| m.is_file())
             .unwrap_or(false)
         {
-            tracing::debug!(source = ?url_link, target = url.as_ref(), "Creating `url` metadata file");
-            self.root.write(&url_link, url.as_ref())?;
+            tracing::debug!(path = ?url_path, "Creating `url` metadata file");
+            let mut url_file = self.root.create(&url_path)?;
+            url_file.write_all(url.as_ref().as_bytes())?;
+            url_file.set_permissions(Permissions::from_mode(0o444))?;
         }
 
         Ok(())
