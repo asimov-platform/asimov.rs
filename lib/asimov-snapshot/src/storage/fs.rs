@@ -1,7 +1,13 @@
 // This is free and unencumbered software released into the public domain.
 
 use jiff::Timestamp;
-use std::{format, io::Result, string::String, vec::Vec};
+use std::{
+    format,
+    io::{Result, Write},
+    path::Path,
+    string::String,
+    vec::Vec,
+};
 
 const TIMESTAMP_FORMAT_STRING: &str = "%Y%m%dT%H%M%SZ";
 
@@ -40,18 +46,30 @@ impl super::Storage for Fs {
         let snapshot_path = url_dir.join(filename);
 
         tracing::debug!("Writing snapshot");
-        self.root.write(&snapshot_path, data)?;
+        let mut snapshot_file = self.root.create(&snapshot_path)?;
+        snapshot_file.write_all(data.as_ref())?;
 
-        let url_link = url_dir.join(".url");
+        tracing::debug!("Setting snapshot file permissions");
+        let mut permissions = snapshot_file.metadata()?.permissions();
+        permissions.set_readonly(true);
+        snapshot_file.set_permissions(permissions)?;
+
+        let url_path = url_dir.join(".url");
 
         if !self
             .root
-            .symlink_metadata(&url_link)
-            .map(|m| m.is_symlink())
+            .metadata(&url_path)
+            .map(|m| m.is_file())
             .unwrap_or(false)
         {
-            tracing::debug!(source = ?url_link, target = url.as_ref(), "Creating `url` metadata file");
-            self.root.write(&url_link, url.as_ref())?;
+            tracing::debug!(path = ?url_path, "Creating `url` metadata file");
+            let mut url_file = self.root.create(&url_path)?;
+            url_file.write_all(url.as_ref().as_bytes())?;
+
+            tracing::debug!("Setting `url` metadata file permissions");
+            let mut permissions = url_file.metadata()?.permissions();
+            permissions.set_readonly(true);
+            url_file.set_permissions(permissions)?;
         }
 
         Ok(())
@@ -194,13 +212,7 @@ impl super::Storage for Fs {
         let snapshot_path = url_dir.join(filename);
 
         tracing::debug!(path = ?snapshot_path, "Deleting snapshot");
-        self.root.remove_file(&snapshot_path).or_else(|e| {
-            if e.kind() == std::io::ErrorKind::NotFound {
-                Ok(())
-            } else {
-                Err(e)
-            }
-        })?;
+        self.delete_file(&snapshot_path)?;
 
         let Ok(current) = self.current_version(&url) else {
             return Ok(());
@@ -231,7 +243,27 @@ impl Fs {
 
         let current_link_path = url_dir.join("current");
 
-        self.root.remove_file(&current_link_path).or_else(|e| {
+        self.delete_file(&current_link_path)
+    }
+
+    fn delete_file(&self, path: impl AsRef<Path>) -> Result<()> {
+        // We call `std::fs::symlink_metadata` because the target file may
+        // be a symlink and this does not follow the symlink like
+        // `std::fs::metadata` does.
+        #[cfg(windows)]
+        match self.root.symlink_metadata(&path) {
+            Ok(md) => {
+                let mut permissions = md.permissions();
+                if permissions.readonly() {
+                    permissions.set_readonly(false);
+                    self.root.set_permissions(&path, permissions)?;
+                }
+            },
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => (),
+            Err(e) => return Err(e),
+        };
+
+        self.root.remove_file(path).or_else(|e| {
             if e.kind() == std::io::ErrorKind::NotFound {
                 Ok(())
             } else {
@@ -252,17 +284,17 @@ mod tests {
 
     use super::*;
     use crate::storage::Storage;
-    use std::{eprintln, io::Result, string::ToString};
+    use std::{eprintln, string::ToString};
 
     #[test]
-    fn storage() -> Result<()> {
+    fn storage() {
         tracing_subscriber::fmt::init();
 
-        let tmp_dir = tempfile::tempdir()?;
+        let tmp_dir = tempfile::tempdir().unwrap();
         let tmp_dir = tmp_dir.path().join("asimov-snapshot-cli-test");
         let auth = cap_std::ambient_authority();
-        cap_std::fs::Dir::create_ambient_dir_all(&tmp_dir, auth)?;
-        let root = cap_std::fs::Dir::open_ambient_dir(&tmp_dir, auth)?;
+        cap_std::fs::Dir::create_ambient_dir_all(&tmp_dir, auth).unwrap();
+        let root = cap_std::fs::Dir::open_ambient_dir(&tmp_dir, auth).unwrap();
 
         eprintln!("Testing directory: {tmp_dir:?}");
 
@@ -271,9 +303,9 @@ mod tests {
         let url = "http://example.org/";
         let first_ts = Timestamp::now().round(Unit::Second).unwrap();
 
-        fs.save(url, first_ts, r"v1")?;
+        fs.save(url, first_ts, r"v1").unwrap();
 
-        let current = fs.current_version(url)?;
+        let current = fs.current_version(url).unwrap();
         assert_eq!(current, first_ts);
 
         let second_ts = Timestamp::now()
@@ -282,9 +314,9 @@ mod tests {
             .checked_sub(1.hour())
             .unwrap();
 
-        fs.save(url, second_ts, r"v2")?;
+        fs.save(url, second_ts, r"v2").unwrap();
 
-        let current = fs.current_version(url)?;
+        let current = fs.current_version(url).unwrap();
         assert_eq!(
             current, first_ts,
             "Saving older timestamps should not affect the `current` link"
@@ -296,43 +328,41 @@ mod tests {
             .checked_add(1.hour())
             .unwrap();
 
-        fs.save(url, third_ts, r"v3")?;
+        fs.save(url, third_ts, r"v3").unwrap();
 
-        let current = fs.current_version(url)?;
+        let current = fs.current_version(url).unwrap();
         assert_eq!(
             current, third_ts,
             "Saving newer timestamps should update the `current` link"
         );
 
-        let urls = fs.list_urls()?;
+        let urls = fs.list_urls().unwrap();
         assert_eq!(
             urls.as_slice(),
             &[(url.to_string(), third_ts)],
             "A single URL should be returned"
         );
 
-        let snapshots = fs.list_snapshots(&url)?;
+        let snapshots = fs.list_snapshots(&url).unwrap();
         assert_eq!(snapshots.len(), 3);
         assert!(snapshots.contains(&first_ts));
         assert!(snapshots.contains(&second_ts));
         assert!(snapshots.contains(&third_ts));
 
-        fs.delete(&url, third_ts)?;
-        assert_eq!(fs.list_snapshots(&url)?.len(), 2);
-        assert_eq!(fs.current_version(&url)?, first_ts);
+        fs.delete(&url, third_ts).unwrap();
+        assert_eq!(fs.list_snapshots(&url).unwrap().len(), 2);
+        assert_eq!(fs.current_version(&url).unwrap(), first_ts);
 
-        fs.delete(&url, first_ts)?;
-        assert_eq!(fs.current_version(&url)?, second_ts);
-        assert_eq!(fs.list_snapshots(&url)?.len(), 1);
+        fs.delete(&url, first_ts).unwrap();
+        assert_eq!(fs.current_version(&url).unwrap(), second_ts);
+        assert_eq!(fs.list_snapshots(&url).unwrap().len(), 1);
 
-        fs.delete(&url, second_ts)?;
-        assert_eq!(fs.list_snapshots(&url)?.len(), 0);
+        fs.delete(&url, second_ts).unwrap();
+        assert_eq!(fs.list_snapshots(&url).unwrap().len(), 0);
 
         assert_eq!(
             fs.current_version(&url).unwrap_err().kind(),
             std::io::ErrorKind::NotFound
         );
-
-        Ok(())
     }
 }
