@@ -28,6 +28,7 @@ asimov-module.workspace = true
 asimov-patterns.workspace = true
 asimov-runner.workspace = true
 async-trait.workspace = true
+bon.workspace = true
 dogma.workspace = true
 jiff.workspace = true
 tracing = { workspace = true, features = ["attributes"] }
