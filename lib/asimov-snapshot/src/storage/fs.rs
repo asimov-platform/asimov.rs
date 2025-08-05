@@ -273,6 +273,7 @@ mod tests {
 
     #[test]
     fn storage() -> Result<()> {
+        unsafe { std::env::set_var("RUST_LOG", "trace") };
         tracing_subscriber::fmt::init();
 
         let tmp_dir = tempfile::tempdir()?;
