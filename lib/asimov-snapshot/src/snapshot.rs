@@ -111,7 +111,7 @@ impl<S: crate::storage::Storage> Snapshotter<S> {
     }
 
     /// compact deletes old snapshots for a given URL.
-    /// Currently everything but the latest snasphot is deleted.
+    /// Currently everything but the latest snapshot is deleted.
     #[tracing::instrument(skip(self), fields(url = url.as_ref()))]
     pub async fn compact(&self, url: impl AsRef<str>) -> Result<()> {
         // TODO: max hourly/daily/weekly/monthly/yearly snapshots
