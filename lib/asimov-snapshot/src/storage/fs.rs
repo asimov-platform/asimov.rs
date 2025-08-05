@@ -4,6 +4,7 @@ use jiff::Timestamp;
 use std::{
     format,
     io::{Result, Write},
+    path::Path,
     string::String,
     vec::Vec,
 };
@@ -211,13 +212,7 @@ impl super::Storage for Fs {
         let snapshot_path = url_dir.join(filename);
 
         tracing::debug!(path = ?snapshot_path, "Deleting snapshot");
-        self.root.remove_file(&snapshot_path).or_else(|e| {
-            if e.kind() == std::io::ErrorKind::NotFound {
-                Ok(())
-            } else {
-                Err(e)
-            }
-        })?;
+        self.delete_file(&snapshot_path)?;
 
         let Ok(current) = self.current_version(&url) else {
             return Ok(());
@@ -248,7 +243,28 @@ impl Fs {
 
         let current_link_path = url_dir.join("current");
 
-        self.root.remove_file(&current_link_path).or_else(|e| {
+        self.delete_file(&current_link_path)
+    }
+
+    #[cfg(unix)]
+    fn delete_file(&self, path: impl AsRef<Path>) -> Result<()> {
+        self.root.remove_file(path).or_else(|e| {
+            if e.kind() == std::io::ErrorKind::NotFound {
+                Ok(())
+            } else {
+                Err(e)
+            }
+        })
+    }
+
+    #[cfg(windows)]
+    fn delete_file(&self, path: impl AsRef<Path>) -> Result<()> {
+        let mut permissions = self.root.metadata(&path)?.permissions();
+        if permissions.readonly() {
+            permissions.set_readonly(false);
+            self.root.set_permissions(&path, permissions)?;
+        }
+        self.root.remove_file(path).or_else(|e| {
             if e.kind() == std::io::ErrorKind::NotFound {
                 Ok(())
             } else {
