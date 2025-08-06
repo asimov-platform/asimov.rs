@@ -9,56 +9,6 @@ use std::{
 use thiserror::Error;
 
 #[derive(Debug, Error)]
-pub enum CreateFileTreeError {
-    #[error("failed to create directory for installed modules `{0}`: {1}")]
-    InstallDir(PathBuf, #[source] io::Error),
-    #[error("failed to create directory for enabled modules `{0}`: {1}")]
-    EnableDir(PathBuf, #[source] io::Error),
-    #[error("failed to create directory for module binaries `{0}`: {1}")]
-    ExecDir(PathBuf, #[source] io::Error),
-}
-
-#[derive(Debug, Error)]
-pub enum InstalledModulesError {
-    #[error("failed to read directory for installed modules `{0}`: {1}")]
-    DirIo(PathBuf, #[source] io::Error),
-    #[error("failed to read manifest at `{0}`: {1}")]
-    ReadManifestError(PathBuf, #[source] ReadManifestError),
-}
-
-#[derive(Debug, Error)]
-pub enum EnabledModulesError {
-    #[error("failed to read directory for enabled modules `{0}`: {1}")]
-    DirIo(PathBuf, #[source] io::Error),
-    #[error("failed to read symlink for enabled module at `{0}`: {1}")]
-    LinkIo(PathBuf, #[source] io::Error),
-    #[error("failed to read manifest at `{0}`: {1}")]
-    ReadManifestError(PathBuf, #[source] ReadManifestError),
-}
-
-#[derive(Debug, Error)]
-#[error("error while searching for manifest file: {0}")]
-pub struct IsModuleInstalledError(#[from] FindManifestError);
-
-#[derive(Debug, Error)]
-#[error("unable to read symlink for enabled module: {0}")]
-pub struct IsModuleEnabledError(#[from] io::Error);
-
-#[derive(Debug, Error)]
-#[error(transparent)]
-pub struct ModuleVersionError(#[from] ManifestError);
-
-#[derive(Debug, Error)]
-pub enum ManifestError {
-    #[error("module is not installed")]
-    NotInstalled,
-    #[error("error while searching for manifest file: {0}")]
-    FindManifest(#[from] FindManifestError),
-    #[error("unable to read module manifest: {0}")]
-    Read(#[from] ReadManifestError),
-}
-
-#[derive(Debug, Error)]
 pub enum InstallError {
     #[error("failed to create directory for downloading: {0}")]
     CreateTempDir(io::Error),
@@ -71,11 +21,11 @@ pub enum InstallError {
 #[derive(Debug, Error)]
 pub enum UpgradeError {
     #[error("unable to read current version of module: {0}")]
-    CheckVersion(#[from] ModuleVersionError),
+    CheckVersion(#[from] crate::registry::error::ModuleVersionError),
     #[error("failed to create directory for downloading: {0}")]
     CreateTempDir(io::Error),
     #[error("unable to check if module is enabled: {0}")]
-    CheckEnabled(#[from] IsModuleEnabledError),
+    CheckEnabled(#[from] crate::registry::error::IsModuleEnabledError),
     #[error(transparent)]
     Preinstall(#[from] PreinstallError),
     #[error(transparent)]
@@ -83,36 +33,22 @@ pub enum UpgradeError {
     #[error(transparent)]
     Install(#[from] FinishInstallError),
     #[error("failed to re-enable module: {0}")]
-    ReEnable(#[from] EnableError),
+    ReEnable(#[from] crate::registry::error::EnableError),
 }
 
 #[derive(Debug, Error)]
 pub enum UninstallError {
     #[error("error while searching for manifest file: {0}")]
-    FindManifest(#[from] FindManifestError),
+    FindManifest(#[from] crate::registry::error::FindManifestError),
     #[error("unable to read module manifest file: {0}")]
-    Read(#[from] ReadManifestError),
+    Read(#[from] crate::registry::error::ReadManifestError),
     #[error(transparent)]
-    Disable(#[from] DisableError),
+    Disable(#[from] crate::registry::error::DisableError),
     #[error("unable to remove installed module file `{0}`: {1}")]
     Delete(PathBuf, io::Error),
     #[error("module is not installed")]
     NotInstalled,
 }
-
-#[derive(Debug, Error)]
-pub enum EnableError {
-    #[error("error while searching for manifest file: {0}")]
-    FindManifest(#[from] FindManifestError),
-    #[error("module is not installed")]
-    NotInstalled,
-    #[error("failed to enable module: {0}")]
-    Io(#[from] io::Error),
-}
-
-#[derive(Debug, Error)]
-#[error("failed to disable module: {0}")]
-pub struct DisableError(#[from] pub io::Error);
 
 mod common {
     use super::*;
@@ -128,28 +64,6 @@ mod common {
     impl From<reqwest::Error> for FetchError {
         fn from(value: reqwest::Error) -> Self {
             FetchError::Http(HttpError::Http(value))
-        }
-    }
-
-    #[derive(Debug, Error)]
-    pub enum ReadManifestError {
-        #[error("failed to access module manifest file: {0}")]
-        InstalledManifestIo(#[from] io::Error),
-        #[error("failed to deserialize module manifest: {0}")]
-        ManifestDeserialize(#[from] DeserializeError),
-        #[error("unknown manifest format: {}", .0.as_deref().unwrap_or("no file extension"))]
-        UnknownManifestFormat(Option<String>),
-    }
-
-    impl From<serde_json::Error> for ReadManifestError {
-        fn from(value: serde_json::Error) -> Self {
-            ReadManifestError::ManifestDeserialize(DeserializeError::Json(value))
-        }
-    }
-
-    impl From<serde_yaml_ng::Error> for ReadManifestError {
-        fn from(value: serde_yaml_ng::Error) -> Self {
-            ReadManifestError::ManifestDeserialize(DeserializeError::Yaml(value))
         }
     }
 
@@ -238,9 +152,5 @@ mod common {
         #[error("failed to save module manifest: {0}")]
         SaveManifest(io::Error),
     }
-
-    #[derive(Debug, Error)]
-    #[error("unable to check for manifest file at `{0}`: {1}")]
-    pub struct FindManifestError(pub PathBuf, #[source] pub io::Error);
 }
 pub use common::*;
