@@ -54,7 +54,7 @@ pub enum AddBinaryError {
     #[error("failed to copy binary: {0}")]
     Copy(#[source] io::Error),
     #[cfg(unix)]
-    #[error("failed to make binary executable: ")]
+    #[error("failed to make binary executable: {0}")]
     MakeExecutable(#[source] io::Error),
 }
 
