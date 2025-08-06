@@ -321,7 +321,7 @@ impl Registry {
             .await?
             .ok_or(EnableError::NotInstalled)?;
 
-        let target_path = if target_path.starts_with(&self.install_dir()) {
+        let target_path = if target_path.starts_with(self.install_dir()) {
             // manifest is in installed directory: ../installed/manifest.json
             std::path::PathBuf::from("..")
                 .join("installed")
