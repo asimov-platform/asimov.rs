@@ -247,25 +247,3 @@ pub async fn extract_files(
 
     Ok(())
 }
-
-pub async fn install_binaries(
-    manifest: &ModuleManifest,
-    extract_dir: &Path,
-    install_dir: &Path,
-) -> Result<(), tokio::io::Error> {
-    for program in &manifest.provides.programs {
-        let src = extract_dir.join(program);
-        let dst = install_dir.join(program);
-
-        tokio::fs::copy(&src, &dst).await?;
-
-        #[cfg(unix)]
-        {
-            use std::fs::Permissions;
-            use std::os::unix::fs::PermissionsExt;
-            tokio::fs::set_permissions(&dst, Permissions::from_mode(0o755)).await?;
-        }
-    }
-
-    Ok(())
-}

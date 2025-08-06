@@ -1,5 +1,5 @@
 [package]
-name = "asimov-installer"
+name = "asimov-registry"
 version.workspace = true
 authors.workspace = true
 edition.workspace = true
@@ -26,7 +26,6 @@ std = [
 	"getenv?/std",
 	"serde/std",
 	"serde_json/std",
-	"sha2/std",
 	"tracing?/std",
 	"tracing-subscriber?/fmt",
 	"tracing-subscriber?/std",
@@ -38,20 +37,17 @@ tracing = ["dep:tracing", "dep:tracing-subscriber", "clientele?/tracing"]
 
 [dependencies]
 asimov-module.workspace = true
-asimov-registry.workspace = true
+bon.workspace = true
 dogma.workspace = true
-flate2.workspace = true
 reqwest.workspace = true
 secrecy.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 serde_yaml_ng.workspace = true
-sha2.workspace = true
 tar.workspace = true
 tempfile.workspace = true
 thiserror.workspace = true
 tokio = { workspace = true, features = ["fs"] }
-zip = { workspace = true, features = ["deflate"] }
 
 # Optional dependencies:
 asimov-env = { workspace = true, optional = true }

@@ -12,6 +12,6 @@ pub use asimov_module::{InstalledModuleManifest, ModuleManifest};
 pub use dogma::prelude;
 
 #[cfg(feature = "std")]
-pub mod installer;
+pub mod registry;
 #[cfg(feature = "std")]
-pub use installer::*;
+pub use registry::*;
