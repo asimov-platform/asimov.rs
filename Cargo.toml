@@ -8,6 +8,7 @@ default-members = [
     "lib/asimov-module",
     "lib/asimov-patterns",
     "lib/asimov-prompt",
+    "lib/asimov-registry",
     "lib/asimov-runner",
     "lib/asimov-server",
     "lib/asimov-snapshot",
@@ -50,6 +51,7 @@ asimov-platform = "25.0.0-dev.20"
 asimov-prompt = "25.0.0-dev.20"
 asimov-protocol = "25.0.0-dev.20"
 asimov-proxy = "25.0.0-dev.20"
+asimov-registry = "25.0.0-dev.20"
 asimov-repository = "25.0.0-dev.20"
 asimov-runner = "25.0.0-dev.20"
 asimov-runtime = "25.0.0-dev.20"
@@ -67,7 +69,7 @@ async-trait = { version = "0.1", default-features = false }
 axum = { version = "0.8", default-features = false, features = ["macros"] }
 axum-embed = { version = "0.1", default-features = false }
 axum-prometheus = { version = "0.8", default-features = false, features = [
-    "prometheus",
+	"prometheus",
 ] }
 axum-test = { version = "17.3", default-features = false }
 bon = { version = "3.6", default-features = false }
@@ -182,6 +184,7 @@ asimov-platform = { path = "lib/asimov-platform" }
 asimov-prompt = { path = "lib/asimov-prompt" }
 asimov-protocol = { path = "lib/asimov-protocol" }
 asimov-proxy = { path = "lib/asimov-proxy" }
+asimov-registry = { path = "lib/asimov-registry" }
 asimov-repository = { path = "lib/asimov-repository" }
 asimov-runner = { path = "lib/asimov-runner" }
 asimov-runtime = { path = "lib/asimov-runtime" }

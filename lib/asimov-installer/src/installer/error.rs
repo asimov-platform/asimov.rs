@@ -1,6 +1,7 @@
 // This is free and unencumbered software released into the public domain.
 
 use super::platform::PlatformInfo;
+use asimov_registry::error as registry;
 use std::{
     io,
     path::PathBuf,
@@ -21,11 +22,11 @@ pub enum InstallError {
 #[derive(Debug, Error)]
 pub enum UpgradeError {
     #[error("unable to read current version of module: {0}")]
-    CheckVersion(#[from] crate::registry::error::ModuleVersionError),
+    CheckVersion(#[from] registry::ModuleVersionError),
     #[error("failed to create directory for downloading: {0}")]
     CreateTempDir(io::Error),
     #[error("unable to check if module is enabled: {0}")]
-    CheckEnabled(#[from] crate::registry::error::IsModuleEnabledError),
+    CheckEnabled(#[from] registry::IsModuleEnabledError),
     #[error(transparent)]
     Preinstall(#[from] PreinstallError),
     #[error(transparent)]
@@ -33,17 +34,17 @@ pub enum UpgradeError {
     #[error(transparent)]
     Install(#[from] FinishInstallError),
     #[error("failed to re-enable module: {0}")]
-    ReEnable(#[from] crate::registry::error::EnableError),
+    ReEnable(#[from] registry::EnableError),
 }
 
 #[derive(Debug, Error)]
 pub enum UninstallError {
     #[error("error while searching for manifest file: {0}")]
-    FindManifest(#[from] crate::registry::error::FindManifestError),
+    FindManifest(#[from] registry::FindManifestError),
     #[error("unable to read module manifest file: {0}")]
-    Read(#[from] crate::registry::error::ReadManifestError),
+    Read(#[from] registry::ReadManifestError),
     #[error(transparent)]
-    Disable(#[from] crate::registry::error::DisableError),
+    Disable(#[from] registry::DisableError),
     #[error("unable to remove installed module file `{0}`: {1}")]
     Delete(PathBuf, io::Error),
     #[error("module is not installed")]

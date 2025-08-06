@@ -7,7 +7,7 @@ use tokio::io;
 pub mod error;
 use error::*;
 
-use crate::registry::Registry;
+use asimov_registry::{Registry, error::ReadManifestError};
 
 mod github;
 mod platform;
@@ -226,25 +226,25 @@ impl Installer {
 
 async fn read_manifest(
     path: impl AsRef<Path>,
-) -> Result<InstalledModuleManifest, crate::registry::error::ReadManifestError> {
+) -> Result<InstalledModuleManifest, ReadManifestError> {
     let manifest = match path.as_ref().extension().and_then(|ext| ext.to_str()) {
         Some("yaml") | Some("yml") => {
             let content = tokio::fs::read(&path)
                 .await
-                .map_err(crate::registry::error::ReadManifestError::InstalledManifestIo)?;
+                .map_err(ReadManifestError::InstalledManifestIo)?;
 
             serde_yaml_ng::from_slice::<'_, InstalledModuleManifest>(&content)?
         },
         Some("json") => {
             let content = tokio::fs::read(&path)
                 .await
-                .map_err(crate::registry::error::ReadManifestError::InstalledManifestIo)?;
+                .map_err(ReadManifestError::InstalledManifestIo)?;
 
             serde_json::from_slice::<'_, InstalledModuleManifest>(&content)?
         },
-        ext => Err(
-            crate::registry::error::ReadManifestError::UnknownManifestFormat(ext.map(Into::into)),
-        )?,
+        ext => Err(ReadManifestError::UnknownManifestFormat(
+            ext.map(Into::into),
+        ))?,
     };
     Ok(manifest)
 }
