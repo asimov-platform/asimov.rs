@@ -2,12 +2,11 @@
 
 use asimov_module::{InstalledModuleManifest, ModuleManifest, tracing};
 use std::{path::Path, string::String};
-use tokio::io;
 
 pub mod error;
 use error::*;
 
-use asimov_registry::{Registry, error::ReadManifestError};
+use asimov_registry::Registry;
 
 mod github;
 mod platform;
@@ -50,13 +49,8 @@ impl Installer {
             .preinstall(module_name.as_ref(), version.as_ref(), temp_dir.path())
             .await?;
 
-        self.finish_install(
-            module_name.as_ref(),
-            version.as_ref(),
-            manifest,
-            temp_dir.path(),
-        )
-        .await?;
+        self.finish_install(version.as_ref(), manifest, temp_dir.path())
+            .await?;
 
         Ok(())
     }
@@ -98,7 +92,7 @@ impl Installer {
         // now ok to uninstall old version
         self.uninstall_module(module_name).await?;
 
-        self.finish_install(module_name, version, manifest, temp_dir.path())
+        self.finish_install(version, manifest, temp_dir.path())
             .await?;
 
         if was_enabled {
@@ -112,36 +106,18 @@ impl Installer {
         &self,
         module_name: impl AsRef<str>,
     ) -> Result<(), UninstallError> {
-        let manifest_path = self
-            .registry
-            .find_manifest_file(module_name.as_ref())
-            .await?
-            .ok_or(UninstallError::NotInstalled)?;
-
-        let manifest = read_manifest(&manifest_path).await?;
+        let manifest = self.registry.read_manifest(&module_name).await?;
 
         self.registry.disable_module(&module_name).await?;
 
-        tokio::fs::remove_file(&manifest_path).await.or_else(|e| {
-            if e.kind() == io::ErrorKind::NotFound {
-                Ok(())
-            } else {
-                Err(UninstallError::Delete(manifest_path, e))
-            }
-        })?;
-
-        let exec_dir = self.registry.exec_dir();
-
-        for program in manifest.manifest.provides.programs {
-            let path = exec_dir.join(program);
-            tokio::fs::remove_file(&path).await.or_else(|e| {
-                if e.kind() == io::ErrorKind::NotFound {
-                    Ok(())
-                } else {
-                    Err(UninstallError::Delete(path, e))
-                }
-            })?;
+        for program in &manifest.manifest.provides.programs {
+            self.registry
+                .remove_binary(program)
+                .await
+                .map_err(|e| UninstallError::RemoveBinary(program.into(), e))?;
         }
+
+        self.registry.remove_manifest(&module_name).await?;
 
         Ok(())
     }
@@ -156,9 +132,7 @@ impl Installer {
 
         let release = github::fetch_release(&self.client, module_name, version)
             .await
-            .map_err(|_| {
-                PreinstallError::CreateManifestDir(std::io::Error::other("Failed to fetch release"))
-            })?;
+            .map_err(PreinstallError::FetchRelease)?;
 
         let Some(asset) = github::find_matching_asset(&release.assets, module_name, &platform)
         else {
@@ -193,58 +167,24 @@ impl Installer {
 
     async fn finish_install(
         &self,
-        module_name: &str,
         version: &str,
         manifest: ModuleManifest,
         temp_dir: &Path,
     ) -> Result<(), FinishInstallError> {
         let extract_dir = temp_dir.join("extract");
 
-        let manifest_path = self
-            .registry
-            .install_dir()
-            .join(std::format!("{module_name}.json"));
-
-        github::install_binaries(&manifest, &extract_dir, &self.registry.exec_dir())
-            .await
-            .map_err(FinishInstallError::BinaryInstall)?;
+        for program in &manifest.provides.programs {
+            let src = extract_dir.join(program);
+            self.registry.add_binary(program, &src).await?;
+        }
 
         let installed_manifest = InstalledModuleManifest {
             version: Some(version.into()),
             manifest,
         };
-        let mut manifest_json = serde_json::to_string_pretty(&installed_manifest)?;
-        manifest_json.push('\n'); // always newline-terminate text files
 
-        tokio::fs::write(&manifest_path, &manifest_json)
-            .await
-            .map_err(FinishInstallError::SaveManifest)?;
+        self.registry.add_manifest(installed_manifest).await?;
 
         Ok(())
     }
-}
-
-async fn read_manifest(
-    path: impl AsRef<Path>,
-) -> Result<InstalledModuleManifest, ReadManifestError> {
-    let manifest = match path.as_ref().extension().and_then(|ext| ext.to_str()) {
-        Some("yaml") | Some("yml") => {
-            let content = tokio::fs::read(&path)
-                .await
-                .map_err(ReadManifestError::InstalledManifestIo)?;
-
-            serde_yaml_ng::from_slice::<'_, InstalledModuleManifest>(&content)?
-        },
-        Some("json") => {
-            let content = tokio::fs::read(&path)
-                .await
-                .map_err(ReadManifestError::InstalledManifestIo)?;
-
-            serde_json::from_slice::<'_, InstalledModuleManifest>(&content)?
-        },
-        ext => Err(ReadManifestError::UnknownManifestFormat(
-            ext.map(Into::into),
-        ))?,
-    };
-    Ok(manifest)
 }

@@ -1,9 +1,6 @@
 // This is free and unencumbered software released into the public domain.
 
-use alloc::{
-    string::{String, ToString},
-    vec::Vec,
-};
+use alloc::{string::String, vec::Vec};
 use asimov_module::{InstalledModuleManifest, tracing};
 use std::path::{Path, PathBuf};
 use tokio::io;
@@ -73,6 +70,103 @@ impl Registry {
             .map_err(|e| CreateFileTreeError::ExecDir(exec_dir, e))?;
 
         Ok(())
+    }
+
+    pub async fn add_manifest(
+        &self,
+        manifest: InstalledModuleManifest,
+    ) -> Result<(), AddManifestError> {
+        let module_name = &manifest.manifest.name;
+
+        if self.is_module_installed(module_name).await.unwrap_or(false) {
+            return Err(AddManifestError::AlreadyInstalled);
+        }
+
+        let manifest_path = self.install_dir().join(module_name).with_extension("json");
+
+        let serialized = serde_json::to_vec_pretty(&manifest).map_err(SerializeError::Json)?;
+
+        tokio::fs::write(&manifest_path, serialized)
+            .await
+            .map_err(|e| AddManifestError::WriteManifest(manifest_path, e))
+    }
+
+    pub async fn read_manifest(
+        &self,
+        module_name: impl AsRef<str>,
+    ) -> Result<InstalledModuleManifest, ManifestError> {
+        let path = self
+            .find_manifest_file(module_name)
+            .await?
+            .ok_or(ManifestError::NotInstalled)?;
+        read_manifest(path).await.map_err(Into::into)
+    }
+
+    pub async fn module_version(
+        &self,
+        module_name: impl AsRef<str>,
+    ) -> Result<Option<String>, ModuleVersionError> {
+        self.read_manifest(module_name)
+            .await
+            .map(|manifest| manifest.version)
+            .map_err(Into::into)
+    }
+
+    pub async fn remove_manifest(
+        &self,
+        module_name: impl AsRef<str>,
+    ) -> Result<(), RemoveManifestError> {
+        let manifest_path = self
+            .find_manifest_file(&module_name)
+            .await?
+            .ok_or(RemoveManifestError::NotInstalled)?;
+
+        tokio::fs::remove_file(&manifest_path)
+            .await
+            .map_err(|e| RemoveManifestError::RemoveManifest(manifest_path, e))
+    }
+
+    pub async fn add_binary(
+        &self,
+        name: impl AsRef<str>,
+        path: impl AsRef<Path>,
+    ) -> Result<(), AddBinaryError> {
+        let source_path = path.as_ref();
+        let target_path = self.exec_dir().join(name.as_ref());
+
+        if tokio::fs::try_exists(&target_path).await.unwrap_or(false) {
+            return Err(AddBinaryError::AlreadyExists);
+        }
+
+        tokio::fs::copy(source_path, &target_path)
+            .await
+            .map_err(AddBinaryError::Copy)?;
+
+        // Make binary executable on Unix systems
+        #[cfg(unix)]
+        {
+            use std::fs::Permissions;
+            use std::os::unix::fs::PermissionsExt;
+
+            let permissions = Permissions::from_mode(0o755);
+            tokio::fs::set_permissions(&target_path, permissions)
+                .await
+                .map_err(AddBinaryError::MakeExecutable)?;
+        }
+
+        Ok(())
+    }
+
+    pub async fn remove_binary(&self, name: impl AsRef<str>) -> Result<(), RemoveBinaryError> {
+        let binary_path = self.exec_dir().join(name.as_ref());
+
+        tokio::fs::remove_file(&binary_path).await.or_else(|e| {
+            if e.kind() == io::ErrorKind::NotFound {
+                Ok(())
+            } else {
+                Err(RemoveBinaryError(e))
+            }
+        })
     }
 
     pub async fn installed_modules(
@@ -221,27 +315,6 @@ impl Registry {
             })
     }
 
-    pub async fn module_version(
-        &self,
-        module_name: impl AsRef<str>,
-    ) -> Result<Option<String>, ModuleVersionError> {
-        self.manifest(module_name)
-            .await
-            .map(|manifest| manifest.version)
-            .map_err(Into::into)
-    }
-
-    pub async fn manifest(
-        &self,
-        module_name: impl AsRef<str>,
-    ) -> Result<InstalledModuleManifest, ManifestError> {
-        let path = self
-            .find_manifest_file(module_name)
-            .await?
-            .ok_or(ManifestError::NotInstalled)?;
-        read_manifest(path).await.map_err(Into::into)
-    }
-
     pub async fn enable_module(&self, module_name: impl AsRef<str>) -> Result<(), EnableError> {
         let target_path = self
             .find_manifest_file(&module_name)
@@ -299,7 +372,7 @@ impl Registry {
             .map_err(Into::into)
     }
 
-    pub async fn find_manifest_file(
+    async fn find_manifest_file(
         &self,
         module_name: impl AsRef<str>,
     ) -> Result<Option<PathBuf>, FindManifestError> {
@@ -365,114 +438,16 @@ impl Registry {
         Ok(None)
     }
 
-    pub fn install_dir(&self) -> PathBuf {
+    fn install_dir(&self) -> PathBuf {
         self.dir.join("modules").join("installed")
     }
 
-    pub fn enable_dir(&self) -> PathBuf {
+    fn enable_dir(&self) -> PathBuf {
         self.dir.join("modules").join("enabled")
     }
 
-    pub fn exec_dir(&self) -> PathBuf {
+    fn exec_dir(&self) -> PathBuf {
         self.dir.join("libexec")
-    }
-
-    pub async fn add_manifest(
-        &self,
-        manifest: InstalledModuleManifest,
-    ) -> Result<(), AddManifestError> {
-        let module_name = &manifest.manifest.name;
-
-        // Check if module is already installed
-        if self.is_module_installed(module_name).await.unwrap_or(false) {
-            return Err(AddManifestError::AlreadyInstalled(module_name.clone()));
-        }
-
-        let install_dir = self.install_dir();
-        let manifest_path = install_dir.join(module_name).with_extension("json");
-
-        // Serialize manifest to JSON
-        let serialized = serde_json::to_vec_pretty(&manifest)
-            .map_err(|e| AddManifestError::SerializeManifest(SerializeError::Json(e)))?;
-
-        // Write manifest file
-        tokio::fs::write(&manifest_path, serialized)
-            .await
-            .map_err(|e| AddManifestError::WriteManifest(manifest_path, e))?;
-
-        Ok(())
-    }
-
-    pub async fn remove_manifest(
-        &self,
-        module_name: impl AsRef<str>,
-    ) -> Result<(), RemoveManifestError> {
-        let manifest_path = self
-            .find_manifest_file(&module_name)
-            .await?
-            .ok_or(RemoveManifestError::NotInstalled)?;
-
-        tokio::fs::remove_file(&manifest_path)
-            .await
-            .map_err(|e| RemoveManifestError::RemoveManifest(manifest_path, e))?;
-
-        Ok(())
-    }
-
-    pub async fn add_binary(
-        &self,
-        name: impl AsRef<str>,
-        path: impl AsRef<Path>,
-    ) -> Result<(), AddBinaryError> {
-        let name = name.as_ref();
-        let source_path = path.as_ref();
-        let exec_dir = self.exec_dir();
-        let target_path = exec_dir.join(name);
-
-        // Check if binary already exists
-        if tokio::fs::try_exists(&target_path).await.unwrap_or(false) {
-            return Err(AddBinaryError::AlreadyExists(name.to_string()));
-        }
-
-        // Copy the binary to exec directory
-        tokio::fs::copy(source_path, &target_path)
-            .await
-            .map_err(|e| {
-                AddBinaryError::CopyBinary(source_path.to_path_buf(), target_path.clone(), e)
-            })?;
-
-        // Make binary executable on Unix systems
-        #[cfg(unix)]
-        {
-            use std::fs::Permissions;
-            use std::os::unix::fs::PermissionsExt;
-
-            let permissions = Permissions::from_mode(0o755);
-            tokio::fs::set_permissions(&target_path, permissions)
-                .await
-                .map_err(|e| {
-                    AddBinaryError::CopyBinary(source_path.to_path_buf(), target_path, e)
-                })?;
-        }
-
-        Ok(())
-    }
-
-    pub async fn remove_binary(&self, name: impl AsRef<str>) -> Result<(), RemoveBinaryError> {
-        let name = name.as_ref();
-        let exec_dir = self.exec_dir();
-        let binary_path = exec_dir.join(name);
-
-        // Check if binary exists
-        if !tokio::fs::try_exists(&binary_path).await.unwrap_or(false) {
-            return Err(RemoveBinaryError::NotFound(name.to_string()));
-        }
-
-        tokio::fs::remove_file(&binary_path)
-            .await
-            .map_err(|e| RemoveBinaryError::RemoveBinary(binary_path, e))?;
-
-        Ok(())
     }
 }
 

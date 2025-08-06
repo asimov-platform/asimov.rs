@@ -4,7 +4,6 @@ use super::platform::PlatformInfo;
 use asimov_registry::error as registry;
 use std::{
     io,
-    path::PathBuf,
     string::{String, ToString as _},
 };
 use thiserror::Error;
@@ -39,16 +38,14 @@ pub enum UpgradeError {
 
 #[derive(Debug, Error)]
 pub enum UninstallError {
-    #[error("error while searching for manifest file: {0}")]
-    FindManifest(#[from] registry::FindManifestError),
     #[error("unable to read module manifest file: {0}")]
-    Read(#[from] registry::ReadManifestError),
+    Read(#[from] registry::ManifestError),
     #[error(transparent)]
     Disable(#[from] registry::DisableError),
-    #[error("unable to remove installed module file `{0}`: {1}")]
-    Delete(PathBuf, io::Error),
-    #[error("module is not installed")]
-    NotInstalled,
+    #[error("unable to remove installed module binary `{0}`: {1}")]
+    RemoveBinary(String, #[source] registry::RemoveBinaryError),
+    #[error("unable to remove installed module manifest: {0}")]
+    RemoveManifest(#[from] registry::RemoveManifestError),
 }
 
 mod common {
@@ -120,12 +117,8 @@ mod common {
 
     #[derive(Debug, Error)]
     pub enum PreinstallError {
-        #[error("failed to create directory for installed manifests: {0}")]
-        CreateManifestDir(io::Error),
-        #[error("failed to create directory for installed binaries: {0}")]
-        CreateExecDir(io::Error),
-        #[error("failed to create directory for extracting: {0}")]
-        CreateExtractDir(io::Error),
+        #[error("failed fetch release: {0}")]
+        FetchRelease(FetchError),
 
         #[error("no binaries available for platform `{}-{}{}`", .0.os, .0.arch, if let Some(ref libc) = .0.libc { "-".to_string() + libc } else { "".to_string() })]
         NotAvailable(PlatformInfo),
@@ -140,18 +133,19 @@ mod common {
         #[error(transparent)]
         VerifyChecksum(#[from] VerifyChecksumError),
 
+        #[error("failed to create directory for extracting: {0}")]
+        CreateExtractDir(io::Error),
+
         #[error("failed to extract archive: {0}")]
         Extract(io::Error),
     }
 
     #[derive(Debug, Error)]
     pub enum FinishInstallError {
-        #[error("failed to install binaries: {0}")]
-        BinaryInstall(io::Error),
-        #[error("failed to serialize module manifest: {0}")]
-        SerializeManifest(#[from] serde_json::Error),
-        #[error("failed to save module manifest: {0}")]
-        SaveManifest(io::Error),
+        #[error("failed to install binary: {0}")]
+        AddBinary(#[from] registry::AddBinaryError),
+        #[error("failed to add manifest: {0}")]
+        AddManifest(#[from] registry::AddManifestError),
     }
 }
 pub use common::*;

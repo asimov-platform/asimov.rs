@@ -14,6 +14,55 @@ pub enum CreateFileTreeError {
 }
 
 #[derive(Debug, Error)]
+pub enum AddManifestError {
+    #[error("module is already installed")]
+    AlreadyInstalled,
+    #[error("failed to serialize module manifest: {0}")]
+    SerializeManifest(#[from] SerializeError),
+    #[error("failed to write module manifest to `{0}`: {1}")]
+    WriteManifest(PathBuf, #[source] io::Error),
+}
+
+#[derive(Debug, Error)]
+pub enum ManifestError {
+    #[error("module is not installed")]
+    NotInstalled,
+    #[error("error while searching for manifest file: {0}")]
+    FindManifest(#[from] FindManifestError),
+    #[error("unable to read module manifest: {0}")]
+    Read(#[from] ReadManifestError),
+}
+
+#[derive(Debug, Error)]
+#[error(transparent)]
+pub struct ModuleVersionError(#[from] ManifestError);
+
+#[derive(Debug, Error)]
+pub enum RemoveManifestError {
+    #[error("error while searching for manifest file: {0}")]
+    FindManifest(#[from] FindManifestError),
+    #[error("module is not installed")]
+    NotInstalled,
+    #[error("failed to remove module manifest at `{0}`: {1}")]
+    RemoveManifest(PathBuf, #[source] io::Error),
+}
+
+#[derive(Debug, Error)]
+pub enum AddBinaryError {
+    #[error("binary already exists")]
+    AlreadyExists,
+    #[error("failed to copy binary: {0}")]
+    Copy(#[source] io::Error),
+    #[cfg(unix)]
+    #[error("failed to make binary executable: ")]
+    MakeExecutable(#[source] io::Error),
+}
+
+#[derive(Debug, Error)]
+#[error("failed to remove binary: {0}")]
+pub struct RemoveBinaryError(#[from] pub io::Error);
+
+#[derive(Debug, Error)]
 pub enum InstalledModulesError {
     #[error("failed to read directory for installed modules `{0}`: {1}")]
     DirIo(PathBuf, #[source] io::Error),
@@ -40,20 +89,6 @@ pub struct IsModuleInstalledError(#[from] FindManifestError);
 pub struct IsModuleEnabledError(#[from] io::Error);
 
 #[derive(Debug, Error)]
-#[error(transparent)]
-pub struct ModuleVersionError(#[from] ManifestError);
-
-#[derive(Debug, Error)]
-pub enum ManifestError {
-    #[error("module is not installed")]
-    NotInstalled,
-    #[error("error while searching for manifest file: {0}")]
-    FindManifest(#[from] FindManifestError),
-    #[error("unable to read module manifest: {0}")]
-    Read(#[from] ReadManifestError),
-}
-
-#[derive(Debug, Error)]
 pub enum EnableError {
     #[error("error while searching for manifest file: {0}")]
     FindManifest(#[from] FindManifestError),
@@ -66,44 +101,6 @@ pub enum EnableError {
 #[derive(Debug, Error)]
 #[error("failed to disable module: {0}")]
 pub struct DisableError(#[from] pub io::Error);
-
-#[derive(Debug, Error)]
-pub enum AddManifestError {
-    #[error("failed to serialize module manifest: {0}")]
-    SerializeManifest(#[from] SerializeError),
-    #[error("failed to write module manifest to `{0}`: {1}")]
-    WriteManifest(PathBuf, #[source] io::Error),
-    #[error("module `{0}` is already installed")]
-    AlreadyInstalled(String),
-}
-
-#[derive(Debug, Error)]
-pub enum RemoveManifestError {
-    #[error("error while searching for manifest file: {0}")]
-    FindManifest(#[from] FindManifestError),
-    #[error("module is not installed")]
-    NotInstalled,
-    #[error("failed to remove module manifest at `{0}`: {1}")]
-    RemoveManifest(PathBuf, #[source] io::Error),
-}
-
-#[derive(Debug, Error)]
-pub enum AddBinaryError {
-    #[error("failed to copy binary from `{0}` to `{1}`: {2}")]
-    CopyBinary(PathBuf, PathBuf, #[source] io::Error),
-    #[error("failed to create symlink from `{0}` to `{1}`: {2}")]
-    CreateSymlink(PathBuf, PathBuf, #[source] io::Error),
-    #[error("binary `{0}` already exists")]
-    AlreadyExists(String),
-}
-
-#[derive(Debug, Error)]
-pub enum RemoveBinaryError {
-    #[error("failed to remove binary `{0}`: {1}")]
-    RemoveBinary(PathBuf, #[source] io::Error),
-    #[error("binary `{0}` does not exist")]
-    NotFound(String),
-}
 
 mod common {
     use super::*;
