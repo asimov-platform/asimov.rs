@@ -60,6 +60,7 @@ rmcp = { workspace = true, features = [
     "transport-sse-server",
 ] }
 thiserror.workspace = true
+tldr.workspace = true
 tokio.workspace = true
 tokio-util.workspace = true
 uuid.workspace = true

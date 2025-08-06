@@ -144,6 +144,7 @@ stability = { version = "0.2", default-features = false }
 tar = { version = "0.4", default-features = false }
 tempfile = { version = "3.20", default-features = false }
 thiserror = { version = "2", default-features = false }
+tldr = { version = "0.1", package = "tldr-traits", default-features = false }
 tokio = { version = "1", default-features = false, features = [
     "io-util",
     "rt",
