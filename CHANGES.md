@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 25.0.0-dev.21 - 2025-08-06
+### Added
+- Implement time-to-live (TTL) options for snapshots (#28 by @SamuelSarle)
+### Changed
+- Split installer to installer and registry (#29 by @SamuelSarle)
+### Fixed
+- Set 0444 file permissions for snapshot files (#27 by @SamuelSarle)
+- Ensure JSON manifests are newline-terminated (by @artob)
+
 ## 25.0.0-dev.20 - 2025-08-02
 ### Changed
 - Make enabled module symlinks relative (#26 by @SamuelSarle)
