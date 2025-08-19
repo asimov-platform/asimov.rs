@@ -9,6 +9,8 @@ use std::{
     vec::Vec,
 };
 
+use crate::Snapshot;
+
 const TIMESTAMP_FORMAT_STRING: &str = "%Y%m%dT%H%M%SZ";
 
 pub struct Fs {
@@ -27,27 +29,22 @@ impl Fs {
 }
 
 impl super::Storage for Fs {
-    #[tracing::instrument(skip(self, data), fields(url = url.as_ref()))]
-    fn save_timestamp(
-        &self,
-        url: impl AsRef<str>,
-        timestamp: Timestamp,
-        data: impl AsRef<[u8]>,
-    ) -> Result<()> {
-        let url_hash = hex::encode(sha256(url.as_ref()));
+    #[tracing::instrument(skip_all, fields(url = snapshot.url))]
+    fn save_timestamp(&self, snapshot: &Snapshot) -> Result<()> {
+        let url_hash = hex::encode(sha256(&snapshot.url));
         let url_dir = std::path::Path::new(&url_hash);
 
         tracing::debug!(hash = url_hash, "Creating directory for url");
         self.root.create_dir_all(url_dir)?;
 
-        let ts = timestamp.strftime(TIMESTAMP_FORMAT_STRING);
+        let ts = snapshot.start_timestamp.strftime(TIMESTAMP_FORMAT_STRING);
         let filename = format!("{ts}.jsonld");
 
         let snapshot_path = url_dir.join(filename);
 
         tracing::debug!("Writing snapshot");
         let mut snapshot_file = self.root.create(&snapshot_path)?;
-        snapshot_file.write_all(data.as_ref())?;
+        snapshot_file.write_all(snapshot.data.as_ref())?;
 
         tracing::debug!("Setting snapshot file permissions");
         let mut permissions = snapshot_file.metadata()?.permissions();
@@ -64,7 +61,7 @@ impl super::Storage for Fs {
         {
             tracing::debug!(path = ?url_path, "Creating `url` metadata file");
             let mut url_file = self.root.create(&url_path)?;
-            url_file.write_all(url.as_ref().as_bytes())?;
+            url_file.write_all(snapshot.url.as_bytes())?;
 
             tracing::debug!("Setting `url` metadata file permissions");
             let mut permissions = url_file.metadata()?.permissions();
@@ -303,7 +300,12 @@ mod tests {
         let url = "http://example.org/";
         let first_ts = Timestamp::now().round(Unit::Second).unwrap();
 
-        fs.save(url, first_ts, r"v1").unwrap();
+        let snapshot = Snapshot::builder()
+            .url(url)
+            .start_timestamp(first_ts)
+            .data(r"v1")
+            .build();
+        fs.save(&snapshot).unwrap();
 
         let current = fs.current_version(url).unwrap();
         assert_eq!(current, first_ts);
@@ -314,7 +316,12 @@ mod tests {
             .checked_sub(1.hour())
             .unwrap();
 
-        fs.save(url, second_ts, r"v2").unwrap();
+        let snapshot = Snapshot::builder()
+            .url(url)
+            .start_timestamp(second_ts)
+            .data(r"v2")
+            .build();
+        fs.save(&snapshot).unwrap();
 
         let current = fs.current_version(url).unwrap();
         assert_eq!(
@@ -328,7 +335,12 @@ mod tests {
             .checked_add(1.hour())
             .unwrap();
 
-        fs.save(url, third_ts, r"v3").unwrap();
+        let snapshot = Snapshot::builder()
+            .url(url)
+            .start_timestamp(third_ts)
+            .data(r"v3")
+            .build();
+        fs.save(&snapshot).unwrap();
 
         let current = fs.current_version(url).unwrap();
         assert_eq!(

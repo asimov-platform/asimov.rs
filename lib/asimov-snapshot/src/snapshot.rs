@@ -5,6 +5,8 @@ use asimov_runner::{FetcherOptions, GraphOutput};
 use jiff::{Span, Timestamp, ToSpan};
 use std::{io::Result, string::String, vec::Vec};
 
+use crate::Snapshot;
+
 #[derive(Clone, Debug, bon::Builder)]
 pub struct Options {
     /// Controls maximum age of the "current" snapshot that is allowed to be
@@ -51,16 +53,26 @@ impl<S: crate::storage::Storage> Snapshotter<S> {
             .first()
             .cloned()
             .ok_or_else(|| std::io::Error::other("No module found for fetch operation"))?;
-        let timestamp = Timestamp::now();
+        let start_timestamp = Timestamp::now();
         let program = std::format!("asimov-{}-fetcher", module.name);
         let options = FetcherOptions::builder().build();
         let data =
             asimov_runner::Fetcher::new(program, url.as_ref(), GraphOutput::Captured, options)
                 .execute()
                 .await
-                .map_err(|e| std::io::Error::other(std::format!("Execution error: {e}")))?;
+                .map_err(|e| std::io::Error::other(std::format!("Execution error: {e}")))?
+                .into_inner(); // TODO: consider using the std::io::Cursor?
 
-        self.storage.save(url, timestamp, data.get_ref())
+        let end_timestamp = Some(Timestamp::now());
+
+        let snapshot = Snapshot {
+            url: url.as_ref().into(),
+            start_timestamp,
+            end_timestamp,
+            data,
+        };
+
+        self.storage.save(&snapshot)
     }
 
     /// Returns the snapshot content of an URL at the given timestamp.
