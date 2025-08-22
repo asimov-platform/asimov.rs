@@ -64,8 +64,11 @@ impl super::Storage for Fs {
             url_file.set_permissions(permissions)?;
         }
 
-        let ts = snapshot.start_timestamp.strftime(TIMESTAMP_FORMAT_STRING);
-        let tmp_snapshot_dir_path = std::path::PathBuf::from(ts.to_string());
+        let ts = snapshot
+            .start_timestamp
+            .strftime(TIMESTAMP_FORMAT_STRING)
+            .to_string();
+        let tmp_snapshot_dir_path = std::path::PathBuf::from(&ts);
 
         tracing::debug!("Creating snapshot directory");
         tmp_dir.create_dir(&tmp_snapshot_dir_path)?;
@@ -110,10 +113,8 @@ impl super::Storage for Fs {
     fn read(&self, url: impl AsRef<str>, timestamp: Timestamp) -> Result<Vec<u8>> {
         let url_hash = hex::encode(sha256(url.as_ref()));
 
-        let ts = timestamp.strftime(TIMESTAMP_FORMAT_STRING);
-        let file_path = std::path::Path::new(&url_hash)
-            .join(ts.to_string())
-            .join("data");
+        let ts = timestamp.strftime(TIMESTAMP_FORMAT_STRING).to_string();
+        let file_path = std::path::Path::new(&url_hash).join(ts).join("data");
 
         tracing::debug!("Reading snapshot");
         self.root.read(file_path)
@@ -129,15 +130,15 @@ impl super::Storage for Fs {
         tracing::debug!(source = ?current_link_path, "Removing old `current` symlink");
         self.delete_current_version(&url)?;
 
-        let ts = timestamp.strftime(TIMESTAMP_FORMAT_STRING);
+        let ts = timestamp.strftime(TIMESTAMP_FORMAT_STRING).to_string();
 
-        tracing::debug!(source = ?current_link_path, target = ?ts, "Creating new `current` symlink");
+        tracing::debug!(source = ?current_link_path, target = ts, "Creating new `current` symlink");
 
         #[cfg(unix)]
-        return self.root.symlink(ts.to_string(), current_link_path);
+        return self.root.symlink(ts, current_link_path);
 
         #[cfg(windows)]
-        return self.root.symlink_file(&snapshot_name, current_link_path);
+        return self.root.symlink_file(ts, current_link_path);
     }
 
     #[tracing::instrument(skip(self), fields(url = url.as_ref()))]
@@ -240,8 +241,8 @@ impl super::Storage for Fs {
         let url_hash = hex::encode(sha256(url.as_ref()));
         let url_dir = std::path::Path::new(&url_hash);
 
-        let ts = timestamp.strftime(TIMESTAMP_FORMAT_STRING);
-        let snapshot_dir_path = url_dir.join(ts.to_string());
+        let ts = timestamp.strftime(TIMESTAMP_FORMAT_STRING).to_string();
+        let snapshot_dir_path = url_dir.join(ts);
 
         tracing::debug!(path = ?snapshot_dir_path, "Deleting snapshot");
         self.delete_dir(&snapshot_dir_path)?;
