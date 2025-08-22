@@ -12,7 +12,7 @@ use crate::Snapshot;
 
 pub trait Storage {
     fn save(&self, snapshot: &Snapshot) -> Result<()> {
-        self.save_timestamp(snapshot)?;
+        self.save_snapshot(snapshot)?;
         match self.current_version(&snapshot.url) {
             Ok(current) if snapshot.start_timestamp > current => {
                 self.set_current_version(&snapshot.url, snapshot.start_timestamp)
@@ -26,7 +26,7 @@ pub trait Storage {
         }
     }
 
-    fn save_timestamp(&self, _snapshot: &Snapshot) -> Result<()>;
+    fn save_snapshot(&self, _snapshot: &Snapshot) -> Result<()>;
 
     fn read(&self, _url: impl AsRef<str>, _timestamp: Timestamp) -> Result<Snapshot>;
 

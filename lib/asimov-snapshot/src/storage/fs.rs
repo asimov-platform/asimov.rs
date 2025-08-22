@@ -30,7 +30,7 @@ impl Fs {
 
 impl super::Storage for Fs {
     #[tracing::instrument(skip_all, fields(url = snapshot.url))]
-    fn save_timestamp(&self, snapshot: &Snapshot) -> Result<()> {
+    fn save_snapshot(&self, snapshot: &Snapshot) -> Result<()> {
         let url_hash = hex::encode(sha256(&snapshot.url));
         let final_url_dir = std::path::Path::new(&url_hash);
 
