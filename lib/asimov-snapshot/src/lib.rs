@@ -13,7 +13,7 @@ pub use snapshot::*;
 #[cfg(feature = "std")]
 pub mod storage;
 
-#[derive(Clone, Debug, bon::Builder)]
+#[derive(Clone, Debug, PartialEq, Eq, bon::Builder)]
 pub struct Snapshot {
     #[builder(into)]
     pub url: std::string::String,

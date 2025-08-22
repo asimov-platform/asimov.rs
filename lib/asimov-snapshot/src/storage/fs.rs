@@ -110,14 +110,34 @@ impl super::Storage for Fs {
     }
 
     #[tracing::instrument(skip(self), fields(url = url.as_ref()))]
-    fn read(&self, url: impl AsRef<str>, timestamp: Timestamp) -> Result<Vec<u8>> {
+    fn read(&self, url: impl AsRef<str>, timestamp: Timestamp) -> Result<Snapshot> {
         let url_hash = hex::encode(sha256(url.as_ref()));
 
         let ts = timestamp.strftime(TIMESTAMP_FORMAT_STRING).to_string();
-        let file_path = std::path::Path::new(&url_hash).join(ts).join("data");
+        let snapshot_path = std::path::Path::new(&url_hash).join(ts);
+
+        let file_path = snapshot_path.join("data");
 
         tracing::debug!("Reading snapshot");
-        self.root.read(file_path)
+        let data = self.root.read(file_path)?;
+
+        let end_ts_path = snapshot_path.join("end-timestamp");
+        let end_timestamp = if self.root.exists(&end_ts_path) {
+            let content = self.root.read_to_string(&end_ts_path)?;
+            content
+                .parse::<Timestamp>()
+                .map_err(|e| std::io::Error::other(format!("Invalid timestamp `{content}`: {e}")))?
+                .into()
+        } else {
+            None
+        };
+
+        Ok(Snapshot {
+            url: url.as_ref().into(),
+            start_timestamp: timestamp,
+            end_timestamp,
+            data,
+        })
     }
 
     #[tracing::instrument(skip(self), fields(url = url.as_ref()))]
@@ -354,11 +374,13 @@ mod tests {
     fn storage() {
         tracing_subscriber::fmt::init();
 
-        let tmp_dir = tempfile::tempdir().unwrap();
-        let tmp_dir = tmp_dir.path().join("asimov-snapshot-cli-test");
+        let tmp_dir = tempfile::Builder::new()
+            .prefix("asimov-snapshot-fs-test")
+            .tempdir()
+            .unwrap();
         let auth = cap_std::ambient_authority();
-        cap_std::fs::Dir::create_ambient_dir_all(&tmp_dir, auth).unwrap();
-        let root = cap_std::fs::Dir::open_ambient_dir(&tmp_dir, auth).unwrap();
+        cap_std::fs::Dir::create_ambient_dir_all(&tmp_dir.path(), auth).unwrap();
+        let root = cap_std::fs::Dir::open_ambient_dir(&tmp_dir.path(), auth).unwrap();
 
         eprintln!("Testing directory: {tmp_dir:?}");
 
@@ -370,12 +392,16 @@ mod tests {
         let snapshot = Snapshot::builder()
             .url(url)
             .start_timestamp(first_ts)
+            .end_timestamp(first_ts + 1.second())
             .data(r"v1")
             .build();
         fs.save(&snapshot).unwrap();
 
         let current = fs.current_version(url).unwrap();
         assert_eq!(current, first_ts);
+
+        let read_snapshot = fs.read_current(url).unwrap();
+        assert_eq!(snapshot, read_snapshot);
 
         let second_ts = Timestamp::now()
             .round(Unit::Second)

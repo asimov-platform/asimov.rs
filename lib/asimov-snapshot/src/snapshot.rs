@@ -77,7 +77,7 @@ impl<S: crate::storage::Storage> Snapshotter<S> {
 
     /// Returns the snapshot content of an URL at the given timestamp.
     #[tracing::instrument(skip(self), fields(url = url.as_ref()))]
-    pub async fn read(&self, url: impl AsRef<str>, timestamp: Timestamp) -> Result<Vec<u8>> {
+    pub async fn read(&self, url: impl AsRef<str>, timestamp: Timestamp) -> Result<Snapshot> {
         self.storage.read(url, timestamp)
     }
 
@@ -86,7 +86,7 @@ impl<S: crate::storage::Storage> Snapshotter<S> {
     /// A fresh snapshot is first created if [`Options::max_current_age`]
     /// is set and the latest snapshot is older than the maximum age.
     #[tracing::instrument(skip(self), fields(url = url.as_ref()))]
-    pub async fn read_current(&mut self, url: impl AsRef<str>) -> Result<Vec<u8>> {
+    pub async fn read_current(&mut self, url: impl AsRef<str>) -> Result<Snapshot> {
         if let Some(max_age) = &self.options.max_current_age {
             let ts = self
                 .storage

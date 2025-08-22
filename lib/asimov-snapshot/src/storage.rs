@@ -28,9 +28,9 @@ pub trait Storage {
 
     fn save_timestamp(&self, _snapshot: &Snapshot) -> Result<()>;
 
-    fn read(&self, _url: impl AsRef<str>, _timestamp: Timestamp) -> Result<Vec<u8>>;
+    fn read(&self, _url: impl AsRef<str>, _timestamp: Timestamp) -> Result<Snapshot>;
 
-    fn read_current(&self, url: impl AsRef<str>) -> Result<Vec<u8>> {
+    fn read_current(&self, url: impl AsRef<str>) -> Result<Snapshot> {
         let ts = self.current_version(&url)?;
         self.read(&url, ts)
     }
