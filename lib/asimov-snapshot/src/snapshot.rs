@@ -1,9 +1,14 @@
 // This is free and unencumbered software released into the public domain.
 
 use asimov_module::resolve::Resolver;
-use asimov_runner::{FetcherOptions, GraphOutput};
+use asimov_registry::Registry;
+use asimov_runner::GraphOutput;
 use jiff::{Span, Timestamp, ToSpan};
-use std::{io::Result, string::String, vec::Vec};
+use std::{
+    io::{self, Result},
+    string::{String, ToString},
+    vec::Vec,
+};
 
 use crate::Snapshot;
 
@@ -27,17 +32,20 @@ impl Default for Options {
 pub struct Snapshotter<S> {
     // TODO: not critical but would be nice to have the ability to inject the fetcher impl:
     // fetcher: F,
-    resolver: Resolver,
+    registry: Registry,
     storage: S,
     options: Options,
+
+    cached_resolver: Option<Resolver>,
 }
 
 impl<S> Snapshotter<S> {
-    pub fn new(resolver: Resolver, storage: S, options: Options) -> Self {
+    pub fn new(registry: Registry, storage: S, options: Options) -> Self {
         Self {
-            resolver,
+            registry,
             storage,
             options,
+            cached_resolver: None,
         }
     }
 }
@@ -45,34 +53,75 @@ impl<S> Snapshotter<S> {
 impl<S: crate::storage::Storage> Snapshotter<S> {
     /// Fetches the content from an URL and saves it to the snapshot storage.
     #[tracing::instrument(skip(self), fields(url = url.as_ref()))]
-    pub async fn snapshot(&mut self, url: impl AsRef<str>) -> Result<()> {
-        let module = self
-            .resolver
+    pub async fn snapshot(&mut self, url: impl AsRef<str>) -> Result<Snapshot> {
+        if self.cached_resolver.is_none() {
+            let modules = self
+                .registry
+                .enabled_modules()
+                .await
+                .map_err(io::Error::other)?
+                .into_iter()
+                .map(|enabled| enabled.manifest)
+                .filter(|manifest| {
+                    manifest
+                        .provides
+                        .programs
+                        .iter()
+                        .any(|p| p.ends_with("-fetcher") || p.ends_with("-cataloger"))
+                });
+            let resolver = Resolver::try_from_iter(modules).map_err(io::Error::other)?;
+            self.cached_resolver = Some(resolver);
+        }
+        let resolver = self.cached_resolver.as_ref().unwrap();
+
+        let module = resolver
             .resolve(url.as_ref())
             .map_err(std::io::Error::other)?
             .first()
             .cloned()
-            .ok_or_else(|| std::io::Error::other("No module found for fetch operation"))?;
+            .ok_or_else(|| std::io::Error::other("No module found for creating snapshot"))?;
+
+        let programs = self
+            .registry
+            .read_manifest(&module.name)
+            .await
+            .map_err(io::Error::other)?
+            .manifest
+            .provides
+            .programs;
+
+        let url = url.as_ref().to_string();
+
         let start_timestamp = Timestamp::now();
-        let program = std::format!("asimov-{}-fetcher", module.name);
-        let options = FetcherOptions::builder().build();
-        let data =
-            asimov_runner::Fetcher::new(program, url.as_ref(), GraphOutput::Captured, options)
+
+        let data = if let Some(program) = programs.iter().find(|p| p.ends_with("-fetcher")) {
+            asimov_runner::Fetcher::new(program, &url, GraphOutput::Captured, Default::default())
                 .execute()
                 .await
-                .map_err(|e| std::io::Error::other(std::format!("Execution error: {e}")))?
-                .into_inner(); // TODO: consider using the std::io::Cursor?
+        } else if let Some(program) = programs.iter().find(|p| p.ends_with("-cataloger")) {
+            asimov_runner::Cataloger::new(program, &url, GraphOutput::Captured, Default::default())
+                .execute()
+                .await
+        } else {
+            return Err(std::io::Error::other(
+                "No module found for creating snapshot",
+            ));
+        }
+        .map_err(|e| std::io::Error::other(std::format!("Execution error: {e}")))?
+        .into_inner(); // TODO: consider using the std::io::Cursor?
 
         let end_timestamp = Some(Timestamp::now());
 
         let snapshot = Snapshot {
-            url: url.as_ref().into(),
+            url,
             start_timestamp,
             end_timestamp,
             data,
         };
 
-        self.storage.save(&snapshot)
+        self.storage.save(&snapshot)?;
+
+        Ok(snapshot)
     }
 
     /// Returns the snapshot content of an URL at the given timestamp.
@@ -105,9 +154,9 @@ impl<S: crate::storage::Storage> Snapshotter<S> {
             match diff.compare((max_age, &now)) {
                 Ok(std::cmp::Ordering::Greater | std::cmp::Ordering::Equal) => {
                     tracing::debug!("Updating current snapshot...");
-                    self.snapshot(&url).await?
+                    return self.snapshot(&url).await;
                 },
-                Ok(std::cmp::Ordering::Less) => (),
+                Ok(std::cmp::Ordering::Less) => return self.storage.read_current(url),
                 Err(err) => {
                     tracing::error!(?err, "unable to compare timestamps, not updating snapshot")
                 },

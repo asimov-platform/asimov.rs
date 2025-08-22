@@ -26,6 +26,7 @@ unstable = []
 asimov-env.workspace = true
 asimov-module.workspace = true
 asimov-patterns.workspace = true
+asimov-registry.workspace = true
 asimov-runner.workspace = true
 async-trait.workspace = true
 bon.workspace = true
