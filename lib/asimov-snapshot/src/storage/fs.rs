@@ -32,29 +32,16 @@ impl super::Storage for Fs {
     #[tracing::instrument(skip_all, fields(url = snapshot.url))]
     fn save_timestamp(&self, snapshot: &Snapshot) -> Result<()> {
         let url_hash = hex::encode(sha256(&snapshot.url));
-        let url_dir = std::path::Path::new(&url_hash);
+        let final_url_dir = std::path::Path::new(&url_hash);
+        let tmp_url_dir = std::path::Path::new(".tmp").join(&url_hash);
+
+        tracing::debug!(hash = url_hash, "Creating temporary directory for url");
+        self.root.create_dir_all(&tmp_url_dir)?;
 
         tracing::debug!(hash = url_hash, "Creating directory for url");
-        self.root.create_dir_all(url_dir)?;
+        self.root.create_dir_all(&final_url_dir)?;
 
-        let ts = snapshot.start_timestamp.strftime(TIMESTAMP_FORMAT_STRING);
-        let snapshot_dir_path = url_dir.join(ts.to_string());
-
-        tracing::debug!("Creating snapshot directory");
-        self.root.create_dir(&snapshot_dir_path)?;
-
-        tracing::debug!("Writing snapshot");
-        let snapshot_path = snapshot_dir_path.join("data");
-        let mut snapshot_file = self.root.create(snapshot_path)?;
-        snapshot_file.write_all(snapshot.data.as_ref())?;
-
-        tracing::debug!("Setting snapshot file permissions");
-        let mut permissions = snapshot_file.metadata()?.permissions();
-        permissions.set_readonly(true);
-        snapshot_file.set_permissions(permissions)?;
-
-        let url_path = url_dir.join(".url");
-
+        let url_path = final_url_dir.join(".url");
         if !self
             .root
             .metadata(&url_path)
@@ -70,6 +57,41 @@ impl super::Storage for Fs {
             permissions.set_readonly(true);
             url_file.set_permissions(permissions)?;
         }
+
+        let ts = snapshot.start_timestamp.strftime(TIMESTAMP_FORMAT_STRING);
+        let tmp_snapshot_dir_path = tmp_url_dir.join(ts.to_string());
+
+        tracing::debug!("Creating snapshot directory");
+        self.root.create_dir(&tmp_snapshot_dir_path)?;
+
+        tracing::debug!("Writing snapshot data file");
+        let snapshot_path = tmp_snapshot_dir_path.join("data");
+        let mut snapshot_file = self.root.create(snapshot_path)?;
+        snapshot_file.write_all(snapshot.data.as_ref())?;
+
+        tracing::debug!("Setting snapshot data file permissions");
+        let mut permissions = snapshot_file.metadata()?.permissions();
+        permissions.set_readonly(true);
+        snapshot_file.set_permissions(permissions)?;
+
+        let final_snapshot_dir_path = final_url_dir.join(ts.to_string());
+        tracing::debug!("Creating final snapshot dir");
+        self.root.create_dir_all(&final_snapshot_dir_path)?;
+        tracing::debug!("Moving snapshot directory to final place");
+        self.root
+            .rename(&tmp_snapshot_dir_path, &self.root, &final_snapshot_dir_path)?;
+
+        tracing::debug!("Deleting temporary directory");
+        self.root
+            .remove_dir(&tmp_url_dir)
+            .or_else(|err| match err.kind() {
+                std::io::ErrorKind::DirectoryNotEmpty => {
+                    tracing::debug!("Temporary directory not empty, skipping cleanup");
+                    Ok(())
+                },
+                std::io::ErrorKind::NotFound => Ok(()), // already deleted
+                _ => Err(err),
+            })?;
 
         Ok(())
     }
@@ -138,11 +160,15 @@ impl super::Storage for Fs {
         let read_dir = self.root.read_dir("./")?;
         for entry in read_dir {
             let entry = entry?;
-            let url_hash = entry.file_name();
+            let file_name = entry.file_name();
 
-            let url_link = std::path::Path::new(&url_hash).join(".url");
+            if file_name.to_str().is_none_or(|hash| hash.starts_with('.')) {
+                continue;
+            }
 
-            tracing::debug!(hash = ?url_hash, path=?url_link, "Reading `url` metadata file");
+            let url_link = std::path::Path::new(&file_name).join(".url");
+
+            tracing::debug!(hash = ?file_name, path=?url_link, "Reading `url` metadata file");
             let url = match self.root.read_to_string(&url_link) {
                 Ok(url) => url,
                 Err(err) if err.kind() == std::io::ErrorKind::NotFound => continue,
