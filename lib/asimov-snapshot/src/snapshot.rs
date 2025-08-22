@@ -10,7 +10,15 @@ use std::{
     vec::Vec,
 };
 
-use crate::Snapshot;
+#[derive(Clone, Debug, PartialEq, Eq, bon::Builder)]
+pub struct Snapshot {
+    #[builder(into)]
+    pub url: std::string::String,
+    #[builder(into)]
+    pub data: std::vec::Vec<u8>,
+    pub start_timestamp: jiff::Timestamp,
+    pub end_timestamp: Option<jiff::Timestamp>,
+}
 
 #[derive(Clone, Debug, bon::Builder)]
 pub struct Options {
