@@ -5,7 +5,7 @@ use std::{
     format,
     io::{Result, Write},
     path::Path,
-    string::String,
+    string::{String, ToString},
     vec::Vec,
 };
 
@@ -38,12 +38,14 @@ impl super::Storage for Fs {
         self.root.create_dir_all(url_dir)?;
 
         let ts = snapshot.start_timestamp.strftime(TIMESTAMP_FORMAT_STRING);
-        let filename = format!("{ts}.jsonld");
+        let snapshot_dir_path = url_dir.join(ts.to_string());
 
-        let snapshot_path = url_dir.join(filename);
+        tracing::debug!("Creating snapshot directory");
+        self.root.create_dir(&snapshot_dir_path)?;
 
         tracing::debug!("Writing snapshot");
-        let mut snapshot_file = self.root.create(&snapshot_path)?;
+        let snapshot_path = snapshot_dir_path.join("data");
+        let mut snapshot_file = self.root.create(snapshot_path)?;
         snapshot_file.write_all(snapshot.data.as_ref())?;
 
         tracing::debug!("Setting snapshot file permissions");
@@ -77,9 +79,9 @@ impl super::Storage for Fs {
         let url_hash = hex::encode(sha256(url.as_ref()));
 
         let ts = timestamp.strftime(TIMESTAMP_FORMAT_STRING);
-        let filename = format!("{ts}.jsonld");
-
-        let file_path = std::path::Path::new(&url_hash).join(filename);
+        let file_path = std::path::Path::new(&url_hash)
+            .join(ts.to_string())
+            .join("data");
 
         tracing::debug!("Reading snapshot");
         self.root.read(file_path)
@@ -96,12 +98,11 @@ impl super::Storage for Fs {
         self.delete_current_version(&url)?;
 
         let ts = timestamp.strftime(TIMESTAMP_FORMAT_STRING);
-        let snapshot_name = format!("{ts}.jsonld");
 
-        tracing::debug!(source = ?current_link_path, target = ?snapshot_name, "Creating new `current` symlink");
+        tracing::debug!(source = ?current_link_path, target = ?ts, "Creating new `current` symlink");
 
         #[cfg(unix)]
-        return self.root.symlink(&snapshot_name, current_link_path);
+        return self.root.symlink(ts.to_string(), current_link_path);
 
         #[cfg(windows)]
         return self.root.symlink_file(&snapshot_name, current_link_path);
@@ -204,12 +205,10 @@ impl super::Storage for Fs {
         let url_dir = std::path::Path::new(&url_hash);
 
         let ts = timestamp.strftime(TIMESTAMP_FORMAT_STRING);
-        let filename = format!("{ts}.jsonld");
+        let snapshot_dir_path = url_dir.join(ts.to_string());
 
-        let snapshot_path = url_dir.join(filename);
-
-        tracing::debug!(path = ?snapshot_path, "Deleting snapshot");
-        self.delete_file(&snapshot_path)?;
+        tracing::debug!(path = ?snapshot_dir_path, "Deleting snapshot");
+        self.delete_dir(&snapshot_dir_path)?;
 
         let Ok(current) = self.current_version(&url) else {
             return Ok(());
@@ -261,6 +260,37 @@ impl Fs {
         };
 
         self.root.remove_file(path).or_else(|e| {
+            if e.kind() == std::io::ErrorKind::NotFound {
+                Ok(())
+            } else {
+                Err(e)
+            }
+        })
+    }
+
+    fn delete_dir(&self, path: impl AsRef<Path>) -> Result<()> {
+        // We call `std::fs::symlink_metadata` because the target file may
+        // be a symlink and this does not follow the symlink like
+        // `std::fs::metadata` does.
+        #[cfg(windows)]
+        match self.root.symlink_metadata(&path) {
+            Ok(md) => {
+                let mut permissions = md.permissions();
+                if permissions.readonly() {
+                    permissions.set_readonly(false);
+                    self.root.set_permissions(&path, permissions)?;
+                }
+            },
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => (),
+            Err(e) => return Err(e),
+        };
+
+        let mut read_dir = self.root.read_dir(&path)?;
+        while let Some(Ok(entry)) = read_dir.next() {
+            self.delete_file(path.as_ref().join(entry.file_name()))?;
+        }
+
+        self.root.remove_dir(path).or_else(|e| {
             if e.kind() == std::io::ErrorKind::NotFound {
                 Ok(())
             } else {
