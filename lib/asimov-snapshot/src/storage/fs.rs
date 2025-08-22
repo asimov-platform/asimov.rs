@@ -33,10 +33,16 @@ impl super::Storage for Fs {
     fn save_timestamp(&self, snapshot: &Snapshot) -> Result<()> {
         let url_hash = hex::encode(sha256(&snapshot.url));
         let final_url_dir = std::path::Path::new(&url_hash);
-        let tmp_url_dir = std::path::Path::new(".tmp").join(&url_hash);
 
-        tracing::debug!(hash = url_hash, "Creating temporary directory for url");
-        self.root.create_dir_all(&tmp_url_dir)?;
+        tracing::debug!(hash = url_hash, "Creating temporary directory for writing");
+        let tmp_dir = self.root.open_dir(".tmp").or_else(|err| match err.kind() {
+            std::io::ErrorKind::NotFound => {
+                self.root.create_dir(".tmp")?;
+                self.root.open_dir(".tmp")
+            },
+            _ => Err(err),
+        })?;
+        let tmp_dir = cap_tempfile::tempdir_in(&tmp_dir)?;
 
         tracing::debug!(hash = url_hash, "Creating directory for url");
         self.root.create_dir_all(&final_url_dir)?;
@@ -59,14 +65,14 @@ impl super::Storage for Fs {
         }
 
         let ts = snapshot.start_timestamp.strftime(TIMESTAMP_FORMAT_STRING);
-        let tmp_snapshot_dir_path = tmp_url_dir.join(ts.to_string());
+        let tmp_snapshot_dir_path = std::path::PathBuf::from(ts.to_string());
 
         tracing::debug!("Creating snapshot directory");
-        self.root.create_dir(&tmp_snapshot_dir_path)?;
+        tmp_dir.create_dir(&tmp_snapshot_dir_path)?;
 
         tracing::debug!("Writing snapshot data file");
         let snapshot_path = tmp_snapshot_dir_path.join("data");
-        let mut snapshot_file = self.root.create(snapshot_path)?;
+        let mut snapshot_file = tmp_dir.create(snapshot_path)?;
         snapshot_file.write_all(snapshot.data.as_ref())?;
 
         tracing::debug!("Setting snapshot data file permissions");
@@ -75,23 +81,10 @@ impl super::Storage for Fs {
         snapshot_file.set_permissions(permissions)?;
 
         let final_snapshot_dir_path = final_url_dir.join(ts.to_string());
-        tracing::debug!("Creating final snapshot dir");
+        tracing::debug!("Creating final snapshot directory");
         self.root.create_dir_all(&final_snapshot_dir_path)?;
-        tracing::debug!("Moving snapshot directory to final place");
-        self.root
-            .rename(&tmp_snapshot_dir_path, &self.root, &final_snapshot_dir_path)?;
-
-        tracing::debug!("Deleting temporary directory");
-        self.root
-            .remove_dir(&tmp_url_dir)
-            .or_else(|err| match err.kind() {
-                std::io::ErrorKind::DirectoryNotEmpty => {
-                    tracing::debug!("Temporary directory not empty, skipping cleanup");
-                    Ok(())
-                },
-                std::io::ErrorKind::NotFound => Ok(()), // already deleted
-                _ => Err(err),
-            })?;
+        tracing::debug!("Moving snapshot directory to final location");
+        tmp_dir.rename(&tmp_snapshot_dir_path, &self.root, &final_snapshot_dir_path)?;
 
         Ok(())
     }
