@@ -372,7 +372,9 @@ mod tests {
 
     #[test]
     fn storage() {
-        tracing_subscriber::fmt::init();
+        tracing_subscriber::fmt()
+            .with_max_level(tracing::Level::DEBUG)
+            .init();
 
         let tmp_dir = tempfile::Builder::new()
             .prefix("asimov-snapshot-fs-test")
