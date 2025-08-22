@@ -80,6 +80,23 @@ impl super::Storage for Fs {
         permissions.set_readonly(true);
         snapshot_file.set_permissions(permissions)?;
 
+        if let Some(end_ts) = snapshot.end_timestamp {
+            let end_ts_path = tmp_snapshot_dir_path.join("end-timestamp");
+            tracing::debug!("Writing snapshot end_timestamp file");
+            let mut end_ts_file = tmp_dir.create(&end_ts_path)?;
+            end_ts_file.write_all(
+                end_ts
+                    .strftime(TIMESTAMP_FORMAT_STRING)
+                    .to_string()
+                    .as_bytes(),
+            )?;
+
+            tracing::debug!("Setting snapshot end_timestamp file permissions");
+            let mut permissions = end_ts_file.metadata()?.permissions();
+            permissions.set_readonly(true);
+            end_ts_file.set_permissions(permissions)?;
+        }
+
         let final_snapshot_dir_path = final_url_dir.join(ts.to_string());
         tracing::debug!("Creating final snapshot directory");
         self.root.create_dir_all(&final_snapshot_dir_path)?;
