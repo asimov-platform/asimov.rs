@@ -18,7 +18,7 @@ publish.workspace = true
 default = ["all", "std"]
 all = ["tracing", "storage-fs"]
 std = ["dogma/std", "hex/std", "jiff/std", "tracing/std"]
-storage-fs = ["dep:cap-std", "dep:hex", "dep:sha2", "std"]
+storage-fs = ["dep:cap-std", "dep:cap-tempfile", "dep:hex", "dep:sha2", "std"]
 tracing = []
 unstable = []
 
@@ -26,6 +26,7 @@ unstable = []
 asimov-env.workspace = true
 asimov-module.workspace = true
 asimov-patterns.workspace = true
+asimov-registry.workspace = true
 asimov-runner.workspace = true
 async-trait.workspace = true
 bon.workspace = true
@@ -35,6 +36,7 @@ tracing = { workspace = true, features = ["attributes"] }
 
 # Optional dependencies:
 cap-std = { workspace = true, optional = true }
+cap-tempfile = { version = "3.4", optional = true }
 hex = { workspace = true, optional = true }
 sha2 = { workspace = true, optional = true }
 

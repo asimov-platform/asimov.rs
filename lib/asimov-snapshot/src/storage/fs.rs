@@ -5,9 +5,11 @@ use std::{
     format,
     io::{Result, Write},
     path::Path,
-    string::String,
+    string::{String, ToString},
     vec::Vec,
 };
+
+use crate::Snapshot;
 
 const TIMESTAMP_FORMAT_STRING: &str = "%Y%m%dT%H%M%SZ";
 
@@ -27,35 +29,25 @@ impl Fs {
 }
 
 impl super::Storage for Fs {
-    #[tracing::instrument(skip(self, data), fields(url = url.as_ref()))]
-    fn save_timestamp(
-        &self,
-        url: impl AsRef<str>,
-        timestamp: Timestamp,
-        data: impl AsRef<[u8]>,
-    ) -> Result<()> {
-        let url_hash = hex::encode(sha256(url.as_ref()));
-        let url_dir = std::path::Path::new(&url_hash);
+    #[tracing::instrument(skip_all, fields(url = snapshot.url))]
+    fn save_snapshot(&self, snapshot: &Snapshot) -> Result<()> {
+        let url_hash = hex::encode(sha256(&snapshot.url));
+        let final_url_dir = std::path::Path::new(&url_hash);
+
+        tracing::debug!(hash = url_hash, "Creating temporary directory for writing");
+        let tmp_dir = self.root.open_dir(".tmp").or_else(|err| match err.kind() {
+            std::io::ErrorKind::NotFound => {
+                self.root.create_dir(".tmp")?;
+                self.root.open_dir(".tmp")
+            },
+            _ => Err(err),
+        })?;
+        let tmp_dir = cap_tempfile::tempdir_in(&tmp_dir)?;
 
         tracing::debug!(hash = url_hash, "Creating directory for url");
-        self.root.create_dir_all(url_dir)?;
+        self.root.create_dir_all(&final_url_dir)?;
 
-        let ts = timestamp.strftime(TIMESTAMP_FORMAT_STRING);
-        let filename = format!("{ts}.jsonld");
-
-        let snapshot_path = url_dir.join(filename);
-
-        tracing::debug!("Writing snapshot");
-        let mut snapshot_file = self.root.create(&snapshot_path)?;
-        snapshot_file.write_all(data.as_ref())?;
-
-        tracing::debug!("Setting snapshot file permissions");
-        let mut permissions = snapshot_file.metadata()?.permissions();
-        permissions.set_readonly(true);
-        snapshot_file.set_permissions(permissions)?;
-
-        let url_path = url_dir.join(".url");
-
+        let url_path = final_url_dir.join(".url");
         if !self
             .root
             .metadata(&url_path)
@@ -64,7 +56,7 @@ impl super::Storage for Fs {
         {
             tracing::debug!(path = ?url_path, "Creating `url` metadata file");
             let mut url_file = self.root.create(&url_path)?;
-            url_file.write_all(url.as_ref().as_bytes())?;
+            url_file.write_all(snapshot.url.as_bytes())?;
 
             tracing::debug!("Setting `url` metadata file permissions");
             let mut permissions = url_file.metadata()?.permissions();
@@ -72,20 +64,82 @@ impl super::Storage for Fs {
             url_file.set_permissions(permissions)?;
         }
 
+        let ts = snapshot
+            .start_timestamp
+            .strftime(TIMESTAMP_FORMAT_STRING)
+            .to_string();
+        let tmp_snapshot_dir_path = std::path::PathBuf::from(&ts);
+
+        tracing::debug!("Creating snapshot directory");
+        tmp_dir.create_dir(&tmp_snapshot_dir_path)?;
+
+        {
+            tracing::debug!("Writing snapshot data file");
+            let snapshot_path = tmp_snapshot_dir_path.join("data");
+            let mut snapshot_file = tmp_dir.create(snapshot_path)?;
+            snapshot_file.write_all(snapshot.data.as_ref())?;
+
+            tracing::debug!("Setting snapshot data file permissions");
+            let mut permissions = snapshot_file.metadata()?.permissions();
+            permissions.set_readonly(true);
+            snapshot_file.set_permissions(permissions)?;
+        }
+
+        if let Some(end_ts) = snapshot.end_timestamp {
+            let end_ts_path = tmp_snapshot_dir_path.join("end-timestamp");
+            tracing::debug!("Writing snapshot end_timestamp file");
+            let mut end_ts_file = tmp_dir.create(&end_ts_path)?;
+            end_ts_file.write_all(
+                end_ts
+                    .strftime(TIMESTAMP_FORMAT_STRING)
+                    .to_string()
+                    .as_bytes(),
+            )?;
+
+            tracing::debug!("Setting snapshot end_timestamp file permissions");
+            let mut permissions = end_ts_file.metadata()?.permissions();
+            permissions.set_readonly(true);
+            end_ts_file.set_permissions(permissions)?;
+        }
+
+        let final_snapshot_dir_path = final_url_dir.join(&ts);
+        tracing::debug!("Creating final snapshot directory");
+        self.root.create_dir_all(&final_snapshot_dir_path)?;
+        tracing::debug!("Moving snapshot directory to final location");
+        tmp_dir.rename(&tmp_snapshot_dir_path, &self.root, &final_snapshot_dir_path)?;
+
         Ok(())
     }
 
     #[tracing::instrument(skip(self), fields(url = url.as_ref()))]
-    fn read(&self, url: impl AsRef<str>, timestamp: Timestamp) -> Result<Vec<u8>> {
+    fn read(&self, url: impl AsRef<str>, timestamp: Timestamp) -> Result<Snapshot> {
         let url_hash = hex::encode(sha256(url.as_ref()));
 
-        let ts = timestamp.strftime(TIMESTAMP_FORMAT_STRING);
-        let filename = format!("{ts}.jsonld");
+        let ts = timestamp.strftime(TIMESTAMP_FORMAT_STRING).to_string();
+        let snapshot_path = std::path::Path::new(&url_hash).join(ts);
 
-        let file_path = std::path::Path::new(&url_hash).join(filename);
+        let file_path = snapshot_path.join("data");
 
         tracing::debug!("Reading snapshot");
-        self.root.read(file_path)
+        let data = self.root.read(file_path)?;
+
+        let end_ts_path = snapshot_path.join("end-timestamp");
+        let end_timestamp = if self.root.exists(&end_ts_path) {
+            let content = self.root.read_to_string(&end_ts_path)?;
+            content
+                .parse::<Timestamp>()
+                .map_err(|e| std::io::Error::other(format!("Invalid timestamp `{content}`: {e}")))?
+                .into()
+        } else {
+            None
+        };
+
+        Ok(Snapshot {
+            url: url.as_ref().into(),
+            start_timestamp: timestamp,
+            end_timestamp,
+            data,
+        })
     }
 
     #[tracing::instrument(skip(self), fields(url = url.as_ref()))]
@@ -98,16 +152,15 @@ impl super::Storage for Fs {
         tracing::debug!(source = ?current_link_path, "Removing old `current` symlink");
         self.delete_current_version(&url)?;
 
-        let ts = timestamp.strftime(TIMESTAMP_FORMAT_STRING);
-        let snapshot_name = format!("{ts}.jsonld");
+        let ts = timestamp.strftime(TIMESTAMP_FORMAT_STRING).to_string();
 
-        tracing::debug!(source = ?current_link_path, target = ?snapshot_name, "Creating new `current` symlink");
+        tracing::debug!(source = ?current_link_path, target = ts, "Creating new `current` symlink");
 
         #[cfg(unix)]
-        return self.root.symlink(&snapshot_name, current_link_path);
+        return self.root.symlink(ts, current_link_path);
 
         #[cfg(windows)]
-        return self.root.symlink_file(&snapshot_name, current_link_path);
+        return self.root.symlink_file(ts, current_link_path);
     }
 
     #[tracing::instrument(skip(self), fields(url = url.as_ref()))]
@@ -140,11 +193,15 @@ impl super::Storage for Fs {
         let read_dir = self.root.read_dir("./")?;
         for entry in read_dir {
             let entry = entry?;
-            let url_hash = entry.file_name();
+            let file_name = entry.file_name();
 
-            let url_link = std::path::Path::new(&url_hash).join(".url");
+            if file_name.to_str().is_none_or(|hash| hash.starts_with('.')) {
+                continue;
+            }
 
-            tracing::debug!(hash = ?url_hash, path=?url_link, "Reading `url` metadata file");
+            let url_link = std::path::Path::new(&file_name).join(".url");
+
+            tracing::debug!(hash = ?file_name, path=?url_link, "Reading `url` metadata file");
             let url = match self.root.read_to_string(&url_link) {
                 Ok(url) => url,
                 Err(err) if err.kind() == std::io::ErrorKind::NotFound => continue,
@@ -206,13 +263,11 @@ impl super::Storage for Fs {
         let url_hash = hex::encode(sha256(url.as_ref()));
         let url_dir = std::path::Path::new(&url_hash);
 
-        let ts = timestamp.strftime(TIMESTAMP_FORMAT_STRING);
-        let filename = format!("{ts}.jsonld");
+        let ts = timestamp.strftime(TIMESTAMP_FORMAT_STRING).to_string();
+        let snapshot_dir_path = url_dir.join(ts);
 
-        let snapshot_path = url_dir.join(filename);
-
-        tracing::debug!(path = ?snapshot_path, "Deleting snapshot");
-        self.delete_file(&snapshot_path)?;
+        tracing::debug!(path = ?snapshot_dir_path, "Deleting snapshot");
+        self.delete_dir(&snapshot_dir_path)?;
 
         let Ok(current) = self.current_version(&url) else {
             return Ok(());
@@ -271,6 +326,37 @@ impl Fs {
             }
         })
     }
+
+    fn delete_dir(&self, path: impl AsRef<Path>) -> Result<()> {
+        // We call `std::fs::symlink_metadata` because the target file may
+        // be a symlink and this does not follow the symlink like
+        // `std::fs::metadata` does.
+        #[cfg(windows)]
+        match self.root.symlink_metadata(&path) {
+            Ok(md) => {
+                let mut permissions = md.permissions();
+                if permissions.readonly() {
+                    permissions.set_readonly(false);
+                    self.root.set_permissions(&path, permissions)?;
+                }
+            },
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => (),
+            Err(e) => return Err(e),
+        };
+
+        let mut read_dir = self.root.read_dir(&path)?;
+        while let Some(Ok(entry)) = read_dir.next() {
+            self.delete_file(path.as_ref().join(entry.file_name()))?;
+        }
+
+        self.root.remove_dir(path).or_else(|e| {
+            if e.kind() == std::io::ErrorKind::NotFound {
+                Ok(())
+            } else {
+                Err(e)
+            }
+        })
+    }
 }
 
 fn sha256(data: impl AsRef<[u8]>) -> sha2::digest::Output<sha2::Sha256> {
@@ -290,11 +376,13 @@ mod tests {
     fn storage() {
         tracing_subscriber::fmt::init();
 
-        let tmp_dir = tempfile::tempdir().unwrap();
-        let tmp_dir = tmp_dir.path().join("asimov-snapshot-cli-test");
+        let tmp_dir = tempfile::Builder::new()
+            .prefix("asimov-snapshot-fs-test")
+            .tempdir()
+            .unwrap();
         let auth = cap_std::ambient_authority();
-        cap_std::fs::Dir::create_ambient_dir_all(&tmp_dir, auth).unwrap();
-        let root = cap_std::fs::Dir::open_ambient_dir(&tmp_dir, auth).unwrap();
+        cap_std::fs::Dir::create_ambient_dir_all(&tmp_dir.path(), auth).unwrap();
+        let root = cap_std::fs::Dir::open_ambient_dir(&tmp_dir.path(), auth).unwrap();
 
         eprintln!("Testing directory: {tmp_dir:?}");
 
@@ -303,10 +391,19 @@ mod tests {
         let url = "http://example.org/";
         let first_ts = Timestamp::now().round(Unit::Second).unwrap();
 
-        fs.save(url, first_ts, r"v1").unwrap();
+        let snapshot = Snapshot::builder()
+            .url(url)
+            .start_timestamp(first_ts)
+            .end_timestamp(first_ts + 1.second())
+            .data(r"v1")
+            .build();
+        fs.save(&snapshot).unwrap();
 
         let current = fs.current_version(url).unwrap();
         assert_eq!(current, first_ts);
+
+        let read_snapshot = fs.read_current(url).unwrap();
+        assert_eq!(snapshot, read_snapshot);
 
         let second_ts = Timestamp::now()
             .round(Unit::Second)
@@ -314,7 +411,12 @@ mod tests {
             .checked_sub(1.hour())
             .unwrap();
 
-        fs.save(url, second_ts, r"v2").unwrap();
+        let snapshot = Snapshot::builder()
+            .url(url)
+            .start_timestamp(second_ts)
+            .data(r"v2")
+            .build();
+        fs.save(&snapshot).unwrap();
 
         let current = fs.current_version(url).unwrap();
         assert_eq!(
@@ -328,7 +430,12 @@ mod tests {
             .checked_add(1.hour())
             .unwrap();
 
-        fs.save(url, third_ts, r"v3").unwrap();
+        let snapshot = Snapshot::builder()
+            .url(url)
+            .start_timestamp(third_ts)
+            .data(r"v3")
+            .build();
+        fs.save(&snapshot).unwrap();
 
         let current = fs.current_version(url).unwrap();
         assert_eq!(
