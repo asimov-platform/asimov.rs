@@ -100,7 +100,7 @@ impl super::Storage for Fs {
             end_ts_file.set_permissions(permissions)?;
         }
 
-        let final_snapshot_dir_path = final_url_dir.join(ts.to_string());
+        let final_snapshot_dir_path = final_url_dir.join(&ts);
         tracing::debug!("Creating final snapshot directory");
         self.root.create_dir_all(&final_snapshot_dir_path)?;
         tracing::debug!("Moving snapshot directory to final location");
