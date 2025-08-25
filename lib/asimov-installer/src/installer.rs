@@ -1,6 +1,6 @@
 // This is free and unencumbered software released into the public domain.
 
-use asimov_module::{InstalledModuleManifest, ModuleManifest, tracing};
+use asimov_module::{tracing, InstalledModuleManifest, ModuleManifest};
 use std::{path::Path, string::String};
 
 pub mod error;
@@ -22,7 +22,8 @@ impl Default for Installer {
         // TODO: retry support
         let client = reqwest::Client::builder()
             .user_agent("asimov-module-installer")
-            .timeout(std::time::Duration::from_secs(10))
+            .connect_timeout(std::time::Duration::from_secs(10))
+            .read_timeout(std::time::Duration::from_secs(30))
             .build()
             .expect("Failed to build HTTP client");
         let registry = Registry::default();
