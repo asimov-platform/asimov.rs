@@ -79,7 +79,7 @@ pub async fn fetch_latest_release(
         .await
         .inspect_err(|err| tracing::debug!(?err))?;
 
-    serde_json::from_str::<'_, GitHubRelease>(&content)
+    serde_json::from_str::<GitHubRelease>(&content)
         .inspect_err(|err| tracing::debug!(?err, ?content))
         .map_err(|e| FetchError::Deserialize(e.into()))
         .map(|release| release.name)
