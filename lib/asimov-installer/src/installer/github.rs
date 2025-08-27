@@ -24,6 +24,7 @@ pub struct GitHubAsset {
     pub browser_download_url: String,
 }
 
+#[tracing::instrument(skip_all)]
 pub async fn fetch_release(
     client: &reqwest::Client,
     module_name: &str,
@@ -33,18 +34,27 @@ pub async fn fetch_release(
         "https://api.github.com/repos/asimov-modules/asimov-{module_name}-module/releases/tags/{version}",
     );
 
-    let response = client.get(&url).send().await?;
+    let response = client
+        .get(&url)
+        .send()
+        .await
+        .inspect_err(|err| tracing::debug!(?err))?;
 
     if !response.status().is_success() {
         Err(HttpError::NotSuccess(response.status()))?;
     }
 
-    let content = response.bytes().await?;
+    let content = response
+        .text()
+        .await
+        .inspect_err(|err| tracing::debug!(?err))?;
 
-    serde_json::from_slice::<'_, GitHubRelease>(&content)
+    serde_json::from_str(&content)
+        .inspect_err(|err| tracing::debug!(?err, ?content))
         .map_err(|e| FetchError::Deserialize(e.into()))
 }
 
+#[tracing::instrument(skip_all)]
 pub async fn fetch_latest_release(
     client: &reqwest::Client,
     module_name: impl AsRef<str>,
@@ -54,19 +64,28 @@ pub async fn fetch_latest_release(
         module_name.as_ref()
     );
 
-    let response = client.get(url).send().await?;
+    let response = client
+        .get(url)
+        .send()
+        .await
+        .inspect_err(|err| tracing::debug!(?err))?;
 
     if !response.status().is_success() {
         Err(HttpError::NotSuccess(response.status()))?;
     }
 
-    let content = response.bytes().await?;
+    let content = response
+        .text()
+        .await
+        .inspect_err(|err| tracing::debug!(?err))?;
 
-    serde_json::from_slice::<'_, GitHubRelease>(&content)
+    serde_json::from_str::<'_, GitHubRelease>(&content)
+        .inspect_err(|err| tracing::debug!(?err, ?content))
         .map_err(|e| FetchError::Deserialize(e.into()))
         .map(|release| release.name)
 }
 
+#[tracing::instrument(skip_all)]
 pub async fn fetch_module_manifest(
     client: &reqwest::Client,
     module_name: &str,
@@ -76,24 +95,38 @@ pub async fn fetch_module_manifest(
         "https://raw.githubusercontent.com/asimov-modules/asimov-{module_name}-module/{version}/.asimov/module.yaml",
     );
 
-    let response = client.get(&url).send().await?;
+    let response = client
+        .get(&url)
+        .send()
+        .await
+        .inspect_err(|err| tracing::debug!(?err))?;
 
     if !response.status().is_success() {
         Err(HttpError::NotSuccess(response.status()))?;
     }
 
-    let content = response.bytes().await?;
+    let content = response
+        .text()
+        .await
+        .inspect_err(|err| tracing::debug!(?err))?;
 
-    serde_yaml_ng::from_slice(&content).map_err(|e| FetchError::Deserialize(e.into()))
+    serde_yaml_ng::from_str(&content)
+        .inspect_err(|err| tracing::debug!(?err, ?content))
+        .map_err(|e| FetchError::Deserialize(e.into()))
 }
 
+#[tracing::instrument(skip_all)]
 pub async fn fetch_checksum(
     client: &reqwest::Client,
     asset: &GitHubAsset,
 ) -> Result<Option<String>, FetchChecksumError> {
     let checksum_url = format!("{}.sha256", asset.browser_download_url);
 
-    let response = client.get(&checksum_url).send().await?;
+    let response = client
+        .get(&checksum_url)
+        .send()
+        .await
+        .inspect_err(|err| tracing::debug!(?err))?;
 
     if response.status() == 404 {
         return Ok(None);
@@ -103,7 +136,14 @@ pub async fn fetch_checksum(
         Err(HttpError::NotSuccess(response.status()))?;
     }
 
-    Ok(Some(response.text().await?.trim().to_string()))
+    Ok(Some(
+        response
+            .text()
+            .await
+            .inspect_err(|err| tracing::debug!(?err))?
+            .trim()
+            .to_string(),
+    ))
 }
 
 pub async fn verify_checksum(
@@ -190,12 +230,17 @@ pub fn find_matching_asset<'a>(
     None
 }
 
+#[tracing::instrument(skip_all)]
 pub async fn download_asset(
     client: &reqwest::Client,
     asset: &GitHubAsset,
     dst_dir: &Path,
 ) -> Result<std::path::PathBuf, DownloadError> {
-    let mut response = client.get(&asset.browser_download_url).send().await?;
+    let mut response = client
+        .get(&asset.browser_download_url)
+        .send()
+        .await
+        .inspect_err(|err| tracing::debug!(?err))?;
 
     if !response.status().is_success() {
         Err(HttpError::NotSuccess(response.status()))?;
@@ -204,7 +249,11 @@ pub async fn download_asset(
     let asset_path = dst_dir.join(&asset.name);
     let mut dst = tokio::fs::File::create(&asset_path).await?;
 
-    while let Some(chunk) = response.chunk().await? {
+    while let Some(chunk) = response
+        .chunk()
+        .await
+        .inspect_err(|err| tracing::debug!(?err))?
+    {
         dst.write_all(&chunk).await?;
     }
     dst.flush().await?;
