@@ -19,18 +19,19 @@ default = ["all", "std"]
 all = ["cli", "tracing", "serde"]
 cli = ["std", "dep:clientele", "clientele?/clap"]
 std = [
+    "clientele?/std",
     "dep:asimov-env",
     "dep:getenv",
-    "clientele?/std",
     "dogma/std",
     "getenv?/std",
-    "serde?/std",
+    "iri-string/std",
     "serde_json?/std",
+    "serde?/std",
     "slab/std",
     "thiserror/std",
-    "tracing?/std",
     "tracing-subscriber?/fmt",
     "tracing-subscriber?/std",
+    "tracing?/std",
     "url/std",
 ]
 unstable = []
@@ -47,6 +48,7 @@ secrecy.workspace = true
 slab.workspace = true
 thiserror.workspace = true
 url.workspace = true
+iri-string = { version = "0.7", default-features = false, features = ["alloc"] }
 
 # Optional dependencies:
 asimov-env = { workspace = true, optional = true }
