@@ -1,6 +1,6 @@
 // This is free and unencumbered software released into the public domain.
 
-use asimov_module::{tracing, InstalledModuleManifest, ModuleManifest};
+use asimov_module::{InstalledModuleManifest, ModuleManifest, tracing};
 use std::{path::Path, string::String};
 
 pub mod error;
