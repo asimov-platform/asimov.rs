@@ -100,45 +100,8 @@ mod tests {
             ),
             ("tel:+1-555-123-4567", "tel:+1-555-123-4567"),
             ("urn:isbn:1234567890", "urn:isbn:1234567890"),
-            (
-                // Plain strings get `file:` scheme and current directory prepended
-                "document.txt",
-                &format!(
-                    "file:{}/document.txt",
-                    std::env::current_dir().unwrap().display()
-                ),
-            ),
-            (
-                // Domain-like strings without scheme get treated as files
-                "example.org",
-                &format!(
-                    "file:{}/example.org",
-                    std::env::current_dir().unwrap().display()
-                ),
-            ),
             // TODO: should this be inferred?
-            // ("localhost:8080", "http://localhost:8080".into()),
-            (
-                "folder name/file.txt",
-                &format!(
-                    "file:{}/folder%20name/file.txt",
-                    std::env::current_dir().unwrap().display()
-                ),
-            ),
-            (
-                "./subfolder/../file.txt",
-                &format!(
-                    "file:{}/subfolder/../file.txt",
-                    std::env::current_dir().unwrap().display()
-                ),
-            ),
-            (
-                "../parent/file.txt",
-                &format!(
-                    "file:{}/../parent/file.txt",
-                    std::env::current_dir().unwrap().display()
-                ),
-            ),
+            // ("localhost:8080", "http://localhost:8080"),
         ];
 
         for case in cases {
@@ -155,6 +118,43 @@ mod tests {
             let cases = [
                 ("/file with spaces.txt", "file:/file%20with%20spaces.txt"),
                 ("/file+with+pluses.txt", "file:/file+with+pluses.txt"),
+                (
+                    // Plain strings get `file:` scheme and current directory prepended
+                    "document.txt",
+                    &format!(
+                        "file:{}/document.txt",
+                        std::env::current_dir().unwrap().display()
+                    ),
+                ),
+                (
+                    // Domain-like strings without scheme get treated as files
+                    "example.org",
+                    &format!(
+                        "file:{}/example.org",
+                        std::env::current_dir().unwrap().display()
+                    ),
+                ),
+                (
+                    "folder name/file.txt",
+                    &format!(
+                        "file:{}/folder%20name/file.txt",
+                        std::env::current_dir().unwrap().display()
+                    ),
+                ),
+                (
+                    "./subfolder/../file.txt",
+                    &format!(
+                        "file:{}/subfolder/../file.txt",
+                        std::env::current_dir().unwrap().display()
+                    ),
+                ),
+                (
+                    "../parent/./file.txt",
+                    &format!(
+                        "file:{}/../parent/file.txt",
+                        std::env::current_dir().unwrap().display()
+                    ),
+                ),
             ];
 
             for case in cases {
@@ -178,35 +178,6 @@ mod tests {
                     input
                 );
             }
-
-            let cur_dir = std::env::current_dir().unwrap().display().to_string();
-
-            let input = "path/to/file.txt";
-            let want = "file:".to_string() + &cur_dir + "/path/to/file.txt";
-            assert_eq!(
-                normalize_url(input).unwrap(),
-                want,
-                "relative path should be get added after current directory, input: {:?}",
-                input
-            );
-
-            let input = "../path/./file.txt";
-            let want = "file:".to_string() + &cur_dir + "/../path/file.txt";
-            assert_eq!(
-                normalize_url(input).unwrap(),
-                want,
-                "relative path should be get added after current directory, input: {:?}",
-                input
-            );
-
-            let input = "another-type-of-a-string";
-            let want = "file:".to_string() + &cur_dir + "/another-type-of-a-string";
-            assert_eq!(
-                normalize_url(input).unwrap(),
-                want,
-                "non-path-looking input should be treated as a file in current directory, input: {:?}",
-                input
-            );
         }
 
         #[cfg(windows)]
