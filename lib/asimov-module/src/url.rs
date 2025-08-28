@@ -20,22 +20,26 @@ pub fn normalize_url(url: &str) -> Result<String, iri_string::types::CreationErr
 
     let path = iri.path_str();
 
-    if scheme == "file"
-        && let Some(rest) = path.strip_prefix("~/")
-    {
+    // TODO: utilize `path.normalize_lexically()` once it stabilizes
+    // https://github.com/rust-lang/rust/issues/134694
+
+    if scheme == "file" && path.starts_with("~/") {
+        let rest = path.strip_prefix("~/").unwrap(); // safe, the prefix was checked just above
+
         let home_dir = std::env::home_dir().expect("unable to determine home directory");
-        let path2 = home_dir.join(rest);
-        let path3 = std::path::absolute(&path2).unwrap_or(path2);
-        let path4 = path3.to_str().unwrap_or(path);
 
-        write!(&mut out, "{}", path4).unwrap();
-    } else if scheme == "file" && !path.starts_with('/') {
-        let cur_dir = std::env::current_dir().expect("unable to determine current directory");
-        let path2 = cur_dir.join(path);
-        let path3 = std::path::absolute(&path2).unwrap_or(path2);
-        let path4 = path3.to_str().unwrap_or(path);
+        let path = home_dir.join(rest);
+        let path = std::path::absolute(&path).unwrap_or(path);
+        let path = path.canonicalize().unwrap_or(path);
 
-        write!(&mut out, "{}", path4).unwrap();
+        write!(&mut out, "{}", path.display()).unwrap();
+    } else if scheme == "file" {
+        // `std::path::absolute` also changes relative paths to absolute with the current directory
+        // as base.
+        let path = std::path::absolute(path).unwrap_or_else(|_| std::path::PathBuf::from(path));
+        let path = path.canonicalize().unwrap_or(path);
+
+        write!(&mut out, "{}", path.display()).unwrap();
     } else if iri.authority_str().is_some() && path.is_empty() {
         write!(&mut out, "/").unwrap();
     } else {
@@ -56,7 +60,7 @@ pub fn normalize_url(url: &str) -> Result<String, iri_string::types::CreationErr
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::string::ToString;
+    use std::{format, string::ToString};
 
     #[test]
     fn url_normalization() {
@@ -64,9 +68,12 @@ mod tests {
             ("https://example.org", "https://example.org/"),
             ("https://example.org/", "https://example.org/"),
             ("http://example.com/path", "http://example.com/path"),
+            ("https://api.example.com", "https://api.example.com/"),
+            ("http://localhost:3000", "http://localhost:3000/"),
+            ("ftp://fileserver.local", "ftp://fileserver.local/"),
             (
-                "https://user:pass@example.org:8080/path?query=value#fragment",
-                "https://user:pass@example.org:8080/path?query=value#fragment",
+                "https://user:pass@example.org:8080/path?foo=bar&query=hello world#fragment",
+                "https://user:pass@example.org:8080/path?foo=bar&query=hello%20world#fragment",
             ),
             ("near://testnet/123456789", "near://testnet/123456789"),
             (
@@ -88,23 +95,50 @@ mod tests {
                 "https://example.org/path%20already%20encoded",
             ),
             (
-                "https://example.org/?q=test&foo=bar",
-                "https://example.org/?q=test&foo=bar",
-            ),
-            (
-                "https://example.org/page#section1",
-                "https://example.org/page#section1",
-            ),
-            (
-                "https://example.org/search?q=hello world",
-                "https://example.org/search?q=hello%20world",
-            ),
-            (
                 "data:text/plain;base64,SGVsbG8=",
                 "data:text/plain;base64,SGVsbG8=",
             ),
             ("tel:+1-555-123-4567", "tel:+1-555-123-4567"),
             ("urn:isbn:1234567890", "urn:isbn:1234567890"),
+            (
+                // Plain strings get `file:` scheme and current directory prepended
+                "document.txt",
+                &format!(
+                    "file:{}/document.txt",
+                    std::env::current_dir().unwrap().display()
+                ),
+            ),
+            (
+                // Domain-like strings without scheme get treated as files
+                "example.org",
+                &format!(
+                    "file:{}/example.org",
+                    std::env::current_dir().unwrap().display()
+                ),
+            ),
+            // TODO: should this be inferred?
+            // ("localhost:8080", "http://localhost:8080".into()),
+            (
+                "folder name/file.txt",
+                &format!(
+                    "file:{}/folder%20name/file.txt",
+                    std::env::current_dir().unwrap().display()
+                ),
+            ),
+            (
+                "./subfolder/../file.txt",
+                &format!(
+                    "file:{}/subfolder/../file.txt",
+                    std::env::current_dir().unwrap().display()
+                ),
+            ),
+            (
+                "../parent/file.txt",
+                &format!(
+                    "file:{}/../parent/file.txt",
+                    std::env::current_dir().unwrap().display()
+                ),
+            ),
         ];
 
         for case in cases {
@@ -173,15 +207,6 @@ mod tests {
                 "non-path-looking input should be treated as a file in current directory, input: {:?}",
                 input
             );
-
-            // let input = "hello\\ world!";
-            // let want = "file:".to_string() + &cur_dir + "/hello%5C%20world!";
-            // assert_eq!(
-            //     normalize_url(input).unwrap(),
-            //     want,
-            //     "output should be url encoded, input: {:?}",
-            //     input
-            // );
         }
 
         #[cfg(windows)]
@@ -191,11 +216,11 @@ mod tests {
             let cases = [
                 (
                     "/file with spaces.txt",
-                    format!("file:///{drive}:/file%20with%20spaces.txt"),
+                    format!("file:/{drive}:/file%20with%20spaces.txt"),
                 ),
                 (
                     "/file+with+pluses.txt",
-                    format!("file:///{drive}:/file+with+pluses.txt"),
+                    format!("file:/{drive}:/file+with+pluses.txt"),
                 ),
             ];
 
