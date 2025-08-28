@@ -1,21 +1,40 @@
 // This is free and unencumbered software released into the public domain.
 
-use core::fmt::Write;
-use iri_string::types::IriReferenceString;
-use std::string::String;
+use iri_string::types::{IriReferenceStr, IriReferenceString};
+use std::string::{String, ToString};
 
-pub fn normalize_url(url: &str) -> Result<String, iri_string::types::CreationError<String>> {
+#[derive(Clone, Debug, thiserror::Error)]
+pub enum NormalizeError {
+    #[error(transparent)]
+    Parse(#[from] iri_string::types::CreationError<String>),
+    #[error(transparent)]
+    Build(#[from] iri_string::validate::Error),
+}
+
+pub fn normalize_url(url: &str) -> Result<String, NormalizeError> {
     let iri = IriReferenceString::try_from(url)
         .or_else(|_| IriReferenceString::try_from(url.replace(" ", "%20")))?;
 
-    let mut out: String = String::new();
+    let mut builder = iri_string::build::Builder::new();
 
     // default `file:` scheme
     let scheme = iri.scheme_str().unwrap_or("file");
-    write!(&mut out, "{scheme}:").unwrap();
+    builder.scheme(scheme);
 
     if let Some(auth) = iri.authority_str() {
-        write!(&mut out, "//{auth}").unwrap();
+        let rest = if let Some((user, rest)) = auth.split_once("@") {
+            builder.userinfo(user);
+            rest
+        } else {
+            auth
+        };
+
+        if let Some((host, port)) = rest.split_once(":") {
+            builder.host(host);
+            builder.port(port);
+        } else {
+            builder.host(rest);
+        }
     }
 
     let path = iri.path_str();
@@ -23,8 +42,8 @@ pub fn normalize_url(url: &str) -> Result<String, iri_string::types::CreationErr
     // TODO: utilize `path.normalize_lexically()` once it stabilizes
     // https://github.com/rust-lang/rust/issues/134694
 
-    if scheme == "file" && path.starts_with("~/") {
-        let rest = path.strip_prefix("~/").unwrap(); // safe, the prefix was checked just above
+    let path = if scheme == "file" && path.starts_with("~/") {
+        let rest = path.strip_prefix("~/").unwrap(); // safe, the prefix was just checked just
 
         let home_dir = std::env::home_dir().expect("unable to determine home directory");
 
@@ -32,29 +51,35 @@ pub fn normalize_url(url: &str) -> Result<String, iri_string::types::CreationErr
         let path = std::path::absolute(&path).unwrap_or(path);
         let path = path.canonicalize().unwrap_or(path);
 
-        write!(&mut out, "{}", path.display()).unwrap();
+        path.to_string_lossy().to_string()
     } else if scheme == "file" {
         // `std::path::absolute` also changes relative paths to absolute with the current directory
         // as base.
         let path = std::path::absolute(path).unwrap_or_else(|_| std::path::PathBuf::from(path));
         let path = path.canonicalize().unwrap_or(path);
 
-        write!(&mut out, "{}", path.display()).unwrap();
+        path.to_string_lossy().to_string()
     } else if iri.authority_str().is_some() && path.is_empty() {
-        write!(&mut out, "/").unwrap();
+        "/".to_string()
     } else {
-        write!(&mut out, "{path}").unwrap();
-    }
+        path.to_string()
+    };
+    builder.path(&path);
 
     if let Some(query) = iri.query() {
-        write!(&mut out, "?{query}").unwrap()
+        builder.query(query.as_str());
     }
 
     if let Some(fraq) = iri.fragment() {
-        write!(&mut out, "#{fraq}").unwrap()
+        builder.fragment(fraq.as_str());
     }
 
-    Ok(out)
+    builder.normalize();
+
+    builder
+        .build::<IriReferenceStr>()
+        .map(|r| r.to_string())
+        .map_err(Into::into)
 }
 
 #[cfg(test)]
@@ -106,7 +131,7 @@ mod tests {
 
         for case in cases {
             assert_eq!(
-                normalize_url(case.0).unwrap(),
+                normalize_url(case.0).expect(case.0),
                 case.1,
                 "input: {:?}",
                 case.0
@@ -144,15 +169,15 @@ mod tests {
                 (
                     "./subfolder/../file.txt",
                     &format!(
-                        "file:{}/subfolder/../file.txt",
+                        "file:{}/file.txt",
                         std::env::current_dir().unwrap().display()
                     ),
                 ),
                 (
                     "../parent/./file.txt",
                     &format!(
-                        "file:{}/../parent/file.txt",
-                        std::env::current_dir().unwrap().display()
+                        "file:{}/parent/file.txt",
+                        std::env::current_dir().unwrap().parent().unwrap().display()
                     ),
                 ),
             ];
