@@ -21,19 +21,13 @@ pub fn normalize_url(url: &str) -> Result<String, NormalizeError> {
     let scheme = iri.scheme_str().unwrap_or("file");
     builder.scheme(scheme);
 
-    if let Some(auth) = iri.authority_str() {
-        let rest = if let Some((user, rest)) = auth.split_once("@") {
+    if let Some(auth) = iri.authority_components() {
+        if let Some(user) = auth.userinfo() {
             builder.userinfo(user);
-            rest
-        } else {
-            auth
-        };
-
-        if let Some((host, port)) = rest.split_once(":") {
-            builder.host(host);
+        }
+        builder.host(auth.host());
+        if let Some(port) = auth.port() {
             builder.port(port);
-        } else {
-            builder.host(rest);
         }
     }
 
@@ -125,6 +119,15 @@ mod tests {
             ),
             ("tel:+1-555-123-4567", "tel:+1-555-123-4567"),
             ("urn:isbn:1234567890", "urn:isbn:1234567890"),
+            (
+                "ldap://[2001:db8::7]/c=GB?objectClass?one",
+                "ldap://[2001:db8::7]/c=GB?objectClass?one",
+            ),
+            (
+                "ldap://foo:bar@[2001:db8::7]:80/c=GB?objectClass?one",
+                "ldap://foo:bar@[2001:db8::7]:80/c=GB?objectClass?one",
+            ),
+            ("telnet://192.0.2.16:80", "telnet://192.0.2.16:80/"),
             // TODO: should this be inferred?
             // ("localhost:8080", "http://localhost:8080"),
         ];
