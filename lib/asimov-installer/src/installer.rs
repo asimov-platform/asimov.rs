@@ -22,7 +22,8 @@ impl Default for Installer {
         // TODO: retry support
         let client = reqwest::Client::builder()
             .user_agent("asimov-module-installer")
-            .timeout(std::time::Duration::from_secs(10))
+            .connect_timeout(std::time::Duration::from_secs(10))
+            .read_timeout(std::time::Duration::from_secs(30))
             .build()
             .expect("Failed to build HTTP client");
         let registry = Registry::default();

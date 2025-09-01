@@ -128,7 +128,7 @@ mod common {
         #[error("failed to fetch module manifest: {0}")]
         FetchManifest(FetchError),
 
-        #[error(transparent)]
+        #[error("failed to fetch checksum: {0}")]
         FetchChecksum(#[from] FetchChecksumError),
         #[error(transparent)]
         VerifyChecksum(#[from] VerifyChecksumError),
