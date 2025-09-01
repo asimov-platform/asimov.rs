@@ -45,14 +45,14 @@ pub fn normalize_url(url: &str) -> Result<String, NormalizeError> {
         let path = std::path::absolute(&path).unwrap_or(path);
         let path = path.canonicalize().unwrap_or(path);
 
-        path.to_string_lossy().to_string()
+        path.display().to_string()
     } else if scheme == "file" {
         // `std::path::absolute` also changes relative paths to absolute with the current directory
         // as base.
         let path = std::path::absolute(path).unwrap_or_else(|_| std::path::PathBuf::from(path));
         let path = path.canonicalize().unwrap_or(path);
 
-        path.to_string_lossy().to_string()
+        path.display().to_string()
     } else if iri.authority_str().is_some() && path.is_empty() {
         "/".to_string()
     } else {
@@ -213,6 +213,7 @@ mod tests {
             let cwd = std::env::current_dir().unwrap();
             let drive = cwd.to_str().unwrap().chars().next().unwrap();
             let cases = [
+                ("c:/file/path.txt", "file:/c:/file/path.txt"),
                 (
                     "/file with spaces.txt",
                     format!("file:/{drive}:/file%20with%20spaces.txt"),
