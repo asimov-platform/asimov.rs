@@ -856,6 +856,7 @@ dependencies = [
  "clientele 0.3.8",
  "dogma",
  "getenv",
+ "iri-string",
  "secrecy",
  "serde",
  "serde_json",
