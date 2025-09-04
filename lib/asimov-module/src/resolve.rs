@@ -90,10 +90,12 @@ impl Resolver {
     ) -> Result<(), Infallible> {
         let module = self.add_module(module);
 
-        self.file_extensions
-            .entry(file_extension.to_string())
-            .or_default()
-            .push(module);
+        let ext = file_extension
+            .strip_prefix(".")
+            .unwrap_or(file_extension)
+            .to_string();
+
+        self.file_extensions.entry(ext).or_default().push(module);
 
         Ok(())
     }
@@ -406,6 +408,7 @@ mod test {
         resolver.insert_prefix("fs", "file://").unwrap();
         resolver.insert_prefix("fs2", "file:///2").unwrap();
         resolver.insert_file_extension("txt-ext", "txt").unwrap();
+        resolver.insert_file_extension("zip-ext", ".zip").unwrap(); // leading dot should work just as well
         resolver.insert_file_extension("tar-ext", "tar.gz").unwrap();
 
         eprintln!("{resolver:#?}");
@@ -422,6 +425,7 @@ mod test {
             ("https://multiple.subdomains.foo.bar.baz.com/", "subdomains"),
             ("data:text/plain?Hello+World", "data"),
             ("file:///foo/bar/baz", "fs"),
+            ("file:/archive.zip", "zip-ext"),
             ("file:///2/foo", "fs2"),
             ("file:///foobar.txt", "txt-ext"),
             ("file:///foobar.tar.gz", "tar-ext"),
