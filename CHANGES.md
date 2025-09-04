@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 25.0.0-dev.22 - 2025-09-04
+
+### Added
+
+- Implement a `normalize_url` helper (#32 by @SamuelSarle)
+
+### Changed
+
+- Update the snapshot filesystem layout (#30 by @SamuelSarle)
+
+### Fixed
+
+- Fix installer timeout (#31 by @SamuelSarle)
+- Fix issue with leading dot in module resolver
+
 ## 25.0.0-dev.21 - 2025-08-06
 ### Added
 - Implement time-to-live (TTL) options for snapshots (#28 by @SamuelSarle)
