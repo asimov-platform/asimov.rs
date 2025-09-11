@@ -5,6 +5,7 @@ use asimov_registry::Registry;
 use asimov_runner::GraphOutput;
 use jiff::{Span, Timestamp, ToSpan};
 use std::{
+    format,
     io::{self, Result},
     string::{String, ToString},
     vec::Vec,
@@ -100,36 +101,87 @@ impl<S: crate::storage::Storage> Snapshotter<S> {
 
         let url = url.as_ref().to_string();
 
-        let start_timestamp = Timestamp::now();
+        let fetcher = programs.iter().find(|p| p.ends_with("-fetcher"));
+        let cataloger = programs.iter().find(|p| p.ends_with("-cataloger"));
 
-        let data = if let Some(program) = programs.iter().find(|p| p.ends_with("-fetcher")) {
-            asimov_runner::Fetcher::new(program, &url, GraphOutput::Captured, Default::default())
-                .execute()
-                .await
-        } else if let Some(program) = programs.iter().find(|p| p.ends_with("-cataloger")) {
-            asimov_runner::Cataloger::new(program, &url, GraphOutput::Captured, Default::default())
-                .execute()
-                .await
-        } else {
+        if fetcher.is_none() && cataloger.is_none() {
             return Err(std::io::Error::other(
                 "No module found for creating snapshot",
             ));
         }
-        .map_err(|e| std::io::Error::other(std::format!("Execution error: {e}")))?
-        .into_inner(); // TODO: consider using the std::io::Cursor?
 
-        let end_timestamp = Some(Timestamp::now());
+        // try fetcher if available
+        let fetcher_error = if let Some(program) = fetcher {
+            tracing::debug!("attempting to capture a snapshot with fetcher");
+            let start_timestamp = Timestamp::now();
+            match asimov_runner::Fetcher::new(
+                program,
+                &url,
+                GraphOutput::Captured,
+                Default::default(),
+            )
+            .execute()
+            .await
+            .inspect_err(|e| tracing::debug!("failed creating a snapshot with fetcher: {e}"))
+            {
+                Ok(result) => {
+                    let snapshot = Snapshot {
+                        url,
+                        start_timestamp,
+                        end_timestamp: Some(Timestamp::now()),
+                        data: result.into_inner(),
+                    };
+                    self.storage.save(&snapshot)?;
 
-        let snapshot = Snapshot {
-            url,
-            start_timestamp,
-            end_timestamp,
-            data,
+                    return Ok(snapshot);
+                },
+                Err(e) => Some(e),
+            }
+        } else {
+            None
         };
 
-        self.storage.save(&snapshot)?;
+        // if fetcher failed or doesn't exist, try cataloger
+        let cataloger_error = if let Some(program) = cataloger {
+            tracing::debug!("attempting to capture a snapshot with cataloger");
+            let start_timestamp = Timestamp::now();
+            match asimov_runner::Cataloger::new(
+                program,
+                &url,
+                GraphOutput::Captured,
+                Default::default(),
+            )
+            .execute()
+            .await
+            .inspect_err(|e| tracing::debug!("failed creating a snapshot with cataloger: {e}"))
+            {
+                Ok(result) => {
+                    let snapshot = Snapshot {
+                        url,
+                        start_timestamp,
+                        end_timestamp: Some(Timestamp::now()),
+                        data: result.into_inner(),
+                    };
+                    self.storage.save(&snapshot)?;
 
-        Ok(snapshot)
+                    return Ok(snapshot);
+                },
+                Err(e) => Some(e),
+            }
+        } else {
+            None
+        };
+
+        let error_msg = match (fetcher_error, cataloger_error) {
+            (Some(fe), Some(ce)) => {
+                format!("both fetcher and cataloger failed - fetcher: {fe}, cataloger: {ce}")
+            },
+            (Some(fe), None) => format!("fetcher failed: {fe}"),
+            (None, Some(ce)) => format!("cataloger failed: {ce}"),
+            (None, None) => unreachable!("At least one program should exist at this point"),
+        };
+
+        Err(std::io::Error::other(error_msg.replace('\n', " ")))
     }
 
     /// Returns the snapshot content of an URL at the given timestamp.
