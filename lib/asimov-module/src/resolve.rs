@@ -28,7 +28,10 @@ impl Resolver {
     pub fn resolve(&self, url: &str) -> Result<Vec<Rc<Module>>, UrlParseError> {
         let input = split_url(url)?;
 
-        let mut results: BTreeSet<Rc<Module>> = BTreeSet::new();
+        // `results` is a set of `(path_length, Module)` items.
+        // `path_length` first so they get sorted by the length of matching path.
+        // We reverse iter this later so that longer paths are returned first.
+        let mut results: BTreeSet<(usize, Rc<Module>)> = BTreeSet::new();
 
         if matches!(input.first(), Some(Sect::Protocol(proto)) if proto == "file") {
             if let Some(Sect::Path(filename)) = input.last() {
@@ -38,7 +41,7 @@ impl Resolver {
                         .into_iter()
                         .flatten()
                         .for_each(|module| {
-                            results.insert(module.clone());
+                            results.insert((0, module.clone()));
                         });
                 }
             }
@@ -74,13 +77,19 @@ impl Resolver {
         };
 
         // Collect all modules from final states
-        for &state_idx in &final_states {
-            for module in &self.nodes[state_idx].modules {
-                results.insert(module.clone());
+        for node in final_states.iter().map(|&idx| &self.nodes[idx]) {
+            for module in &node.modules {
+                results.insert((node.path_length, module.clone()));
             }
         }
 
-        Ok(results.into_iter().collect())
+        Ok(results
+            .into_iter()
+             // The `results` set is sorted by path_length.
+             // Reverse to prefer longer matches.
+            .rev()
+            .map(|(_, module)| module)
+            .collect())
     }
 
     pub fn insert_file_extension(
@@ -220,24 +229,30 @@ impl Resolver {
             .entry(path[0].clone())
             .or_insert_with(|| self.nodes.insert(Node::default()));
 
-        path[1..].iter().fold(root_idx, |cur_idx, sect| {
-            match (self.nodes[cur_idx].paths.get(sect), sect) {
-                (Some(&idx), _sect) => idx,
-                (None, Sect::WildcardDomain) => {
-                    // If the sect is a wildcard domain add a link to self, this will also match multiple subdomains.
-                    self.nodes[cur_idx].paths.insert(sect.clone(), cur_idx);
-                    cur_idx
-                },
-                (None, sect) => {
-                    // Create a new node
-                    let new_node_idx = self.nodes.insert(Node::default());
+        path.iter()
+            .enumerate()
+            .skip(1) // first one was already inserted to `self.roots`
+            .fold(root_idx, |cur_idx, (path_length, sect)| {
+                match (self.nodes[cur_idx].paths.get(sect), sect) {
+                    (Some(&idx), _sect) => idx,
+                    (None, Sect::WildcardDomain) => {
+                        // If the sect is a wildcard domain add a link to self, this will also match multiple subdomains.
+                        self.nodes[cur_idx].paths.insert(sect.clone(), cur_idx);
+                        cur_idx
+                    },
+                    (None, sect) => {
+                        // Create a new node
+                        let new_node_idx = self.nodes.insert(Node {
+                            path_length,
+                            ..Default::default()
+                        });
 
-                    // Add the transition from current node to new node
-                    self.nodes[cur_idx].paths.insert(sect.clone(), new_node_idx);
-                    new_node_idx
-                },
-            }
-        })
+                        // Add the transition from current node to new node
+                        self.nodes[cur_idx].paths.insert(sect.clone(), new_node_idx);
+                        new_node_idx
+                    },
+                }
+            })
     }
 
     fn add_module(&mut self, name: &str) -> Rc<Module> {
@@ -266,6 +281,7 @@ pub struct Module {
 struct Node {
     paths: BTreeMap<Sect, usize>,
     modules: BTreeSet<Rc<Module>>,
+    path_length: usize,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
@@ -487,5 +503,32 @@ mod test {
                 .is_some_and(|module| module.name == "prefix"),
             "only the prefix should match"
         );
+    }
+
+    #[test]
+    fn longer_matches_are_returned_first() {
+        let mut resolver = Resolver::new();
+        resolver.insert_prefix("fs", "file://").unwrap();
+        resolver.insert_prefix("fs2", "file:///path").unwrap();
+        resolver.insert_prefix("fs3", "file:///path/to").unwrap();
+        resolver.insert_file_extension("txt-ext", "txt").unwrap();
+
+        let mut it = resolver
+            .resolve("file:///path/to/file.txt")
+            .unwrap()
+            .into_iter();
+        assert_eq!("fs3", it.next().unwrap().name);
+        assert_eq!("fs2", it.next().unwrap().name);
+        assert_eq!("fs", it.next().unwrap().name);
+        assert_eq!("txt-ext", it.next().unwrap().name);
+        assert_eq!(None, it.next());
+
+        let mut it = resolver.resolve("file:///file.txt").unwrap().into_iter();
+        assert_eq!("fs", it.next().unwrap().name);
+        assert_eq!("txt-ext", it.next().unwrap().name);
+        assert_eq!(None, it.next());
+
+        let mut it = resolver.resolve("https://example.org").unwrap().into_iter();
+        assert_eq!(None, it.next());
     }
 }
