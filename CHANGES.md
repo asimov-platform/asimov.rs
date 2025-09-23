@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 25.0.0-dev.23 - 2025-09-23
+
+### Changed
+
+- Make module resolver return longer matches first (#34 by @SamuelSarle)
+- Make snapshot service run cataloger when fetcher fails (#33 by @SamuelSarle)
+
 ## 25.0.0-dev.22 - 2025-09-04
 
 ### Added
