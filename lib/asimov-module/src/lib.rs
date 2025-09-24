@@ -50,4 +50,4 @@ pub mod resolve;
 #[cfg(all(feature = "serde", feature = "json"))]
 pub mod json;
 
-pub mod url;
+pub mod normalization;
