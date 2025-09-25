@@ -3,6 +3,21 @@
 use iri_string::types::{IriReferenceStr, IriReferenceString};
 use std::string::{String, ToString};
 
+/// Normalizes module names by removing dots and converting to lowercase.
+/// Allows domain names like `near.ai` or names stylized with capital letters.
+/// The `name` field of [`crate::ModuleManifest`] should equal the normalized form.
+///
+/// # Examples
+///
+/// ```
+/// # use asimov_module::normalization::normalize_module_name;
+/// assert_eq!(normalize_module_name("foo.bar"), "foobar");
+/// assert_eq!(normalize_module_name("FOOBAR"), "foobar");
+/// ```
+pub fn normalize_module_name(module: &str) -> String {
+    module.replace('.', "").to_lowercase()
+}
+
 #[derive(Clone, Debug, thiserror::Error)]
 pub enum NormalizeError {
     #[error(transparent)]
@@ -11,6 +26,22 @@ pub enum NormalizeError {
     Build(#[from] iri_string::validate::Error),
 }
 
+/// Normalizes URLs and file paths into valid IRI format with consistent scheme handling.
+///
+/// Adds `file:` scheme to paths, resolves relative paths, handles `~/` expansion,
+/// and properly encodes spaces and special characters.
+///
+/// # Examples
+///
+/// ```
+/// # fn main() -> Result<(), Box<dyn core::error::Error>> {
+/// # use asimov_module::normalization::normalize_url;
+/// assert_eq!(normalize_url("https://example.org")?, "https://example.org/");
+/// assert!(normalize_url("path with spaces.txt")?.starts_with("file:"));
+/// assert!(normalize_url("~/document.txt")?.ends_with("/document.txt"));
+/// # Ok(())
+/// # }
+/// ```
 pub fn normalize_url(url: &str) -> Result<String, NormalizeError> {
     let iri = IriReferenceString::try_from(url)
         .or_else(|_| IriReferenceString::try_from(url.replace(" ", "%20")))?;
