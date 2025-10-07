@@ -350,14 +350,25 @@ impl Registry {
             .await?
             .ok_or(EnableError::NotInstalled)?;
 
-        let target_path = if target_path.starts_with(&self.install_dir) {
-            // manifest is in installed directory: ../installed/manifest.json
-            std::path::PathBuf::from("..")
-                .join("installed")
-                .join(target_path.file_name().unwrap())
+        let target_path = if self
+            .install_dir
+            .parent()
+            .zip(self.enable_dir.parent())
+            .is_some_and(|(a, b)| a == b)
+        {
+            // This scope only runs if install_dir and enable_dir share the same parent directory.
+
+            if target_path.starts_with(&self.install_dir) {
+                // manifest is in installed directory: ../installed/manifest.json
+                std::path::PathBuf::from("..")
+                    .join(self.install_dir.file_name().unwrap())
+                    .join(target_path.file_name().unwrap())
+            } else {
+                // manifest is in legacy location: ../manifest.yaml
+                std::path::PathBuf::from("..").join(target_path.file_name().unwrap())
+            }
         } else {
-            // manifest is in legacy location: ../manifest.yaml
-            std::path::PathBuf::from("..").join(target_path.file_name().unwrap())
+            target_path
         };
 
         let src_path = self.enable_dir.join(module_name.as_ref());
