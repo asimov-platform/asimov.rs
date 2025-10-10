@@ -159,31 +159,51 @@ where
 pub struct Handles {
     #[cfg_attr(
         feature = "serde",
-        serde(default, deserialize_with = "empty_vec_if_null", skip_serializing_if = "Vec::is_empty")
+        serde(
+            default,
+            deserialize_with = "empty_vec_if_null",
+            skip_serializing_if = "Vec::is_empty"
+        )
     )]
     pub url_protocols: Vec<String>,
 
     #[cfg_attr(
         feature = "serde",
-        serde(default, deserialize_with = "empty_vec_if_null", skip_serializing_if = "Vec::is_empty")
+        serde(
+            default,
+            deserialize_with = "empty_vec_if_null",
+            skip_serializing_if = "Vec::is_empty"
+        )
     )]
     pub url_prefixes: Vec<String>,
 
     #[cfg_attr(
         feature = "serde",
-        serde(default, deserialize_with = "empty_vec_if_null", skip_serializing_if = "Vec::is_empty")
+        serde(
+            default,
+            deserialize_with = "empty_vec_if_null",
+            skip_serializing_if = "Vec::is_empty"
+        )
     )]
     pub url_patterns: Vec<String>,
 
     #[cfg_attr(
         feature = "serde",
-        serde(default, deserialize_with = "empty_vec_if_null", skip_serializing_if = "Vec::is_empty")
+        serde(
+            default,
+            deserialize_with = "empty_vec_if_null",
+            skip_serializing_if = "Vec::is_empty"
+        )
     )]
     pub file_extensions: Vec<String>,
 
     #[cfg_attr(
         feature = "serde",
-        serde(default, deserialize_with = "empty_vec_if_null", skip_serializing_if = "Vec::is_empty")
+        serde(
+            default,
+            deserialize_with = "empty_vec_if_null",
+            skip_serializing_if = "Vec::is_empty"
+        )
     )]
     pub content_types: Vec<String>,
 }
