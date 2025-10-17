@@ -19,7 +19,10 @@ impl Progress {
                 .unwrap()
                 .progress_chars("█░"),
         );
-        Self { bar, started: false }
+        Self {
+            bar,
+            started: false,
+        }
     }
 }
 

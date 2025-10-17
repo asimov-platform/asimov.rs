@@ -15,9 +15,9 @@ pub use ensure::*;
 mod progress;
 pub use progress::*;
 
-use thiserror::Error;
 use hf_hub::api::sync::ApiError;
 use std::path::PathBuf;
+use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum HuggingfaceError {
@@ -32,4 +32,3 @@ pub enum HuggingfaceError {
 }
 
 pub type Result<T> = std::result::Result<T, HuggingfaceError>;
-

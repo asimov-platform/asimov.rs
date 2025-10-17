@@ -3,7 +3,7 @@
 //! Cache-aware download helpers that always use the unified progress bar.
 
 use crate::{HuggingfaceError, Progress, Result};
-use hf_hub::{api::sync::ApiBuilder, Cache, Repo, RepoType};
+use hf_hub::{Cache, Repo, RepoType, api::sync::ApiBuilder};
 use std::path::PathBuf;
 
 /// Ensures that the specified file from a Hugging Face repository is available locally.
@@ -20,7 +20,7 @@ use std::path::PathBuf;
 /// Errors:
 /// - Propagates Hugging Face API errors (`HuggingfaceError::Api`).
 pub fn ensure_file(repo: &str, filename: &str) -> Result<PathBuf> {
-    let api = ApiBuilder::from_env().build()?; // -> hf_hub::api::sync::ApiError
+    let api = ApiBuilder::from_env().build()?;
     let cache = Cache::default();
     let repo_id = Repo::new(repo.to_owned(), RepoType::Model);
 
@@ -29,7 +29,9 @@ pub fn ensure_file(repo: &str, filename: &str) -> Result<PathBuf> {
     }
 
     let progress = Progress::new();
-    let path = api.repo(repo_id).download_with_progress(filename, progress)?; // -> ApiError
+    let path = api
+        .repo(repo_id)
+        .download_with_progress(filename, progress)?;
     Ok(path)
 }
 
@@ -55,12 +57,16 @@ pub fn ensure_snapshot(repo: &str, revision: Option<&str>) -> Result<PathBuf> {
     let repo_id = Repo::new(repo.to_owned(), RepoType::Model);
 
     let repo_api = if let Some(rev) = revision {
-        api.repo(Repo::with_revision(repo.to_owned(), RepoType::Model, rev.to_owned()))
+        api.repo(Repo::with_revision(
+            repo.to_owned(),
+            RepoType::Model,
+            rev.to_owned(),
+        ))
     } else {
         api.repo(repo_id.clone())
     };
 
-    let info = repo_api.info()?; // -> ApiError
+    let info = repo_api.info()?;
     let mut first_file_path: Option<PathBuf> = None;
 
     for s in info.siblings {
