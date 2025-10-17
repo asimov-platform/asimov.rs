@@ -1,13 +1,13 @@
 // This is free and unencumbered software released into the public domain.
 
+//! Unified minimal progress bar for all downloads.
+
 use hf_hub::api::Progress as HfProgress;
 use indicatif::{ProgressBar as IBar, ProgressStyle};
-use std::sync::{Arc, Mutex};
 
-#[derive(Clone)]
 pub struct Progress {
-    inner: Arc<Mutex<IBar>>,
-    started: Arc<Mutex<bool>>,
+    bar: IBar,
+    started: bool,
 }
 
 impl Progress {
@@ -19,16 +19,7 @@ impl Progress {
                 .unwrap()
                 .progress_chars("█░"),
         );
-        Self {
-            inner: Arc::new(Mutex::new(bar)),
-            started: Arc::new(Mutex::new(false)),
-        }
-    }
-
-    pub fn global() -> &'static Self {
-        use std::sync::OnceLock;
-        static GLOBAL: OnceLock<Progress> = OnceLock::new();
-        GLOBAL.get_or_init(Self::new)
+        Self { bar, started: false }
     }
 }
 
@@ -37,29 +28,24 @@ impl HfProgress for Progress {
         if size == 0 {
             return;
         }
-        let mut started = self.started.lock().unwrap();
-        let bar = self.inner.lock().unwrap();
-        bar.set_length(size as u64);
-        bar.set_position(0);
-        *started = true;
+        self.bar.set_length(size as u64);
+        self.bar.set_position(0);
+        self.started = true;
     }
 
     fn update(&mut self, n: usize) {
-        if !*self.started.lock().unwrap() {
+        if !self.started {
             return;
         }
-        let bar = self.inner.lock().unwrap();
-        let pos = bar.position().saturating_add(n as u64);
-        bar.set_position(pos);
+        let pos = self.bar.position().saturating_add(n as u64);
+        self.bar.set_position(pos);
     }
 
     fn finish(&mut self) {
-        let mut started = self.started.lock().unwrap();
-        if !*started {
+        if !self.started {
             return;
         }
-        let bar = self.inner.lock().unwrap();
-        bar.finish_and_clear();
-        *started = false;
+        self.bar.finish_and_clear();
+        self.started = false;
     }
 }

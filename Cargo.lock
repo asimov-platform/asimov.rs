@@ -818,9 +818,9 @@ dependencies = [
 name = "asimov-huggingface"
 version = "25.0.0-dev.23"
 dependencies = [
- "anyhow",
  "hf-hub",
  "indicatif",
+ "thiserror 2.0.16",
 ]
 
 [[package]]

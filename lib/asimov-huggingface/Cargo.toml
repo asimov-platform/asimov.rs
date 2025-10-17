@@ -21,6 +21,6 @@ tracing = []
 unstable = []
 
 [dependencies]
-hf-hub = { workspace = true }
-indicatif = { workspace = true }
-anyhow = "1.0.97"
+hf-hub.workspace = true
+indicatif.workspace = true
+thiserror.workspace = true

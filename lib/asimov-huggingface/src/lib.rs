@@ -15,3 +15,21 @@ pub use ensure::*;
 mod progress;
 pub use progress::*;
 
+use thiserror::Error;
+use hf_hub::api::sync::ApiError;
+use std::path::PathBuf;
+
+#[derive(Debug, Error)]
+pub enum HuggingfaceError {
+    #[error("failed to access Hugging Face API: {0}")]
+    Api(#[from] ApiError),
+
+    #[error("snapshot is empty")]
+    EmptySnapshot,
+
+    #[error("failed to download file `{0}`")]
+    Download(PathBuf),
+}
+
+pub type Result<T> = std::result::Result<T, HuggingfaceError>;
+
