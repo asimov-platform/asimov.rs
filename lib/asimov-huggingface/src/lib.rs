@@ -1,0 +1,17 @@
+// This is free and unencumbered software released into the public domain.
+
+//! Hugging Face helpers for model downloads with unified progress bar.
+//!
+//! ```no_run
+//! use asimov_huggingface::{ensure_file, ensure_snapshot};
+//!
+//! let file = ensure_file("facebook/dinov2-base", "pytorch_model.bin").unwrap();
+//! let dir = ensure_snapshot("julien-c/dummy-unknown", None).unwrap();
+//! ```
+
+mod ensure;
+pub use ensure::*;
+
+mod progress;
+pub use progress::*;
+
