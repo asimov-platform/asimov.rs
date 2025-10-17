@@ -33,7 +33,10 @@ impl Default for Options {
 
 #[derive(Clone, Debug)]
 pub struct Registry {
-    dir: std::path::PathBuf,
+    install_dir: PathBuf,
+    enable_dir: PathBuf,
+    exec_dir: PathBuf,
+    legacy_modules_dir: Option<PathBuf>,
     options: Options,
 }
 
@@ -46,28 +49,49 @@ impl Default for Registry {
 }
 
 impl Registry {
-    pub fn new(asimov_dir: impl Into<std::path::PathBuf>, options: Options) -> Self {
+    pub fn new(asimov_dir: impl Into<PathBuf>, options: Options) -> Self {
+        let dir = asimov_dir.into();
         Self {
-            dir: asimov_dir.into(),
+            install_dir: dir.join("modules").join("installed"),
+            enable_dir: dir.join("modules").join("enabled"),
+            exec_dir: dir.join("libexec"),
+            legacy_modules_dir: Some(dir.join("modules")),
+            options,
+        }
+    }
+
+    pub fn with_dirs<S1, S2, S3>(
+        install_dir: S1,
+        enable_dir: S2,
+        exec_dir: S3,
+        options: Options,
+    ) -> Self
+    where
+        S1: Into<PathBuf>,
+        S2: Into<PathBuf>,
+        S3: Into<PathBuf>,
+    {
+        Self {
+            install_dir: install_dir.into(),
+            enable_dir: enable_dir.into(),
+            exec_dir: exec_dir.into(),
+            legacy_modules_dir: None,
             options,
         }
     }
 
     pub async fn create_file_tree(&self) -> Result<(), CreateFileTreeError> {
-        let install_dir = self.install_dir();
-        tokio::fs::create_dir_all(&install_dir)
+        tokio::fs::create_dir_all(&self.install_dir)
             .await
-            .map_err(|e| CreateFileTreeError::InstallDir(install_dir, e))?;
+            .map_err(|e| CreateFileTreeError::InstallDir(self.install_dir.clone(), e))?;
 
-        let enable_dir = self.enable_dir();
-        tokio::fs::create_dir_all(&enable_dir)
+        tokio::fs::create_dir_all(&self.enable_dir)
             .await
-            .map_err(|e| CreateFileTreeError::EnableDir(enable_dir, e))?;
+            .map_err(|e| CreateFileTreeError::EnableDir(self.enable_dir.clone(), e))?;
 
-        let exec_dir = self.exec_dir();
-        tokio::fs::create_dir_all(&exec_dir)
+        tokio::fs::create_dir_all(&self.exec_dir)
             .await
-            .map_err(|e| CreateFileTreeError::ExecDir(exec_dir, e))?;
+            .map_err(|e| CreateFileTreeError::ExecDir(self.exec_dir.clone(), e))?;
 
         Ok(())
     }
@@ -82,7 +106,7 @@ impl Registry {
             return Err(AddManifestError::AlreadyInstalled);
         }
 
-        let manifest_path = self.install_dir().join(module_name).with_extension("json");
+        let manifest_path = self.install_dir.join(module_name).with_extension("json");
 
         let serialized = serde_json::to_vec_pretty(&manifest).map_err(SerializeError::Json)?;
 
@@ -132,7 +156,7 @@ impl Registry {
         path: impl AsRef<Path>,
     ) -> Result<(), AddBinaryError> {
         let source_path = path.as_ref();
-        let target_path = self.exec_dir().join(name.as_ref());
+        let target_path = self.exec_dir.join(name.as_ref());
 
         if tokio::fs::try_exists(&target_path).await.unwrap_or(false) {
             return Err(AddBinaryError::AlreadyExists);
@@ -158,7 +182,7 @@ impl Registry {
     }
 
     pub async fn remove_binary(&self, name: impl AsRef<str>) -> Result<(), RemoveBinaryError> {
-        let binary_path = self.exec_dir().join(name.as_ref());
+        let binary_path = self.exec_dir.join(name.as_ref());
 
         tokio::fs::remove_file(&binary_path).await.or_else(|e| {
             if e.kind() == io::ErrorKind::NotFound {
@@ -172,40 +196,45 @@ impl Registry {
     pub async fn installed_modules(
         &self,
     ) -> Result<Vec<InstalledModuleManifest>, InstalledModulesError> {
-        let installed_dir = self.install_dir();
+        let installed_dir = &self.install_dir;
 
         let mut modules = Vec::new();
 
         if self.options.search_legacy_path || self.options.auto_migrate_legacy_path {
-            if let Ok(mut read_dir) = tokio::fs::read_dir(self.dir.join("modules")).await {
-                while let Ok(Some(entry)) = read_dir.next_entry().await {
-                    let path = entry.path();
-                    if !tokio::fs::metadata(&path)
-                        .await
-                        .map(|md| md.is_file())
-                        .unwrap_or(false)
-                    {
-                        continue;
-                    }
+            if let Some(modules_dir) = &self.legacy_modules_dir {
+                if let Ok(mut read_dir) = tokio::fs::read_dir(modules_dir).await {
+                    while let Ok(Some(entry)) = read_dir.next_entry().await {
+                        let path = entry.path();
+                        if !tokio::fs::metadata(&path)
+                            .await
+                            .map(|md| md.is_file())
+                            .unwrap_or(false)
+                        {
+                            continue;
+                        }
 
-                    let Some(file_name) = path.file_name().and_then(|n| n.to_str()) else {
-                        continue;
-                    };
+                        let Some(file_name) = path.file_name().and_then(|n| n.to_str()) else {
+                            continue;
+                        };
 
-                    if let Ok(manifest) = read_manifest(&path).await {
-                        if self.options.auto_migrate_legacy_path {
-                            tracing::debug!(?path, "found a legacy manifest file, migrating...");
+                        if let Ok(manifest) = read_manifest(&path).await {
+                            if self.options.auto_migrate_legacy_path {
+                                tracing::debug!(
+                                    ?path,
+                                    "found a legacy manifest file, migrating..."
+                                );
 
-                            let dst = installed_dir.join(file_name);
+                                let dst = installed_dir.join(file_name);
 
-                            tokio::fs::rename(&path, &dst)
+                                tokio::fs::rename(&path, &dst)
                                 .await
                                 .inspect_err(|e| {
                                     tracing::debug!(from = ?path, to = ?dst, "failed to migrate legacy manifest file: {e}")
                                 })
                                 .ok();
-                        } else {
-                            modules.push(manifest);
+                            } else {
+                                modules.push(manifest);
+                            }
                         }
                     }
                 }
@@ -244,7 +273,7 @@ impl Registry {
     pub async fn enabled_modules(
         &self,
     ) -> Result<Vec<InstalledModuleManifest>, EnabledModulesError> {
-        let enabled_dir = self.enable_dir();
+        let enabled_dir = &self.enable_dir;
 
         let mut read_dir = tokio::fs::read_dir(&enabled_dir)
             .await
@@ -301,7 +330,7 @@ impl Registry {
         &self,
         module_name: impl AsRef<str>,
     ) -> Result<bool, IsModuleEnabledError> {
-        let path = self.enable_dir().join(module_name.as_ref());
+        let path = self.enable_dir.join(module_name.as_ref());
 
         tokio::fs::symlink_metadata(&path)
             .await
@@ -321,17 +350,28 @@ impl Registry {
             .await?
             .ok_or(EnableError::NotInstalled)?;
 
-        let target_path = if target_path.starts_with(self.install_dir()) {
-            // manifest is in installed directory: ../installed/manifest.json
-            std::path::PathBuf::from("..")
-                .join("installed")
-                .join(target_path.file_name().unwrap())
+        let target_path = if self
+            .install_dir
+            .parent()
+            .zip(self.enable_dir.parent())
+            .is_some_and(|(a, b)| a == b)
+        {
+            // This scope only runs if install_dir and enable_dir share the same parent directory.
+
+            if target_path.starts_with(&self.install_dir) {
+                // manifest is in installed directory: ../installed/manifest.json
+                std::path::PathBuf::from("..")
+                    .join(self.install_dir.file_name().unwrap())
+                    .join(target_path.file_name().unwrap())
+            } else {
+                // manifest is in legacy location: ../manifest.yaml
+                std::path::PathBuf::from("..").join(target_path.file_name().unwrap())
+            }
         } else {
-            // manifest is in legacy location: ../manifest.yaml
-            std::path::PathBuf::from("..").join(target_path.file_name().unwrap())
+            target_path
         };
 
-        let src_path = self.enable_dir().join(module_name.as_ref());
+        let src_path = self.enable_dir.join(module_name.as_ref());
 
         #[cfg(unix)]
         let fut = tokio::fs::symlink(&target_path, &src_path);
@@ -358,7 +398,7 @@ impl Registry {
     }
 
     pub async fn disable_module(&self, module_name: impl AsRef<str>) -> Result<(), DisableError> {
-        let path = self.enable_dir().join(module_name.as_ref());
+        let path = self.enable_dir.join(module_name.as_ref());
 
         tokio::fs::remove_file(&path)
             .await
@@ -376,7 +416,7 @@ impl Registry {
         &self,
         module_name: impl AsRef<str>,
     ) -> Result<Option<PathBuf>, FindManifestError> {
-        let install_dir = self.install_dir();
+        let install_dir = &self.install_dir;
 
         let module_name = module_name.as_ref();
 
@@ -436,18 +476,6 @@ impl Registry {
         }
 
         Ok(None)
-    }
-
-    fn install_dir(&self) -> PathBuf {
-        self.dir.join("modules").join("installed")
-    }
-
-    fn enable_dir(&self) -> PathBuf {
-        self.dir.join("modules").join("enabled")
-    }
-
-    fn exec_dir(&self) -> PathBuf {
-        self.dir.join("libexec")
     }
 }
 
