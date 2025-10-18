@@ -26,6 +26,9 @@ pub use input::*;
 pub mod output;
 pub use output::*;
 
+pub mod pipeline;
+pub use pipeline::*;
+
 #[cfg(feature = "std")]
 pub mod programs;
 #[cfg(feature = "std")]
