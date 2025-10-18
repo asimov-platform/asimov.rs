@@ -28,15 +28,15 @@ pub enum FromDirError {
     Insert {
         path: std::path::PathBuf,
         #[source]
-        source: UrlParseError,
+        source: InsertManifestError,
     },
 }
 
 #[cfg(all(feature = "cli", feature = "std"))]
 impl From<FromDirError> for clientele::SysexitsError {
     fn from(value: FromDirError) -> Self {
-        use FromDirError::*;
         use clientele::SysexitsError::*;
+        use FromDirError::*;
         match value {
             ManifestDirIo { .. } => EX_IOERR,
             ManifestIo { .. } => EX_IOERR,
@@ -45,6 +45,14 @@ impl From<FromDirError> for clientele::SysexitsError {
             Insert { source, .. } => source.into(),
         }
     }
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum InsertManifestError {
+    #[error("invalid url: {0}")]
+    Url(#[from] UrlParseError),
+    #[error("invalid content type: {0}")]
+    ContentType(#[from] mime::FromStrError),
 }
 
 #[derive(Clone, Debug, thiserror::Error)]
@@ -60,8 +68,8 @@ pub enum UrlParseError {
 }
 
 #[cfg(all(feature = "cli", feature = "std"))]
-impl From<UrlParseError> for clientele::SysexitsError {
-    fn from(_value: UrlParseError) -> Self {
+impl From<InsertManifestError> for clientele::SysexitsError {
+    fn from(_value: InsertManifestError) -> Self {
         clientele::SysexitsError::EX_USAGE
     }
 }
