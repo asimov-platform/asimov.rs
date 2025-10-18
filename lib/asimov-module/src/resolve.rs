@@ -7,7 +7,7 @@ use alloc::{
     string::{String, ToString},
     vec::Vec,
 };
-use core::{borrow::Borrow, convert::Infallible};
+use core::{borrow::Borrow, convert::Infallible, str::FromStr};
 use error::UrlParseError;
 
 pub mod error;
@@ -16,6 +16,7 @@ pub mod error;
 pub struct Resolver {
     modules: BTreeMap<String, Rc<Module>>,
     file_extensions: BTreeMap<String, Vec<Rc<Module>>>,
+    content_types: BTreeMap<mime::Mime, Vec<Rc<Module>>>,
     nodes: slab::Slab<Node>,
     roots: BTreeMap<Sect, usize>,
 }
@@ -92,22 +93,10 @@ impl Resolver {
             .collect())
     }
 
-    pub fn insert_file_extension(
-        &mut self,
-        module: &str,
-        file_extension: &str,
-    ) -> Result<(), Infallible> {
-        let module = self.add_module(module);
-
-        let ext = file_extension
-            .strip_prefix(".")
-            .unwrap_or(file_extension)
-            .to_string();
-
-        self.file_extensions.entry(ext).or_default().push(module);
-
-        Ok(())
+    pub fn resolve_content_type(&self, content_type: &mime::Mime) -> Option<Vec<Rc<Module>>> {
+        self.content_types.get(content_type).cloned()
     }
+
     pub fn insert_manifest(&mut self, manifest: &ModuleManifest) -> Result<(), UrlParseError> {
         for protocol in &manifest.handles.url_protocols {
             self.insert_protocol(&manifest.name, protocol).ok();
@@ -122,6 +111,41 @@ impl Resolver {
             self.insert_file_extension(&manifest.name, file_extension)
                 .ok();
         }
+        for content_type in &manifest.handles.content_types {
+            let content_type = mime::Mime::from_str(content_type).unwrap();
+            self.insert_content_type(&manifest.name, content_type).ok();
+        }
+        Ok(())
+    }
+
+    pub fn insert_content_type(
+        &mut self,
+        module: &str,
+        content_type: mime::Mime,
+    ) -> Result<(), Infallible> {
+        let module = self.add_module(module);
+
+        self.content_types
+            .entry(content_type)
+            .or_default()
+            .push(module);
+
+        Ok(())
+    }
+    pub fn insert_file_extension(
+        &mut self,
+        module: &str,
+        file_extension: &str,
+    ) -> Result<(), Infallible> {
+        let module = self.add_module(module);
+
+        let ext = file_extension
+            .strip_prefix(".")
+            .unwrap_or(file_extension)
+            .to_string();
+
+        self.file_extensions.entry(ext).or_default().push(module);
+
         Ok(())
     }
     pub fn insert_protocol(&mut self, module: &str, protocol: &str) -> Result<(), Infallible> {
@@ -461,6 +485,26 @@ mod test {
                 want
             );
         }
+    }
+
+    #[test]
+    fn content_type() {
+        let mut resolver = Resolver::default();
+        resolver
+            .insert_content_type("starstar", mime::STAR_STAR)
+            .unwrap();
+        resolver
+            .insert_content_type("textstar", mime::TEXT_STAR)
+            .unwrap();
+        resolver
+            .insert_content_type("textplain", mime::TEXT_PLAIN)
+            .unwrap();
+
+        assert!(resolver
+            .resolve_content_type(&mime::TEXT_PLAIN)
+            .expect("resolve succeeds")
+            .iter()
+            .any(|out| out.name == "textplain"));
     }
 
     #[test]
