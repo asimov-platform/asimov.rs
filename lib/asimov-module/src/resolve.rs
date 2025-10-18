@@ -93,7 +93,7 @@ impl Resolver {
             .collect())
     }
 
-    pub fn resolve_content_type(&self, content_type: &mime::Mime) -> Option<Vec<Rc<Module>>> {
+    pub fn resolve_content_type(&self, content_type: &mime::Mime) -> Vec<Rc<Module>> {
         let mut modules: BTreeSet<Rc<Module>> = BTreeSet::new();
 
         let exact = self.content_types.get(content_type);
@@ -109,7 +109,7 @@ impl Resolver {
         let starstar = self.content_types.get(&mime::STAR_STAR);
         modules.extend(starstar.into_iter().flatten().cloned());
 
-        Some(modules.into_iter().collect())
+        modules.into_iter().collect()
     }
 
     pub fn insert_manifest(
@@ -518,9 +518,7 @@ mod test {
             .insert_content_type("textplain", mime::TEXT_PLAIN)
             .unwrap();
 
-        let results = resolver
-            .resolve_content_type(&mime::TEXT_PLAIN)
-            .expect("resolve succeeds");
+        let results = resolver.resolve_content_type(&mime::TEXT_PLAIN);
 
         assert!(
             results.iter().any(|out| out.name == "starstar"),
@@ -535,9 +533,7 @@ mod test {
             "text/plain should match"
         );
 
-        let results = resolver
-            .resolve_content_type(&mime::APPLICATION_JSON)
-            .expect("resolve succeeds");
+        let results = resolver.resolve_content_type(&mime::APPLICATION_JSON);
         assert!(
             results.iter().any(|out| out.name == "starstar"),
             "*/* should match"
