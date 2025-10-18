@@ -866,6 +866,7 @@ dependencies = [
  "dogma",
  "getenv",
  "iri-string",
+ "mime",
  "secrecy",
  "serde",
  "serde_json",

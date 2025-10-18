@@ -1,6 +1,6 @@
 // This is free and unencumbered software released into the public domain.
 
-use crate::ModuleManifest;
+use crate::{ModuleManifest, resolve::error::InsertManifestError};
 use alloc::{
     collections::{btree_map::BTreeMap, btree_set::BTreeSet},
     rc::Rc,
@@ -16,6 +16,7 @@ pub mod error;
 pub struct Resolver {
     modules: BTreeMap<String, Rc<Module>>,
     file_extensions: BTreeMap<String, Vec<Rc<Module>>>,
+    content_types: BTreeMap<mime::Mime, Vec<Rc<Module>>>,
     nodes: slab::Slab<Node>,
     roots: BTreeMap<Sect, usize>,
 }
@@ -92,6 +93,63 @@ impl Resolver {
             .collect())
     }
 
+    pub fn resolve_content_type(&self, content_type: &mime::Mime) -> Vec<Rc<Module>> {
+        let mut modules: BTreeSet<Rc<Module>> = BTreeSet::new();
+
+        let exact = self.content_types.get(content_type);
+        modules.extend(exact.into_iter().flatten().cloned());
+
+        let toptype = content_type.type_();
+        let star_sub = alloc::format!("{toptype}/*");
+        if let Ok(star_sub) = star_sub.parse() {
+            let matches = self.content_types.get(&star_sub);
+            modules.extend(matches.into_iter().flatten().cloned());
+        }
+
+        let starstar = self.content_types.get(&mime::STAR_STAR);
+        modules.extend(starstar.into_iter().flatten().cloned());
+
+        modules.into_iter().collect()
+    }
+
+    pub fn insert_manifest(
+        &mut self,
+        manifest: &ModuleManifest,
+    ) -> Result<(), InsertManifestError> {
+        for protocol in &manifest.handles.url_protocols {
+            self.insert_protocol(&manifest.name, protocol).ok();
+        }
+        for prefix in &manifest.handles.url_prefixes {
+            self.insert_prefix(&manifest.name, prefix)?;
+        }
+        for pattern in &manifest.handles.url_patterns {
+            self.insert_pattern(&manifest.name, pattern)?;
+        }
+        for file_extension in &manifest.handles.file_extensions {
+            self.insert_file_extension(&manifest.name, file_extension)
+                .ok();
+        }
+        for content_type in &manifest.handles.content_types {
+            let content_type = content_type.parse()?;
+            self.insert_content_type(&manifest.name, content_type).ok();
+        }
+        Ok(())
+    }
+
+    pub fn insert_content_type(
+        &mut self,
+        module: &str,
+        content_type: mime::Mime,
+    ) -> Result<(), Infallible> {
+        let module = self.add_module(module);
+
+        self.content_types
+            .entry(content_type)
+            .or_default()
+            .push(module);
+
+        Ok(())
+    }
     pub fn insert_file_extension(
         &mut self,
         module: &str,
@@ -106,22 +164,6 @@ impl Resolver {
 
         self.file_extensions.entry(ext).or_default().push(module);
 
-        Ok(())
-    }
-    pub fn insert_manifest(&mut self, manifest: &ModuleManifest) -> Result<(), UrlParseError> {
-        for protocol in &manifest.handles.url_protocols {
-            self.insert_protocol(&manifest.name, protocol).ok();
-        }
-        for prefix in &manifest.handles.url_prefixes {
-            self.insert_prefix(&manifest.name, prefix)?;
-        }
-        for pattern in &manifest.handles.url_patterns {
-            self.insert_pattern(&manifest.name, pattern)?;
-        }
-        for file_extension in &manifest.handles.file_extensions {
-            self.insert_file_extension(&manifest.name, file_extension)
-                .ok();
-        }
         Ok(())
     }
     pub fn insert_protocol(&mut self, module: &str, protocol: &str) -> Result<(), Infallible> {
@@ -211,7 +253,7 @@ impl Resolver {
         Ok(resolver)
     }
 
-    pub fn try_from_iter<I, T>(mut iter: I) -> Result<Self, UrlParseError>
+    pub fn try_from_iter<I, T>(mut iter: I) -> Result<Self, InsertManifestError>
     where
         I: Iterator<Item = T>,
         T: Borrow<ModuleManifest>,
@@ -265,7 +307,7 @@ impl Resolver {
 }
 
 impl TryFrom<&[ModuleManifest]> for Resolver {
-    type Error = UrlParseError;
+    type Error = InsertManifestError;
 
     fn try_from(value: &[ModuleManifest]) -> Result<Self, Self::Error> {
         Resolver::try_from_iter(value.iter())
@@ -461,6 +503,49 @@ mod test {
                 want
             );
         }
+    }
+
+    #[test]
+    fn content_type() {
+        let mut resolver = Resolver::default();
+        resolver
+            .insert_content_type("starstar", mime::STAR_STAR)
+            .unwrap();
+        resolver
+            .insert_content_type("textstar", mime::TEXT_STAR)
+            .unwrap();
+        resolver
+            .insert_content_type("textplain", mime::TEXT_PLAIN)
+            .unwrap();
+
+        let results = resolver.resolve_content_type(&mime::TEXT_PLAIN);
+
+        assert!(
+            results.iter().any(|out| out.name == "starstar"),
+            "*/* should match"
+        );
+        assert!(
+            results.iter().any(|out| out.name == "textstar"),
+            "text/* should match"
+        );
+        assert!(
+            results.iter().any(|out| out.name == "textplain"),
+            "text/plain should match"
+        );
+
+        let results = resolver.resolve_content_type(&mime::APPLICATION_JSON);
+        assert!(
+            results.iter().any(|out| out.name == "starstar"),
+            "*/* should match"
+        );
+        assert!(
+            !results.iter().any(|out| out.name == "textstar"),
+            "text/* shouldn't match"
+        );
+        assert!(
+            !results.iter().any(|out| out.name == "textplain"),
+            "text/plain shouldn't match"
+        );
     }
 
     #[test]
