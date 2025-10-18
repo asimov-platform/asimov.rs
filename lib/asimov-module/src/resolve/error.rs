@@ -35,8 +35,8 @@ pub enum FromDirError {
 #[cfg(all(feature = "cli", feature = "std"))]
 impl From<FromDirError> for clientele::SysexitsError {
     fn from(value: FromDirError) -> Self {
-        use clientele::SysexitsError::*;
         use FromDirError::*;
+        use clientele::SysexitsError::*;
         match value {
             ManifestDirIo { .. } => EX_IOERR,
             ManifestIo { .. } => EX_IOERR,

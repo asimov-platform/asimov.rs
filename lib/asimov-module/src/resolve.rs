@@ -1,6 +1,6 @@
 // This is free and unencumbered software released into the public domain.
 
-use crate::{resolve::error::InsertManifestError, ModuleManifest};
+use crate::{ModuleManifest, resolve::error::InsertManifestError};
 use alloc::{
     collections::{btree_map::BTreeMap, btree_set::BTreeSet},
     rc::Rc,
