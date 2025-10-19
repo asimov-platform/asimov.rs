@@ -11,6 +11,11 @@ pub use clientele::SysexitsError;
 pub use tokio::process::Command;
 
 #[cfg(feature = "std")]
+pub mod pipeline;
+#[cfg(feature = "std")]
+pub use pipeline::*;
+
+#[cfg(feature = "std")]
 pub mod executor;
 #[cfg(feature = "std")]
 pub use executor::*;
