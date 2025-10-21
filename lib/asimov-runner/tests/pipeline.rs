@@ -14,9 +14,14 @@ fn test_pipeline() {
                 program: "cat".to_string(),
                 args: vec![],
             },
+            PipelineStep::Writer {
+                program: "cat".to_string(),
+                args: vec![],
+            },
         ],
     };
 
     let result = pipeline.execute();
     assert!(result.is_ok());
+    assert_eq!(result.unwrap().unwrap().into_inner(), b"hello world\n");
 }

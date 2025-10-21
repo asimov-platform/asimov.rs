@@ -21,14 +21,14 @@ impl Pipeline {
 
             if let Some(stdout) = last_stdout.take() {
                 cmd.stdin(std::process::Stdio::from(stdout));
+                cmd.stdout(Stdio::piped());
+            } else {
+                cmd.stdin(Stdio::null());
+                cmd.stdout(Stdio::piped());
             }
-
-            // cmd.stdout(Stdio::piped());
-            // cmd.stdin(Stdio::piped());
 
             let mut child = cmd.spawn()?;
             last_stdout = child.stdout.take();
-            // last_stdout = Some(child.stdout.take().unwrap());
 
             children.push(child);
         }
@@ -37,10 +37,12 @@ impl Pipeline {
             child.wait()?;
         }
 
-        let mut last_stdout = children.last_mut().unwrap().stdout.take().unwrap();
-        let mut output = Vec::new();
-        last_stdout.read_to_end(&mut output)?;
+        if let Some(mut stdout) = last_stdout.take() {
+            let mut output = Vec::new();
+            stdout.read_to_end(&mut output)?;
+            return Ok(Some(Cursor::new(output)));
+        }
 
-        Ok(Some(Cursor::new(output)))
+        Ok(None)
     }
 }
