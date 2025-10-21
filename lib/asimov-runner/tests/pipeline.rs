@@ -3,18 +3,18 @@
 use asimov_runner::{Pipeline, PipelineStep};
 
 #[test]
-fn test_pipeline() {
+fn test_pipeline_0() {
     let pipeline = Pipeline {
         steps: vec![
-            PipelineStep::Reader {
+            PipelineStep::Custom {
                 program: "echo".to_string(),
                 args: vec!["hello world".to_string()],
             },
-            PipelineStep::Writer {
+            PipelineStep::Custom {
                 program: "cat".to_string(),
                 args: vec![],
             },
-            PipelineStep::Writer {
+            PipelineStep::Custom {
                 program: "cat".to_string(),
                 args: vec![],
             },
