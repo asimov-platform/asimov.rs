@@ -280,5 +280,29 @@ pub struct Requires {
         feature = "serde",
         serde(default, skip_serializing_if = "BTreeMap::is_empty")
     )]
-    pub models: BTreeMap<String, BTreeMap<String, String>>,
+    pub models: BTreeMap<String, RequiredModel>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(serde::Deserialize, serde::Serialize),
+    serde(untagged)
+)]
+pub enum RequiredModel {
+    /// Just a direct URL string:
+    /// ```yaml
+    /// hf:first/model: https://huggingface.co/...
+    /// ```
+    Url(String),
+
+    /// Multiple variants:
+    /// ```yaml
+    /// hf:second/model:
+    ///   small: https://huggingface.co/...
+    ///   medium: https://huggingface.co/...
+    ///   large: https://huggingface.co/...
+    /// ```
+    Choices(BTreeMap<String, String>),
+}
 }
