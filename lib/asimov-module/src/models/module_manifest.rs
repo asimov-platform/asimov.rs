@@ -303,7 +303,49 @@ pub enum RequiredModel {
     ///   medium: https://huggingface.co/...
     ///   large: https://huggingface.co/...
     /// ```
-    Choices(BTreeMap<String, String>),
+    #[cfg_attr(
+        feature = "serde",
+        serde(deserialize_with = "ordered::deserialize_ordered")
+    )]
+    Choices(Vec<(String, String)>),
+}
+
+#[cfg(feature = "serde")]
+mod ordered {
+    use super::*;
+    use serde::{
+        Deserializer,
+        de::{MapAccess, Visitor},
+    };
+    use std::fmt;
+
+    pub fn deserialize_ordered<'de, D>(deserializer: D) -> Result<Vec<(String, String)>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        struct OrderedVisitor;
+
+        impl<'de> Visitor<'de> for OrderedVisitor {
+            type Value = Vec<(String, String)>;
+
+            fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
+                f.write_str("a map of string keys to string values (preserving order)")
+            }
+
+            fn visit_map<A>(self, mut access: A) -> Result<Self::Value, A::Error>
+            where
+                A: MapAccess<'de>,
+            {
+                let mut items = Vec::with_capacity(access.size_hint().unwrap_or(0));
+                while let Some((k, v)) = access.next_entry::<String, String>()? {
+                    items.push((k, v));
+                }
+                Ok(items)
+            }
+        }
+
+        deserializer.deserialize_map(OrderedVisitor)
+    }
 }
 
 #[cfg(test)]
@@ -434,11 +476,11 @@ requires:
         );
 
         assert_eq!(
-            RequiredModel::Choices(BTreeMap::from([
+            RequiredModel::Choices(vec![
                 ("small".into(), "small_url".into()),
                 ("medium".into(), "medium_url".into()),
                 ("large".into(), "large_url".into())
-            ])),
+            ]),
             requires.models["hf:second/model"]
         );
     }
