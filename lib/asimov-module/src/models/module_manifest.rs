@@ -2,7 +2,7 @@
 
 use alloc::{collections::BTreeMap, string::String, vec::Vec};
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub struct ModuleManifest {
     pub name: String,
@@ -135,7 +135,7 @@ impl ModuleManifest {
     }
 }
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub struct Provides {
     pub programs: Vec<String>,
@@ -157,7 +157,7 @@ where
     Ok(Option::<Vec<T>>::deserialize(deserializer)?.unwrap_or_default())
 }
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub struct Handles {
     #[cfg_attr(
@@ -221,7 +221,7 @@ impl Handles {
     }
 }
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub struct Configuration {
     #[cfg_attr(
@@ -231,7 +231,7 @@ pub struct Configuration {
     pub variables: Vec<ConfigurationVariable>,
 }
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub struct ConfigurationVariable {
     /// The name of the variable. Configured variables are by default saved in
@@ -262,7 +262,7 @@ pub struct ConfigurationVariable {
     pub default_value: Option<String>,
 }
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub struct Requires {
     /// List of modules that this module depends on.
