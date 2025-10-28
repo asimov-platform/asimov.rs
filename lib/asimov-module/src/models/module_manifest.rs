@@ -305,4 +305,141 @@ pub enum RequiredModel {
     /// ```
     Choices(BTreeMap<String, String>),
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::*;
+
+    #[test]
+    fn test_deser() {
+        let yaml = r#"
+name: example
+label: Example
+summary: Example Module
+links:
+  - https://github.com/asimov-platform/asimov.rs/tree/master/lib/asimov-module
+
+provides:
+  programs:
+    - asimov-example-module
+
+handles:
+  content_types:
+    - content_type
+  file_extensions:
+    - file_extension
+  url_patterns:
+    - pattern
+  url_prefixes:
+    - prefix
+  url_protocols:
+    - protocol
+
+config:
+  variables:
+    - name: api_key
+      description: "api key to authorize requests"
+      default_value: "foobar"
+      environment: API_KEY
+
+requires:
+  modules:
+    - other
+  models:
+    hf:first/model: first_url
+    hf:second/model:
+      small: small_url
+      medium: medium_url
+      large: large_url
+"#;
+
+        let dec: ModuleManifest = serde_yaml_ng::from_str(yaml).expect("deser should succeed");
+
+        assert_eq!("example", dec.name);
+        assert_eq!("Example", dec.label);
+        assert_eq!("Example Module", dec.summary);
+
+        assert_eq!(
+            vec!["https://github.com/asimov-platform/asimov.rs/tree/master/lib/asimov-module"],
+            dec.links
+        );
+
+        assert_eq!(1, dec.provides.programs.len());
+        assert_eq!(
+            "asimov-example-module",
+            dec.provides.programs.first().unwrap()
+        );
+
+        assert_eq!(
+            "content_type",
+            dec.handles
+                .content_types
+                .first()
+                .expect("should have content_types")
+        );
+
+        assert_eq!(
+            "file_extension",
+            dec.handles
+                .file_extensions
+                .first()
+                .expect("should have file_extensions")
+        );
+
+        assert_eq!(
+            "pattern",
+            dec.handles
+                .url_patterns
+                .first()
+                .expect("should have url_patterns")
+        );
+
+        assert_eq!(
+            "prefix",
+            dec.handles
+                .url_prefixes
+                .first()
+                .expect("should have url_prefixes")
+        );
+
+        assert_eq!(
+            "protocol",
+            dec.handles
+                .url_protocols
+                .first()
+                .expect("should have url_protocols")
+        );
+
+        assert_eq!(
+            Some(&ConfigurationVariable {
+                name: "api_key".into(),
+                description: Some("api key to authorize requests".into()),
+                environment: Some("API_KEY".into()),
+                default_value: Some("foobar".into())
+            }),
+            dec.config.expect("should have config").variables.first()
+        );
+
+        let requires = dec.requires.expect("should have requires");
+
+        assert_eq!(1, requires.modules.len());
+        assert_eq!("other", requires.modules.first().unwrap());
+
+        assert_eq!(2, requires.models.len());
+
+        assert_eq!(
+            RequiredModel::Url("first_url".into()),
+            requires.models["hf:first/model"]
+        );
+
+        assert_eq!(
+            RequiredModel::Choices(BTreeMap::from([
+                ("small".into(), "small_url".into()),
+                ("medium".into(), "medium_url".into()),
+                ("large".into(), "large_url".into())
+            ])),
+            requires.models["hf:second/model"]
+        );
+    }
 }
