@@ -20,6 +20,8 @@ pub enum InstallError {
 
 #[derive(Debug, Error)]
 pub enum UpgradeError {
+    #[error("failed to check the latest version of module: {0}")]
+    Fetch(#[from] FetchError),
     #[error("unable to read current version of module: {0}")]
     CheckVersion(#[from] registry::ModuleVersionError),
     #[error("failed to create directory for downloading: {0}")]

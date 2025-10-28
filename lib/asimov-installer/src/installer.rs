@@ -31,6 +31,12 @@ impl Default for Installer {
     }
 }
 
+#[derive(Clone, Debug, bon::Builder)]
+#[builder(on(String, into))]
+pub struct InstallOptions {
+    pub version: Option<String>,
+}
+
 impl Installer {
     pub fn new(client: reqwest::Client, registry: Registry) -> Self {
         Self { client, registry }
@@ -39,15 +45,15 @@ impl Installer {
     pub async fn install_module(
         &self,
         module_name: impl AsRef<str>,
-        version: impl AsRef<str>,
+        options: &InstallOptions,
     ) -> Result<(), InstallError> {
         let temp_dir = tempfile::Builder::new()
             .prefix("asimov-module-installer")
             .tempdir()
             .map_err(InstallError::CreateTempDir)?;
 
-        let manifest = self
-            .preinstall(module_name.as_ref(), version.as_ref(), temp_dir.path())
+        let (manifest, version) = self
+            .preinstall(module_name.as_ref(), options, temp_dir.path())
             .await?;
 
         self.finish_install(version.as_ref(), manifest, temp_dir.path())
@@ -66,10 +72,15 @@ impl Installer {
     pub async fn upgrade_module(
         &self,
         module_name: impl AsRef<str>,
-        version: impl AsRef<str>,
+        options: &InstallOptions,
     ) -> Result<(), UpgradeError> {
         let module_name = module_name.as_ref();
-        let version = version.as_ref();
+
+        let version = if let Some(ref want_version) = options.version {
+            want_version.clone()
+        } else {
+            self.fetch_latest_release(module_name).await?
+        };
 
         let current_version = self.registry.module_version(module_name).await?;
         match current_version {
@@ -86,14 +97,14 @@ impl Installer {
         // check if currently enabled, have to re-enable after upgrade
         let was_enabled = self.registry.is_module_enabled(module_name).await?;
 
-        let manifest = self
-            .preinstall(module_name, version, temp_dir.path())
+        let (manifest, version) = self
+            .preinstall(module_name, options, temp_dir.path())
             .await?;
 
         // now ok to uninstall old version
         self.uninstall_module(module_name).await?;
 
-        self.finish_install(version, manifest, temp_dir.path())
+        self.finish_install(&version, manifest, temp_dir.path())
             .await?;
 
         if was_enabled {
@@ -126,12 +137,20 @@ impl Installer {
     async fn preinstall(
         &self,
         module_name: &str,
-        version: &str,
+        options: &InstallOptions,
         temp_dir: &Path,
-    ) -> Result<ModuleManifest, PreinstallError> {
+    ) -> Result<(ModuleManifest, String), PreinstallError> {
         let platform = platform::detect_platform();
 
-        let release = github::fetch_release(&self.client, module_name, version)
+        let version = if let Some(ref want_version) = options.version {
+            want_version.clone()
+        } else {
+            github::fetch_latest_release(&self.client, module_name)
+                .await
+                .map_err(PreinstallError::FetchRelease)?
+        };
+
+        let release = github::fetch_release(&self.client, module_name, &version)
             .await
             .map_err(PreinstallError::FetchRelease)?;
 
@@ -140,7 +159,7 @@ impl Installer {
             return Err(PreinstallError::NotAvailable(platform));
         };
 
-        let manifest = github::fetch_module_manifest(&self.client, module_name, version)
+        let manifest = github::fetch_module_manifest(&self.client, module_name, &version)
             .await
             .map_err(PreinstallError::FetchManifest)?;
 
@@ -163,7 +182,7 @@ impl Installer {
             .await
             .map_err(PreinstallError::Extract)?;
 
-        Ok(manifest)
+        Ok((manifest, version))
     }
 
     async fn finish_install(

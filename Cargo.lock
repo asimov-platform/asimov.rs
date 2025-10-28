@@ -830,6 +830,7 @@ dependencies = [
  "asimov-env",
  "asimov-module",
  "asimov-registry",
+ "bon",
  "clientele 0.3.8",
  "dogma",
  "flate2",
