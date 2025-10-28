@@ -292,16 +292,16 @@ pub struct Requires {
 pub enum RequiredModel {
     /// Just a direct URL string:
     /// ```yaml
-    /// hf:first/model: https://huggingface.co/...
+    /// hf:first/model: model_file.bin
     /// ```
     Url(String),
 
     /// Multiple variants:
     /// ```yaml
     /// hf:second/model:
-    ///   small: https://huggingface.co/...
-    ///   medium: https://huggingface.co/...
-    ///   large: https://huggingface.co/...
+    ///   small: model_small.bin
+    ///   medium: model_medium.bin
+    ///   large: model_large.bin
     /// ```
     #[cfg_attr(
         feature = "serde",
