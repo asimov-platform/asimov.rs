@@ -1,6 +1,6 @@
 // This is free and unencumbered software released into the public domain.
 
-use alloc::{string::String, vec::Vec};
+use alloc::{collections::BTreeMap, string::String, vec::Vec};
 
 #[derive(Clone, Debug, Default)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
@@ -27,6 +27,9 @@ pub struct ModuleManifest {
         serde(alias = "configuration", skip_serializing_if = "Option::is_none")
     )]
     pub config: Option<Configuration>,
+
+    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
+    pub requires: Option<Requires>,
 }
 
 #[cfg(feature = "std")]
@@ -257,4 +260,25 @@ pub struct ConfigurationVariable {
         serde(default, alias = "default", skip_serializing_if = "Option::is_none")
     )]
     pub default_value: Option<String>,
+}
+
+#[derive(Clone, Debug, Default)]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+pub struct Requires {
+    /// List of modules that this module depends on.
+    #[cfg_attr(
+        feature = "serde",
+        serde(
+            default,
+            deserialize_with = "empty_vec_if_null",
+            skip_serializing_if = "Vec::is_empty"
+        )
+    )]
+    pub modules: Vec<String>,
+
+    #[cfg_attr(
+        feature = "serde",
+        serde(default, skip_serializing_if = "BTreeMap::is_empty")
+    )]
+    pub models: BTreeMap<String, BTreeMap<String, String>>,
 }
