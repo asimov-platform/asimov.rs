@@ -46,43 +46,24 @@ impl Installer {
     /// ```rust,no_run
     /// # use asimov_installer::{Installer, InstallOptions};
     /// let i = Installer::default();
-    /// i.install_module("foo", &InstallOptions::default());
+    /// i.install_module("foobar", &InstallOptions::default());
     /// ```
     pub async fn install_module(
         &self,
         module: impl AsRef<str> + 'static,
         options: &InstallOptions,
     ) -> Result<(), InstallError> {
-        self.install_modules([module], options).await
-    }
+        let temp_dir = tempfile::Builder::new()
+            .prefix("asimov-module-installer")
+            .tempdir()
+            .map_err(InstallError::CreateTempDir)?;
 
-    /// ```rust,no_run
-    /// # use asimov_installer::{Installer, InstallOptions};
-    /// let i = Installer::default();
-    /// i.install_modules(["foo", "bar"], &InstallOptions::default());
-    /// ```
-    pub async fn install_modules<M>(
-        &self,
-        modules: M,
-        options: &InstallOptions,
-    ) -> Result<(), InstallError>
-    where
-        M: IntoIterator,
-        M::Item: AsRef<str> + 'static,
-    {
-        for module in modules {
-            let temp_dir = tempfile::Builder::new()
-                .prefix("asimov-module-installer")
-                .tempdir()
-                .map_err(InstallError::CreateTempDir)?;
+        let (manifest, version) = self
+            .preinstall(module.as_ref(), options, temp_dir.path())
+            .await?;
 
-            let (manifest, version) = self
-                .preinstall(module.as_ref(), options, temp_dir.path())
-                .await?;
-
-            self.finish_install(version.as_ref(), manifest, temp_dir.path())
-                .await?;
-        }
+        self.finish_install(version.as_ref(), manifest, temp_dir.path())
+            .await?;
 
         Ok(())
     }
@@ -97,67 +78,48 @@ impl Installer {
     /// ```rust,no_run
     /// # use asimov_installer::{Installer, InstallOptions};
     /// let i = Installer::default();
-    /// i.upgrade_module("foo", &InstallOptions::default());
+    /// i.upgrade_module("foobar", &InstallOptions::default());
     /// ```
     pub async fn upgrade_module(
         &self,
         module: impl AsRef<str> + 'static,
         options: &InstallOptions,
     ) -> Result<(), UpgradeError> {
-        self.upgrade_modules([module], options).await
-    }
+        let module_name = module.as_ref();
 
-    /// ```rust,no_run
-    /// # use asimov_installer::{Installer, InstallOptions};
-    /// let i = Installer::default();
-    /// i.upgrade_modules(["foo", "bar"], &InstallOptions::default());
-    /// ```
-    pub async fn upgrade_modules<M>(
-        &self,
-        modules: M,
-        options: &InstallOptions,
-    ) -> Result<(), UpgradeError>
-    where
-        M: IntoIterator,
-        M::Item: AsRef<str> + 'static,
-    {
-        for module in modules {
-            let module_name = module.as_ref();
+        let version = if let Some(ref want_version) = options.version {
+            want_version.clone()
+        } else {
+            self.fetch_latest_release(module_name).await?
+        };
 
-            let version = if let Some(ref want_version) = options.version {
-                want_version.clone()
-            } else {
-                self.fetch_latest_release(module_name).await?
-            };
+        let current_version = self.registry.module_version(module_name).await?;
+        match current_version {
+            Some(current) if current == version => return Ok(()),
+            Some(_) => (),
+            None => tracing::debug!(module_name, "installed module does not define a version"),
+        };
 
-            let current_version = self.registry.module_version(module_name).await?;
-            match current_version {
-                Some(current) if current == version => return Ok(()),
-                Some(_) => (),
-                None => tracing::debug!(module_name, "installed module does not define a version"),
-            };
+        let temp_dir = tempfile::Builder::new()
+            .prefix("asimov-module-installer")
+            .tempdir()
+            .map_err(UpgradeError::CreateTempDir)?;
 
-            let temp_dir = tempfile::Builder::new()
-                .prefix("asimov-module-installer")
-                .tempdir()
-                .map_err(UpgradeError::CreateTempDir)?;
+        // check if currently enabled, have to re-enable after upgrade
+        let was_enabled = self.registry.is_module_enabled(module_name).await?;
 
-            // check if currently enabled, have to re-enable after upgrade
-            let was_enabled = self.registry.is_module_enabled(module_name).await?;
+        let (manifest, version) = self
+            .preinstall(module_name, options, temp_dir.path())
+            .await?;
 
-            let (manifest, version) = self
-                .preinstall(module_name, options, temp_dir.path())
-                .await?;
+        // now ok to uninstall old version
+        self.uninstall_module(module_name).await?;
 
-            // now ok to uninstall old version
-            self.uninstall_module(module_name).await?;
+        self.finish_install(&version, manifest, temp_dir.path())
+            .await?;
 
-            self.finish_install(&version, manifest, temp_dir.path())
-                .await?;
-
-            if was_enabled {
-                self.registry.enable_module(module_name).await?;
-            }
+        if was_enabled {
+            self.registry.enable_module(module_name).await?;
         }
 
         Ok(())
