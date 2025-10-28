@@ -43,20 +43,32 @@ impl Installer {
         Self { client, registry }
     }
 
-    /// ```no_run
+    /// ```rust,no_run
+    /// # use asimov_installer::{Installer, InstallOptions};
     /// let i = Installer::default();
-    ///
-    /// i.install_module("foo", &InstallOptions::default()).await.unwrap();
-    /// i.install_module(["bar", "baz"], &InstallOptions::default()).await.unwrap();
+    /// i.install_module("foo", &InstallOptions::default());
     /// ```
-    pub async fn install_module<M>(
+    pub async fn install_module(
+        &self,
+        module: impl AsRef<str> + 'static,
+        options: &InstallOptions,
+    ) -> Result<(), InstallError> {
+        self.install_modules([module], options).await
+    }
+
+    /// ```rust,no_run
+    /// # use asimov_installer::{Installer, InstallOptions};
+    /// let i = Installer::default();
+    /// i.install_modules(["foo", "bar"], &InstallOptions::default());
+    /// ```
+    pub async fn install_modules<M>(
         &self,
         modules: M,
         options: &InstallOptions,
     ) -> Result<(), InstallError>
     where
         M: IntoIterator,
-        M::Item: AsRef<str>,
+        M::Item: AsRef<str> + 'static,
     {
         for module in modules {
             let temp_dir = tempfile::Builder::new()
@@ -82,20 +94,32 @@ impl Installer {
         github::fetch_latest_release(&self.client, module_name).await
     }
 
-    /// ```no_run
+    /// ```rust,no_run
+    /// # use asimov_installer::{Installer, InstallOptions};
     /// let i = Installer::default();
-    ///
-    /// i.upgrade_module("foo", &InstallOptions::default()).await.unwrap();
-    /// i.upgrade_module(["bar", "baz"], &InstallOptions::default()).await.unwrap();
+    /// i.upgrade_module("foo", &InstallOptions::default());
     /// ```
-    pub async fn upgrade_module<M>(
+    pub async fn upgrade_module(
+        &self,
+        module: impl AsRef<str> + 'static,
+        options: &InstallOptions,
+    ) -> Result<(), UpgradeError> {
+        self.upgrade_modules([module], options).await
+    }
+
+    /// ```rust,no_run
+    /// # use asimov_installer::{Installer, InstallOptions};
+    /// let i = Installer::default();
+    /// i.upgrade_modules(["foo", "bar"], &InstallOptions::default());
+    /// ```
+    pub async fn upgrade_modules<M>(
         &self,
         modules: M,
         options: &InstallOptions,
     ) -> Result<(), UpgradeError>
     where
         M: IntoIterator,
-        M::Item: AsRef<str>,
+        M::Item: AsRef<str> + 'static,
     {
         for module in modules {
             let module_name = module.as_ref();
