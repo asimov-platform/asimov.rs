@@ -30,7 +30,7 @@ pub use tracing_subscriber;
 #[cfg(all(feature = "std", feature = "cli", feature = "tracing"))]
 pub fn init_tracing_subscriber(
     options: &clientele::StandardOptions,
-) -> Result<(), alloc::boxed::Box<(dyn core::error::Error + Send + Sync + 'static)>> {
+) -> Result<(), alloc::boxed::Box<dyn core::error::Error + Send + Sync + 'static>> {
     extern crate std;
     tracing_subscriber::fmt()
         .with_writer(std::io::stderr)
