@@ -37,6 +37,7 @@ unstable = []
 tracing = ["dep:tracing", "dep:tracing-subscriber", "clientele?/tracing"]
 
 [dependencies]
+asimov-huggingface.workspace = true
 asimov-module.workspace = true
 asimov-registry.workspace = true
 bon.workspace = true

@@ -51,3 +51,5 @@ pub mod resolve;
 pub mod json;
 
 pub mod normalization;
+
+pub use iri_string;

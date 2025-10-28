@@ -140,6 +140,12 @@ mod common {
 
         #[error("failed to extract archive: {0}")]
         Extract(io::Error),
+
+        #[error("module manifest does not have a choice of model size `{0}`")]
+        NoSuchModel(String),
+
+        #[error("error while installing required model: {0}")]
+        InstallModel(#[from] asimov_huggingface::HuggingfaceError),
     }
 
     #[derive(Debug, Error)]

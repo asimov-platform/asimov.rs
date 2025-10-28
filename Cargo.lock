@@ -828,6 +828,7 @@ name = "asimov-installer"
 version = "25.0.0-dev.24"
 dependencies = [
  "asimov-env",
+ "asimov-huggingface",
  "asimov-module",
  "asimov-registry",
  "bon",
