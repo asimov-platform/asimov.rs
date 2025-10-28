@@ -1,7 +1,7 @@
 // This is free and unencumbered software released into the public domain.
 
 use asimov_module::{InstalledModuleManifest, ModuleManifest, tracing};
-use std::{path::Path, string::String};
+use std::{boxed::Box, path::Path, string::String};
 
 pub mod error;
 use error::*;
@@ -173,6 +173,26 @@ impl Installer {
         let manifest = github::fetch_module_manifest(&self.client, module_name, &version)
             .await
             .map_err(PreinstallError::FetchManifest)?;
+
+        if let Some(subdeps) = manifest.requires.as_ref().map(|r| r.modules.clone()) {
+            // pass the model_size option to dependencies
+            let options = InstallOptions::builder()
+                .maybe_model_size(options.model_size.clone())
+                .build();
+            for module in subdeps {
+                if self
+                    .registry
+                    .is_module_installed(&module)
+                    .await
+                    .unwrap_or(false)
+                {
+                    continue;
+                }
+                Box::pin(self.install_module(module.clone(), &options))
+                    .await
+                    .map_err(|e| PreinstallError::Dependency(module, Box::new(e)))?;
+            }
+        };
 
         let download = github::download_asset(&self.client, asset, temp_dir).await?;
 

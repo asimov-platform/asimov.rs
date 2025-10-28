@@ -3,6 +3,7 @@
 use super::platform::PlatformInfo;
 use asimov_registry::error as registry;
 use std::{
+    boxed::Box,
     io,
     string::{String, ToString as _},
 };
@@ -129,6 +130,9 @@ mod common {
         Download(#[from] DownloadError),
         #[error("failed to fetch module manifest: {0}")]
         FetchManifest(FetchError),
+
+        #[error("failed to install dependency module `{0}`: {1}")]
+        Dependency(String, Box<InstallError>),
 
         #[error("failed to fetch checksum: {0}")]
         FetchChecksum(#[from] FetchChecksumError),
