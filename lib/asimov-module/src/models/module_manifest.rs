@@ -351,7 +351,7 @@ mod ordered {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::*;
+    use std::vec;
 
     #[test]
     fn test_deser() {
