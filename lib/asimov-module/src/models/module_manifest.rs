@@ -1,8 +1,8 @@
 // This is free and unencumbered software released into the public domain.
 
-use alloc::{string::String, vec::Vec};
+use alloc::{collections::BTreeMap, string::String, vec::Vec};
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub struct ModuleManifest {
     pub name: String,
@@ -27,6 +27,9 @@ pub struct ModuleManifest {
         serde(alias = "configuration", skip_serializing_if = "Option::is_none")
     )]
     pub config: Option<Configuration>,
+
+    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
+    pub requires: Option<Requires>,
 }
 
 #[cfg(feature = "std")]
@@ -132,7 +135,7 @@ impl ModuleManifest {
     }
 }
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub struct Provides {
     pub programs: Vec<String>,
@@ -154,7 +157,7 @@ where
     Ok(Option::<Vec<T>>::deserialize(deserializer)?.unwrap_or_default())
 }
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub struct Handles {
     #[cfg_attr(
@@ -218,7 +221,7 @@ impl Handles {
     }
 }
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub struct Configuration {
     #[cfg_attr(
@@ -228,7 +231,7 @@ pub struct Configuration {
     pub variables: Vec<ConfigurationVariable>,
 }
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub struct ConfigurationVariable {
     /// The name of the variable. Configured variables are by default saved in
@@ -257,4 +260,228 @@ pub struct ConfigurationVariable {
         serde(default, alias = "default", skip_serializing_if = "Option::is_none")
     )]
     pub default_value: Option<String>,
+}
+
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+pub struct Requires {
+    /// List of modules that this module depends on.
+    #[cfg_attr(
+        feature = "serde",
+        serde(
+            default,
+            deserialize_with = "empty_vec_if_null",
+            skip_serializing_if = "Vec::is_empty"
+        )
+    )]
+    pub modules: Vec<String>,
+
+    #[cfg_attr(
+        feature = "serde",
+        serde(default, skip_serializing_if = "BTreeMap::is_empty")
+    )]
+    pub models: BTreeMap<String, RequiredModel>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(serde::Deserialize, serde::Serialize),
+    serde(untagged)
+)]
+pub enum RequiredModel {
+    /// Just a direct URL string:
+    /// ```yaml
+    /// hf:first/model: model_file.bin
+    /// ```
+    Url(String),
+
+    /// Multiple variants:
+    /// ```yaml
+    /// hf:second/model:
+    ///   small: model_small.bin
+    ///   medium: model_medium.bin
+    ///   large: model_large.bin
+    /// ```
+    #[cfg_attr(
+        feature = "serde",
+        serde(deserialize_with = "ordered::deserialize_ordered")
+    )]
+    Choices(Vec<(String, String)>),
+}
+
+#[cfg(feature = "serde")]
+mod ordered {
+    use super::*;
+    use serde::{
+        Deserializer,
+        de::{MapAccess, Visitor},
+    };
+    use std::fmt;
+
+    pub fn deserialize_ordered<'de, D>(deserializer: D) -> Result<Vec<(String, String)>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        struct OrderedVisitor;
+
+        impl<'de> Visitor<'de> for OrderedVisitor {
+            type Value = Vec<(String, String)>;
+
+            fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
+                f.write_str("a map of string keys to string values (preserving order)")
+            }
+
+            fn visit_map<A>(self, mut access: A) -> Result<Self::Value, A::Error>
+            where
+                A: MapAccess<'de>,
+            {
+                let mut items = Vec::with_capacity(access.size_hint().unwrap_or(0));
+                while let Some((k, v)) = access.next_entry::<String, String>()? {
+                    items.push((k, v));
+                }
+                Ok(items)
+            }
+        }
+
+        deserializer.deserialize_map(OrderedVisitor)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::vec;
+
+    #[test]
+    fn test_deser() {
+        let yaml = r#"
+name: example
+label: Example
+summary: Example Module
+links:
+  - https://github.com/asimov-platform/asimov.rs/tree/master/lib/asimov-module
+
+provides:
+  programs:
+    - asimov-example-module
+
+handles:
+  content_types:
+    - content_type
+  file_extensions:
+    - file_extension
+  url_patterns:
+    - pattern
+  url_prefixes:
+    - prefix
+  url_protocols:
+    - protocol
+
+config:
+  variables:
+    - name: api_key
+      description: "api key to authorize requests"
+      default_value: "foobar"
+      environment: API_KEY
+
+requires:
+  modules:
+    - other
+  models:
+    hf:first/model: first_url
+    hf:second/model:
+      small: small_url
+      medium: medium_url
+      large: large_url
+"#;
+
+        let dec: ModuleManifest = serde_yaml_ng::from_str(yaml).expect("deser should succeed");
+
+        assert_eq!("example", dec.name);
+        assert_eq!("Example", dec.label);
+        assert_eq!("Example Module", dec.summary);
+
+        assert_eq!(
+            vec!["https://github.com/asimov-platform/asimov.rs/tree/master/lib/asimov-module"],
+            dec.links
+        );
+
+        assert_eq!(1, dec.provides.programs.len());
+        assert_eq!(
+            "asimov-example-module",
+            dec.provides.programs.first().unwrap()
+        );
+
+        assert_eq!(
+            "content_type",
+            dec.handles
+                .content_types
+                .first()
+                .expect("should have content_types")
+        );
+
+        assert_eq!(
+            "file_extension",
+            dec.handles
+                .file_extensions
+                .first()
+                .expect("should have file_extensions")
+        );
+
+        assert_eq!(
+            "pattern",
+            dec.handles
+                .url_patterns
+                .first()
+                .expect("should have url_patterns")
+        );
+
+        assert_eq!(
+            "prefix",
+            dec.handles
+                .url_prefixes
+                .first()
+                .expect("should have url_prefixes")
+        );
+
+        assert_eq!(
+            "protocol",
+            dec.handles
+                .url_protocols
+                .first()
+                .expect("should have url_protocols")
+        );
+
+        assert_eq!(
+            Some(&ConfigurationVariable {
+                name: "api_key".into(),
+                description: Some("api key to authorize requests".into()),
+                environment: Some("API_KEY".into()),
+                default_value: Some("foobar".into())
+            }),
+            dec.config.expect("should have config").variables.first()
+        );
+
+        let requires = dec.requires.expect("should have requires");
+
+        assert_eq!(1, requires.modules.len());
+        assert_eq!("other", requires.modules.first().unwrap());
+
+        assert_eq!(2, requires.models.len());
+
+        assert_eq!(
+            RequiredModel::Url("first_url".into()),
+            requires.models["hf:first/model"]
+        );
+
+        assert_eq!(
+            RequiredModel::Choices(vec![
+                ("small".into(), "small_url".into()),
+                ("medium".into(), "medium_url".into()),
+                ("large".into(), "large_url".into())
+            ]),
+            requires.models["hf:second/model"]
+        );
+    }
 }

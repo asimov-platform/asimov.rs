@@ -3,6 +3,7 @@
 use super::platform::PlatformInfo;
 use asimov_registry::error as registry;
 use std::{
+    boxed::Box,
     io,
     string::{String, ToString as _},
 };
@@ -20,6 +21,8 @@ pub enum InstallError {
 
 #[derive(Debug, Error)]
 pub enum UpgradeError {
+    #[error("failed to check the latest version of module: {0}")]
+    Fetch(#[from] FetchError),
     #[error("unable to read current version of module: {0}")]
     CheckVersion(#[from] registry::ModuleVersionError),
     #[error("failed to create directory for downloading: {0}")]
@@ -128,6 +131,9 @@ mod common {
         #[error("failed to fetch module manifest: {0}")]
         FetchManifest(FetchError),
 
+        #[error("failed to install dependency module `{0}`: {1}")]
+        Dependency(String, Box<InstallError>),
+
         #[error("failed to fetch checksum: {0}")]
         FetchChecksum(#[from] FetchChecksumError),
         #[error(transparent)]
@@ -138,6 +144,12 @@ mod common {
 
         #[error("failed to extract archive: {0}")]
         Extract(io::Error),
+
+        #[error("module manifest does not have a choice of model size `{0}`")]
+        NoSuchModel(String),
+
+        #[error("error while installing required model: {0}")]
+        InstallModel(#[from] asimov_huggingface::HuggingfaceError),
     }
 
     #[derive(Debug, Error)]
