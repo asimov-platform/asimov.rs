@@ -6,6 +6,17 @@ use crate::{HuggingfaceError, Progress, Result};
 use hf_hub::{Cache, Repo, RepoType, api::sync::ApiBuilder};
 use std::path::PathBuf;
 
+/// Checks whether the specified file from a Hugging Face repository exists locally.
+///
+/// Arguments:
+/// - `repo`: repository id, e.g. `"facebook/dinov2-base"`.
+/// - `filename`: file within the repository, e.g. `"pytorch_model.bin"`.
+pub fn file_exists(repo: &str, filename: &str) -> Option<PathBuf> {
+    let cache = Cache::default();
+    let repo_id = Repo::new(repo.to_owned(), RepoType::Model);
+    cache.repo(repo_id).get(filename)
+}
+
 /// Ensures that the specified file from a Hugging Face repository is available locally.
 ///
 /// Behavior:

@@ -227,6 +227,14 @@ impl Installer {
                 let filename = match (model, &options.model_size) {
                     (RequiredModel::Url(url), None | Some(_)) => url,
                     (RequiredModel::Choices(choices), None) => {
+                        if choices
+                            .iter()
+                            .any(|(_, url)| asimov_huggingface::file_exists(repo, url).is_some())
+                        {
+                            // user didn't specify a model size/version to install
+                            // and one of the choices is already installed
+                            continue;
+                        }
                         let Some((_, model)) = choices.first() else {
                             // malformed manifest?
                             tracing::warn!(
