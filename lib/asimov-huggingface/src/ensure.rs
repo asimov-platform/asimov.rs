@@ -14,7 +14,7 @@ use std::path::PathBuf;
 pub fn file_exists(repo: &str, filename: &str) -> Option<PathBuf> {
     let cache = Cache::default();
     let repo_id = Repo::new(repo.to_owned(), RepoType::Model);
-    cache.repo(repo_id.clone()).get(filename)
+    cache.repo(repo_id).get(filename)
 }
 
 /// Ensures that the specified file from a Hugging Face repository is available locally.
