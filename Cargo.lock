@@ -725,42 +725,42 @@ checksum = "7c02d123df017efcdfbd739ef81735b36c5ba83ec3c59c80a9d7ecc718f92e50"
 
 [[package]]
 name = "asimov-account"
-version = "25.0.0-dev.24"
+version = "25.0.0-dev.25"
 dependencies = [
  "dogma",
 ]
 
 [[package]]
 name = "asimov-agent"
-version = "25.0.0-dev.24"
+version = "25.0.0-dev.25"
 dependencies = [
  "dogma",
 ]
 
 [[package]]
 name = "asimov-cache"
-version = "25.0.0-dev.24"
+version = "25.0.0-dev.25"
 dependencies = [
  "dogma",
 ]
 
 [[package]]
 name = "asimov-config"
-version = "25.0.0-dev.24"
+version = "25.0.0-dev.25"
 dependencies = [
  "dogma",
 ]
 
 [[package]]
 name = "asimov-construct"
-version = "25.0.0-dev.24"
+version = "25.0.0-dev.25"
 dependencies = [
  "dogma",
 ]
 
 [[package]]
 name = "asimov-core"
-version = "25.0.0-dev.24"
+version = "25.0.0-dev.25"
 dependencies = [
  "asimov-sys",
  "cap-directories",
@@ -774,21 +774,21 @@ dependencies = [
 
 [[package]]
 name = "asimov-dataset"
-version = "25.0.0-dev.24"
+version = "25.0.0-dev.25"
 dependencies = [
  "dogma",
 ]
 
 [[package]]
 name = "asimov-directory"
-version = "25.0.0-dev.24"
+version = "25.0.0-dev.25"
 dependencies = [
  "dogma",
 ]
 
 [[package]]
 name = "asimov-env"
-version = "25.0.0-dev.24"
+version = "25.0.0-dev.25"
 dependencies = [
  "cap-directories",
  "cap-std",
@@ -798,7 +798,7 @@ dependencies = [
 
 [[package]]
 name = "asimov-flow"
-version = "25.0.0-dev.24"
+version = "25.0.0-dev.25"
 dependencies = [
  "asimov-core",
  "protoflow",
@@ -809,14 +809,14 @@ dependencies = [
 
 [[package]]
 name = "asimov-graph"
-version = "25.0.0-dev.24"
+version = "25.0.0-dev.25"
 dependencies = [
  "dogma",
 ]
 
 [[package]]
 name = "asimov-huggingface"
-version = "25.0.0-dev.24"
+version = "25.0.0-dev.25"
 dependencies = [
  "hf-hub",
  "indicatif",
@@ -825,7 +825,7 @@ dependencies = [
 
 [[package]]
 name = "asimov-installer"
-version = "25.0.0-dev.24"
+version = "25.0.0-dev.25"
 dependencies = [
  "asimov-env",
  "asimov-huggingface",
@@ -853,7 +853,7 @@ dependencies = [
 
 [[package]]
 name = "asimov-ledger"
-version = "25.0.0-dev.24"
+version = "25.0.0-dev.25"
 dependencies = [
  "alloy",
  "dogma",
@@ -861,7 +861,7 @@ dependencies = [
 
 [[package]]
 name = "asimov-module"
-version = "25.0.0-dev.24"
+version = "25.0.0-dev.25"
 dependencies = [
  "asimov-env",
  "clientele 0.3.8",
@@ -882,14 +882,14 @@ dependencies = [
 
 [[package]]
 name = "asimov-ontology"
-version = "25.0.0-dev.24"
+version = "25.0.0-dev.25"
 dependencies = [
  "dogma",
 ]
 
 [[package]]
 name = "asimov-patterns"
-version = "25.0.0-dev.24"
+version = "25.0.0-dev.25"
 dependencies = [
  "async-trait",
  "bon",
@@ -898,14 +898,14 @@ dependencies = [
 
 [[package]]
 name = "asimov-platform"
-version = "25.0.0-dev.24"
+version = "25.0.0-dev.25"
 dependencies = [
  "dogma",
 ]
 
 [[package]]
 name = "asimov-prompt"
-version = "25.0.0-dev.24"
+version = "25.0.0-dev.25"
 dependencies = [
  "bon",
  "derive_more 2.0.1",
@@ -915,14 +915,14 @@ dependencies = [
 
 [[package]]
 name = "asimov-protocol"
-version = "25.0.0-dev.24"
+version = "25.0.0-dev.25"
 dependencies = [
  "dogma",
 ]
 
 [[package]]
 name = "asimov-proxy"
-version = "25.0.0-dev.24"
+version = "25.0.0-dev.25"
 dependencies = [
  "dogma",
  "gofer",
@@ -932,7 +932,7 @@ dependencies = [
 
 [[package]]
 name = "asimov-registry"
-version = "25.0.0-dev.24"
+version = "25.0.0-dev.25"
 dependencies = [
  "asimov-env",
  "asimov-module",
@@ -955,14 +955,14 @@ dependencies = [
 
 [[package]]
 name = "asimov-repository"
-version = "25.0.0-dev.24"
+version = "25.0.0-dev.25"
 dependencies = [
  "dogma",
 ]
 
 [[package]]
 name = "asimov-runner"
-version = "25.0.0-dev.24"
+version = "25.0.0-dev.25"
 dependencies = [
  "asimov-env",
  "asimov-patterns",
@@ -977,14 +977,14 @@ dependencies = [
 
 [[package]]
 name = "asimov-runtime"
-version = "25.0.0-dev.24"
+version = "25.0.0-dev.25"
 dependencies = [
  "dogma",
 ]
 
 [[package]]
 name = "asimov-sdk"
-version = "25.0.0-dev.24"
+version = "25.0.0-dev.25"
 dependencies = [
  "asimov-core",
  "asimov-sys",
@@ -997,7 +997,7 @@ dependencies = [
 
 [[package]]
 name = "asimov-server"
-version = "25.0.0-dev.24"
+version = "25.0.0-dev.25"
 dependencies = [
  "asimov-prompt",
  "asimov-runner",
@@ -1032,7 +1032,7 @@ dependencies = [
 
 [[package]]
 name = "asimov-snapshot"
-version = "25.0.0-dev.24"
+version = "25.0.0-dev.25"
 dependencies = [
  "asimov-env",
  "asimov-module",
@@ -1054,7 +1054,7 @@ dependencies = [
 
 [[package]]
 name = "asimov-sys"
-version = "25.0.0-dev.24"
+version = "25.0.0-dev.25"
 dependencies = [
  "libloading",
  "num-derive",
@@ -1063,21 +1063,21 @@ dependencies = [
 
 [[package]]
 name = "asimov-token"
-version = "25.0.0-dev.24"
+version = "25.0.0-dev.25"
 dependencies = [
  "dogma",
 ]
 
 [[package]]
 name = "asimov-universe"
-version = "25.0.0-dev.24"
+version = "25.0.0-dev.25"
 dependencies = [
  "dogma",
 ]
 
 [[package]]
 name = "asimov-vault"
-version = "25.0.0-dev.24"
+version = "25.0.0-dev.25"
 dependencies = [
  "dogma",
 ]
