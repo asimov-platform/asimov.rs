@@ -102,6 +102,8 @@ mod common {
         Http(#[from] HttpError),
         #[error("failed to write data on disk: {0}")]
         Io(#[from] io::Error),
+        #[error("no matching asset found")]
+        NoMatch,
     }
 
     impl From<reqwest::Error> for DownloadError {
