@@ -271,6 +271,11 @@ impl Installer {
 
         for program in &manifest.provides.programs {
             let src = extract_dir.join(program);
+
+            // On Windows add the .exe extension to the binary name:
+            #[cfg(windows)]
+            let src = src.with_extension("exe");
+
             self.registry.add_binary(program, &src).await?;
         }
 
