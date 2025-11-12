@@ -5,7 +5,6 @@ use alloc::{
     borrow::ToOwned as _,
     format,
     string::{String, ToString as _},
-    vec::Vec,
 };
 use asimov_module::ModuleManifest;
 use serde::Deserialize;
@@ -15,43 +14,6 @@ use tokio::io::{AsyncReadExt as _, AsyncWriteExt as _};
 #[derive(Debug, Deserialize)]
 pub struct GitHubRelease {
     pub name: String,
-    pub assets: Vec<GitHubAsset>,
-}
-
-#[derive(Debug, Deserialize)]
-pub struct GitHubAsset {
-    pub name: String,
-    pub browser_download_url: String,
-}
-
-#[tracing::instrument(skip_all)]
-pub async fn fetch_release(
-    client: &reqwest::Client,
-    module_name: &str,
-    version: &str,
-) -> Result<GitHubRelease, FetchError> {
-    let url = format!(
-        "https://api.github.com/repos/asimov-modules/asimov-{module_name}-module/releases/tags/{version}",
-    );
-
-    let response = client
-        .get(&url)
-        .send()
-        .await
-        .inspect_err(|err| tracing::debug!(?err))?;
-
-    if !response.status().is_success() {
-        Err(HttpError::NotSuccess(response.status()))?;
-    }
-
-    let content = response
-        .text()
-        .await
-        .inspect_err(|err| tracing::debug!(?err))?;
-
-    serde_json::from_str(&content)
-        .inspect_err(|err| tracing::debug!(?err, ?content))
-        .map_err(|e| FetchError::Deserialize(e.into()))
 }
 
 #[tracing::instrument(skip_all)]
@@ -59,30 +21,64 @@ pub async fn fetch_latest_release(
     client: &reqwest::Client,
     module_name: impl AsRef<str>,
 ) -> Result<String, FetchError> {
-    let url = format!(
-        "https://api.github.com/repos/asimov-modules/asimov-{}-module/releases/latest",
-        module_name.as_ref()
-    );
+    async fn by_api(
+        client: &reqwest::Client,
+        module_name: impl AsRef<str>,
+    ) -> Result<String, FetchError> {
+        let url = format!(
+            "https://api.github.com/repos/asimov-modules/asimov-{}-module/releases/latest",
+            module_name.as_ref()
+        );
 
-    let response = client
-        .get(url)
-        .send()
-        .await
-        .inspect_err(|err| tracing::debug!(?err))?;
+        let response = client
+            .get(url)
+            .send()
+            .await
+            .inspect_err(|err| tracing::debug!(?err))?;
 
-    if !response.status().is_success() {
-        Err(HttpError::NotSuccess(response.status()))?;
+        if !response.status().is_success() {
+            Err(HttpError::NotSuccess(response.status()))?;
+        }
+
+        let content = response
+            .text()
+            .await
+            .inspect_err(|err| tracing::debug!(?err))?;
+
+        serde_json::from_str::<GitHubRelease>(&content)
+            .inspect_err(|err| tracing::debug!(?err, ?content))
+            .map_err(|e| FetchError::Deserialize(e.into()))
+            .map(|release| release.name)
     }
 
-    let content = response
-        .text()
-        .await
-        .inspect_err(|err| tracing::debug!(?err))?;
+    async fn by_redirect(
+        client: &reqwest::Client,
+        module_name: impl AsRef<str>,
+    ) -> Result<String, FetchError> {
+        let url = format!(
+            "https://github.com/asimov-modules/asimov-{}-module/releases/latest",
+            module_name.as_ref()
+        );
 
-    serde_json::from_str::<GitHubRelease>(&content)
-        .inspect_err(|err| tracing::debug!(?err, ?content))
-        .map_err(|e| FetchError::Deserialize(e.into()))
-        .map(|release| release.name)
+        let response = client
+            .head(&url)
+            .send()
+            .await
+            .inspect_err(|err| tracing::debug!(?err))?;
+
+        let final_url = response.url().as_str();
+        if final_url == url {
+            // fallback to trying through the API
+            return by_api(client, &module_name).await;
+        }
+        tracing::debug!("got redirected to: {final_url}");
+
+        let mut parts = final_url.split('/');
+
+        Ok(parts.next_back().unwrap().into())
+    }
+
+    by_redirect(client, &module_name).await
 }
 
 #[tracing::instrument(skip_all)]
@@ -118,9 +114,9 @@ pub async fn fetch_module_manifest(
 #[tracing::instrument(skip_all)]
 pub async fn fetch_checksum(
     client: &reqwest::Client,
-    asset: &GitHubAsset,
+    asset_url: &str,
 ) -> Result<Option<String>, FetchChecksumError> {
-    let checksum_url = format!("{}.sha256", asset.browser_download_url);
+    let checksum_url = format!("{asset_url}.sha256");
 
     let response = client
         .get(&checksum_url)
@@ -184,12 +180,15 @@ pub async fn verify_checksum(
     Ok(())
 }
 
-pub fn find_matching_asset<'a>(
-    assets: &'a [GitHubAsset],
+#[tracing::instrument(skip_all)]
+pub async fn download_matching_asset(
+    client: &reqwest::Client,
     module_name: &str,
+    version: &str,
     platform: &super::platform::PlatformInfo,
-) -> Option<&'a GitHubAsset> {
-    let patterns = if let Some(libc) = &platform.libc {
+    dst_dir: &Path,
+) -> Result<(String, std::path::PathBuf), DownloadError> {
+    let filenames = if let Some(libc) = &platform.libc {
         std::vec![
             format!(
                 "asimov-{}-module-{}-{}-{}.tar.gz",
@@ -221,44 +220,43 @@ pub fn find_matching_asset<'a>(
         ]
     };
 
-    for pattern in patterns {
-        if let Some(asset) = assets.iter().find(|asset| asset.name == pattern) {
-            return Some(asset);
+    for filename in filenames {
+        let url = format!(
+            "https://github.com/asimov-modules/asimov-{module_name}-module/releases/download/{version}/{filename}"
+        );
+
+        tracing::debug!("trying asset URL {url}...");
+
+        let mut response = client
+            .get(&url)
+            .send()
+            .await
+            .inspect_err(|err| tracing::debug!(?err))?;
+
+        if response.status() == 404 {
+            // try another asset pattern
+            continue;
         }
+        if !response.status().is_success() {
+            Err(HttpError::NotSuccess(response.status()))?;
+        }
+
+        let asset_path = dst_dir.join(&filename);
+        let mut dst = tokio::fs::File::create(&asset_path).await?;
+
+        while let Some(chunk) = response
+            .chunk()
+            .await
+            .inspect_err(|err| tracing::debug!(?err))?
+        {
+            dst.write_all(&chunk).await?;
+        }
+        dst.flush().await?;
+
+        return Ok((url, asset_path));
     }
 
-    None
-}
-
-#[tracing::instrument(skip_all)]
-pub async fn download_asset(
-    client: &reqwest::Client,
-    asset: &GitHubAsset,
-    dst_dir: &Path,
-) -> Result<std::path::PathBuf, DownloadError> {
-    let mut response = client
-        .get(&asset.browser_download_url)
-        .send()
-        .await
-        .inspect_err(|err| tracing::debug!(?err))?;
-
-    if !response.status().is_success() {
-        Err(HttpError::NotSuccess(response.status()))?;
-    }
-
-    let asset_path = dst_dir.join(&asset.name);
-    let mut dst = tokio::fs::File::create(&asset_path).await?;
-
-    while let Some(chunk) = response
-        .chunk()
-        .await
-        .inspect_err(|err| tracing::debug!(?err))?
-    {
-        dst.write_all(&chunk).await?;
-    }
-    dst.flush().await?;
-
-    Ok(asset_path)
+    Err(DownloadError::NoMatch)
 }
 
 pub async fn extract_files(

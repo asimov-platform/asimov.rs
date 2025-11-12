@@ -161,18 +161,18 @@ impl Installer {
                 .map_err(PreinstallError::FetchRelease)?
         };
 
-        let release = github::fetch_release(&self.client, module_name, &version)
-            .await
-            .map_err(PreinstallError::FetchRelease)?;
-
-        let Some(asset) = github::find_matching_asset(&release.assets, module_name, &platform)
-        else {
-            return Err(PreinstallError::NotAvailable(platform));
-        };
-
         let manifest = github::fetch_module_manifest(&self.client, module_name, &version)
             .await
             .map_err(PreinstallError::FetchManifest)?;
+
+        let (asset_url, download_path) = github::download_matching_asset(
+            &self.client,
+            module_name,
+            &version,
+            &platform,
+            temp_dir,
+        )
+        .await?;
 
         if let Some(subdeps) = manifest.requires.as_ref().map(|r| r.modules.clone()) {
             // pass the model_size option to dependencies
@@ -194,12 +194,10 @@ impl Installer {
             }
         };
 
-        let download = github::download_asset(&self.client, asset, temp_dir).await?;
-
-        match github::fetch_checksum(&self.client, asset).await {
+        match github::fetch_checksum(&self.client, &asset_url).await {
             Ok(None) => {},
             Ok(Some(checksum)) => {
-                github::verify_checksum(&download, &checksum).await?;
+                github::verify_checksum(&download_path, &checksum).await?;
             },
             Err(err) => Err(err)?,
         }
@@ -209,7 +207,7 @@ impl Installer {
             .await
             .map_err(PreinstallError::CreateExtractDir)?;
 
-        github::extract_files(&download, &extract_dir)
+        github::extract_files(&download_path, &extract_dir)
             .await
             .map_err(PreinstallError::Extract)?;
 
