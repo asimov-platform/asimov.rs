@@ -70,8 +70,11 @@ pub async fn test_registry(
 
     let module = registry.read_manifest("sample").await.unwrap();
     assert_eq!(module.manifest.name, "ipfs");
-    assert_eq!(module.manifest.label, "IPFS");
-    assert_eq!(module.manifest.summary, "IPFS protocol support.");
+    assert_eq!(module.manifest.label.as_deref(), Some("IPFS"));
+    assert_eq!(
+        module.manifest.summary.as_deref(),
+        Some("IPFS protocol support.")
+    );
 
     let installed_modules = registry.installed_modules().await.unwrap();
     assert_eq!(installed_modules.len(), 1);

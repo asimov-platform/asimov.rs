@@ -174,25 +174,24 @@ impl Installer {
         )
         .await?;
 
-        if let Some(subdeps) = manifest.requires.as_ref().map(|r| r.modules.clone()) {
-            // pass the model_size option to dependencies
-            let options = InstallOptions::builder()
-                .maybe_model_size(options.model_size.clone())
-                .build();
-            for module in subdeps {
-                if self
-                    .registry
-                    .is_module_installed(&module)
-                    .await
-                    .unwrap_or(false)
-                {
-                    continue;
-                }
-                Box::pin(self.install_module(module.clone(), &options))
-                    .await
-                    .map_err(|e| PreinstallError::Dependency(module, Box::new(e)))?;
+        // pass the model_size option to dependencies
+        let options = InstallOptions::builder()
+            .maybe_model_size(options.model_size.clone())
+            .build();
+        let subdeps = &manifest.requires.modules;
+        for module in subdeps {
+            if self
+                .registry
+                .is_module_installed(&module)
+                .await
+                .unwrap_or(false)
+            {
+                continue;
             }
-        };
+            Box::pin(self.install_module(module.clone(), &options))
+                .await
+                .map_err(|e| PreinstallError::Dependency(module.clone(), Box::new(e)))?;
+        }
 
         match github::fetch_checksum(&self.client, &asset_url).await {
             Ok(None) => {},
@@ -211,49 +210,47 @@ impl Installer {
             .await
             .map_err(PreinstallError::Extract)?;
 
-        if let Some(ref requires) = manifest.requires {
-            for (name, model) in &requires.models {
-                let Some(repo) = name.strip_prefix("hf:") else {
-                    tracing::debug!(
-                        ?name,
-                        "unexpected format for required model, only `hf:<user>/<repo>` is supported"
-                    );
-                    continue;
-                };
+        for (name, model) in &manifest.requires.models {
+            let Some(repo) = name.strip_prefix("hf:") else {
+                tracing::debug!(
+                    ?name,
+                    "unexpected format for required model, only `hf:<user>/<repo>` is supported"
+                );
+                continue;
+            };
 
-                use asimov_module::RequiredModel;
-                let filename = match (model, &options.model_size) {
-                    (RequiredModel::Url(url), None | Some(_)) => url,
-                    (RequiredModel::Choices(choices), None) => {
-                        if choices
-                            .iter()
-                            .any(|(_, url)| asimov_huggingface::file_exists(repo, url).is_some())
-                        {
-                            // user didn't specify a model size/version to install
-                            // and one of the choices is already installed
-                            continue;
-                        }
-                        let Some((_, model)) = choices.first() else {
-                            // malformed manifest?
-                            tracing::warn!(
-                                ?module_name,
-                                "manifest defines required models with no choices"
-                            );
-                            continue;
-                        };
-                        model
-                    },
-                    (RequiredModel::Choices(choices), Some(want_model)) => {
-                        &choices
-                            .iter()
-                            .find(|(name, _)| *name == *want_model)
-                            .ok_or_else(|| PreinstallError::NoSuchModel(want_model.clone()))?
-                            .1
-                    },
-                };
+            use asimov_module::RequiredModel;
+            let filename = match (model, &options.model_size) {
+                (RequiredModel::Url(url), None | Some(_)) => url,
+                (RequiredModel::Choices(choices), None) => {
+                    if choices
+                        .iter()
+                        .any(|(_, url)| asimov_huggingface::file_exists(repo, url).is_some())
+                    {
+                        // user didn't specify a model size/version to install
+                        // and one of the choices is already installed
+                        continue;
+                    }
+                    let Some((_, model)) = choices.first() else {
+                        // malformed manifest?
+                        tracing::warn!(
+                            ?module_name,
+                            "manifest defines required models with no choices"
+                        );
+                        continue;
+                    };
+                    model
+                },
+                (RequiredModel::Choices(choices), Some(want_model)) => {
+                    &choices
+                        .iter()
+                        .find(|(name, _)| *name == *want_model)
+                        .ok_or_else(|| PreinstallError::NoSuchModel(want_model.clone()))?
+                        .1
+                },
+            };
 
-                asimov_huggingface::ensure_file(repo, filename)?;
-            }
+            asimov_huggingface::ensure_file(repo, filename)?;
         }
 
         Ok((manifest, version))

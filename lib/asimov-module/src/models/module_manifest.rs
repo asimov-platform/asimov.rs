@@ -2,20 +2,71 @@
 
 use alloc::{collections::BTreeMap, string::String, vec::Vec};
 
+/// See: https://asimov-specs.github.io/module-manifest/
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub struct ModuleManifest {
+    /// See: https://asimov-specs.github.io/module-manifest/#name-field
     pub name: String,
-    pub label: String,
-    pub summary: String,
+
+    /// See: https://asimov-specs.github.io/module-manifest/#label-field
+    #[cfg_attr(
+        feature = "serde",
+        serde(default, skip_serializing_if = "Option::is_none")
+    )]
+    pub label: Option<String>,
+
+    /// See: https://asimov-specs.github.io/module-manifest/#title-field
+    #[cfg_attr(
+        feature = "serde",
+        serde(default, skip_serializing_if = "Option::is_none")
+    )]
+    pub title: Option<String>,
+
+    /// See: https://asimov-specs.github.io/module-manifest/#summary-field
+    #[cfg_attr(
+        feature = "serde",
+        serde(default, skip_serializing_if = "Option::is_none")
+    )]
+    pub summary: Option<String>,
+
+    /// See: https://asimov-specs.github.io/module-manifest/#links-field
+    #[cfg_attr(
+        feature = "serde",
+        serde(
+            default,
+            deserialize_with = "empty_vec_if_null",
+            skip_serializing_if = "Vec::is_empty"
+        )
+    )]
     pub links: Vec<String>,
 
+    /// See: https://asimov-specs.github.io/module-manifest/#tags-field
+    #[cfg_attr(
+        feature = "serde",
+        serde(
+            default,
+            deserialize_with = "empty_vec_if_null",
+            skip_serializing_if = "Vec::is_empty"
+        )
+    )]
+    pub tags: Vec<String>,
+
+    /// See: https://asimov-specs.github.io/module-manifest/#requires-section
+    #[cfg_attr(
+        feature = "serde",
+        serde(default, skip_serializing_if = "Requires::is_empty")
+    )]
+    pub requires: Requires,
+
+    /// See: https://asimov-specs.github.io/module-manifest/#provides-section
     #[cfg_attr(
         feature = "serde",
         serde(default, skip_serializing_if = "Provides::is_empty")
     )]
     pub provides: Provides,
 
+    /// See: https://asimov-specs.github.io/module-manifest/#handles-section
     #[cfg_attr(
         feature = "serde",
         serde(default, skip_serializing_if = "Handles::is_empty")
@@ -24,12 +75,13 @@ pub struct ModuleManifest {
 
     #[cfg_attr(
         feature = "serde",
-        serde(alias = "configuration", skip_serializing_if = "Option::is_none")
+        serde(
+            default,
+            alias = "configuration",
+            skip_serializing_if = "Option::is_none"
+        )
     )]
     pub config: Option<Configuration>,
-
-    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
-    pub requires: Option<Requires>,
 }
 
 #[cfg(feature = "std")]
@@ -137,7 +189,69 @@ impl ModuleManifest {
 
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+pub struct Requires {
+    /// List of modules that this module depends on.
+    #[cfg_attr(
+        feature = "serde",
+        serde(
+            default,
+            deserialize_with = "empty_vec_if_null",
+            skip_serializing_if = "Vec::is_empty"
+        )
+    )]
+    pub modules: Vec<String>,
+
+    #[cfg_attr(
+        feature = "serde",
+        serde(default, skip_serializing_if = "BTreeMap::is_empty")
+    )]
+    pub models: BTreeMap<String, RequiredModel>,
+}
+
+impl Requires {
+    pub fn is_empty(&self) -> bool {
+        self.modules.is_empty() && self.models.is_empty()
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(
+    feature = "serde",
+    derive(serde::Deserialize, serde::Serialize),
+    serde(untagged)
+)]
+pub enum RequiredModel {
+    /// Just a direct URL string:
+    /// ```yaml
+    /// hf:first/model: model_file.bin
+    /// ```
+    Url(String),
+
+    /// Multiple variants:
+    /// ```yaml
+    /// hf:second/model:
+    ///   small: model_small.bin
+    ///   medium: model_medium.bin
+    ///   large: model_large.bin
+    /// ```
+    #[cfg_attr(
+        feature = "serde",
+        serde(deserialize_with = "ordered::deserialize_ordered")
+    )]
+    Choices(Vec<(String, String)>),
+}
+
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub struct Provides {
+    #[cfg_attr(
+        feature = "serde",
+        serde(
+            default,
+            deserialize_with = "empty_vec_if_null",
+            skip_serializing_if = "Vec::is_empty"
+        )
+    )]
     pub programs: Vec<String>,
 }
 
@@ -145,16 +259,6 @@ impl Provides {
     pub fn is_empty(&self) -> bool {
         self.programs.is_empty()
     }
-}
-
-#[cfg(feature = "serde")]
-fn empty_vec_if_null<'de, D, T>(deserializer: D) -> Result<Vec<T>, D::Error>
-where
-    D: serde::Deserializer<'de>,
-    T: serde::Deserialize<'de>,
-{
-    use serde::Deserialize;
-    Ok(Option::<Vec<T>>::deserialize(deserializer)?.unwrap_or_default())
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
@@ -262,52 +366,14 @@ pub struct ConfigurationVariable {
     pub default_value: Option<String>,
 }
 
-#[derive(Clone, Debug, Default, PartialEq, Eq)]
-#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
-pub struct Requires {
-    /// List of modules that this module depends on.
-    #[cfg_attr(
-        feature = "serde",
-        serde(
-            default,
-            deserialize_with = "empty_vec_if_null",
-            skip_serializing_if = "Vec::is_empty"
-        )
-    )]
-    pub modules: Vec<String>,
-
-    #[cfg_attr(
-        feature = "serde",
-        serde(default, skip_serializing_if = "BTreeMap::is_empty")
-    )]
-    pub models: BTreeMap<String, RequiredModel>,
-}
-
-#[derive(Clone, Debug, PartialEq, Eq)]
-#[cfg_attr(
-    feature = "serde",
-    derive(serde::Deserialize, serde::Serialize),
-    serde(untagged)
-)]
-pub enum RequiredModel {
-    /// Just a direct URL string:
-    /// ```yaml
-    /// hf:first/model: model_file.bin
-    /// ```
-    Url(String),
-
-    /// Multiple variants:
-    /// ```yaml
-    /// hf:second/model:
-    ///   small: model_small.bin
-    ///   medium: model_medium.bin
-    ///   large: model_large.bin
-    /// ```
-    #[cfg_attr(
-        feature = "serde",
-        serde(deserialize_with = "ordered::deserialize_ordered")
-    )]
-    Choices(Vec<(String, String)>),
+#[cfg(feature = "serde")]
+fn empty_vec_if_null<'de, D, T>(deserializer: D) -> Result<Vec<T>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+    T: serde::Deserialize<'de>,
+{
+    use serde::Deserialize;
+    Ok(Option::<Vec<T>>::deserialize(deserializer)?.unwrap_or_default())
 }
 
 #[cfg(feature = "serde")]
@@ -362,6 +428,16 @@ summary: Example Module
 links:
   - https://github.com/asimov-platform/asimov.rs/tree/master/lib/asimov-module
 
+requires:
+    modules:
+      - other
+    models:
+      hf:first/model: first_url
+      hf:second/model:
+        small: small_url
+        medium: medium_url
+        large: large_url
+
 provides:
   programs:
     - asimov-example-module
@@ -385,103 +461,94 @@ config:
       default_value: "foobar"
       environment: API_KEY
 
-requires:
-  modules:
-    - other
-  models:
-    hf:first/model: first_url
-    hf:second/model:
-      small: small_url
-      medium: medium_url
-      large: large_url
 "#;
 
         let dec: ModuleManifest = serde_yaml_ng::from_str(yaml).expect("deser should succeed");
 
-        assert_eq!("example", dec.name);
-        assert_eq!("Example", dec.label);
-        assert_eq!("Example Module", dec.summary);
+        assert_eq!(dec.name, "example");
+        assert_eq!(dec.label.as_deref(), Some("Example"));
+        assert_eq!(dec.summary.as_deref(), Some("Example Module"));
 
         assert_eq!(
+            dec.links,
             vec!["https://github.com/asimov-platform/asimov.rs/tree/master/lib/asimov-module"],
-            dec.links
         );
 
-        assert_eq!(1, dec.provides.programs.len());
+        assert_eq!(dec.provides.programs.len(), 1);
         assert_eq!(
+            dec.provides.programs.first().unwrap(),
             "asimov-example-module",
-            dec.provides.programs.first().unwrap()
         );
 
         assert_eq!(
-            "content_type",
             dec.handles
                 .content_types
                 .first()
-                .expect("should have content_types")
+                .expect("should have content_types"),
+            "content_type",
         );
 
         assert_eq!(
-            "file_extension",
             dec.handles
                 .file_extensions
                 .first()
-                .expect("should have file_extensions")
+                .expect("should have file_extensions"),
+            "file_extension",
         );
 
         assert_eq!(
-            "pattern",
             dec.handles
                 .url_patterns
                 .first()
-                .expect("should have url_patterns")
+                .expect("should have url_patterns"),
+            "pattern",
         );
 
         assert_eq!(
-            "prefix",
             dec.handles
                 .url_prefixes
                 .first()
-                .expect("should have url_prefixes")
+                .expect("should have url_prefixes"),
+            "prefix",
         );
 
         assert_eq!(
-            "protocol",
             dec.handles
                 .url_protocols
                 .first()
-                .expect("should have url_protocols")
+                .expect("should have url_protocols"),
+            "protocol",
         );
 
         assert_eq!(
+            dec.config.expect("should have config").variables.first(),
             Some(&ConfigurationVariable {
                 name: "api_key".into(),
                 description: Some("api key to authorize requests".into()),
                 environment: Some("API_KEY".into()),
                 default_value: Some("foobar".into())
             }),
-            dec.config.expect("should have config").variables.first()
         );
 
-        let requires = dec.requires.expect("should have requires");
+        let requires = dec.requires;
 
-        assert_eq!(1, requires.modules.len());
-        assert_eq!("other", requires.modules.first().unwrap());
+        assert_eq!(requires.modules.len(), 1);
+        assert_eq!(requires.modules.first().unwrap(), "other");
 
-        assert_eq!(2, requires.models.len());
+        assert_eq!(requires.models.len(), 2);
 
         assert_eq!(
+            requires.models["hf:first/model"],
             RequiredModel::Url("first_url".into()),
-            requires.models["hf:first/model"]
         );
 
         assert_eq!(
+            requires.models["hf:second/model"],
             RequiredModel::Choices(vec![
                 ("small".into(), "small_url".into()),
                 ("medium".into(), "medium_url".into()),
                 ("large".into(), "large_url".into())
             ]),
-            requires.models["hf:second/model"]
         );
     }
 }
