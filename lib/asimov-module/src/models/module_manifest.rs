@@ -190,7 +190,7 @@ impl ModuleManifest {
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub struct Requires {
-    /// List of modules that this module depends on.
+    /// The set of modules that this module depends on.
     #[cfg_attr(
         feature = "serde",
         serde(
@@ -201,11 +201,89 @@ pub struct Requires {
     )]
     pub modules: Vec<String>,
 
+    /// The set of platforms that this module depends on.
+    #[cfg_attr(
+        feature = "serde",
+        serde(
+            default,
+            deserialize_with = "empty_vec_if_null",
+            skip_serializing_if = "Vec::is_empty"
+        )
+    )]
+    pub platforms: Vec<String>,
+
+    /// The set of programs that this module depends on.
+    #[cfg_attr(
+        feature = "serde",
+        serde(
+            default,
+            deserialize_with = "empty_vec_if_null",
+            skip_serializing_if = "Vec::is_empty"
+        )
+    )]
+    pub programs: Vec<String>,
+
+    /// The set of libraries that this module depends on.
+    #[cfg_attr(
+        feature = "serde",
+        serde(
+            default,
+            deserialize_with = "empty_vec_if_null",
+            skip_serializing_if = "Vec::is_empty"
+        )
+    )]
+    pub libraries: Vec<String>,
+
+    /// The set of models that this module depends on.
     #[cfg_attr(
         feature = "serde",
         serde(default, skip_serializing_if = "BTreeMap::is_empty")
     )]
     pub models: BTreeMap<String, RequiredModel>,
+
+    /// The set of datasets that this module depends on.
+    #[cfg_attr(
+        feature = "serde",
+        serde(
+            default,
+            deserialize_with = "empty_vec_if_null",
+            skip_serializing_if = "Vec::is_empty"
+        )
+    )]
+    pub datasets: Vec<String>,
+
+    /// The set of ontologies that this module depends on.
+    #[cfg_attr(
+        feature = "serde",
+        serde(
+            default,
+            deserialize_with = "empty_vec_if_null",
+            skip_serializing_if = "Vec::is_empty"
+        )
+    )]
+    pub ontologies: Vec<String>,
+
+    /// The set of classes that this module depends on.
+    #[cfg_attr(
+        feature = "serde",
+        serde(
+            default,
+            deserialize_with = "empty_vec_if_null",
+            skip_serializing_if = "Vec::is_empty"
+        )
+    )]
+    pub classes: Vec<String>,
+
+    /// The set of datatypes that this module depends on.
+    #[cfg_attr(
+        feature = "serde",
+        serde(
+            default,
+            deserialize_with = "empty_vec_if_null",
+            skip_serializing_if = "Vec::is_empty"
+        )
+    )]
+    pub datatypes: Vec<String>,
 }
 
 impl Requires {
