@@ -61,6 +61,7 @@ impl Server {
     ///           name: "person".to_string(),
     ///           description: Some("The name of the person to greet".to_string()),
     ///           required: Some(true),
+    ///           title: None,
     ///    }],
     ///    |args| {
     ///         let args = args.ok_or(Error::MissingArgument("name".to_string()))?;

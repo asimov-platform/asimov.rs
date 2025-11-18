@@ -23,11 +23,11 @@ unstable = ["https", "mdns", "ssdp"]
 
 # Protocols:
 http = [
-    "persistence",
-    "dep:axum",
-    "dep:axum-prometheus",
-    "dep:http",
-    "dep:tower-http",
+  "persistence",
+  "dep:axum",
+  "dep:axum-prometheus",
+  "dep:http",
+  "dep:tower-http",
 ]
 https = ["http"]
 mdns = ["dep:mdns-sd", "dep:lazy_static", "dep:local-ip-address"]
@@ -54,10 +54,10 @@ futures.workspace = true
 jiff.workspace = true
 openai = { workspace = true, features = ["serde"] }
 rmcp = { workspace = true, features = [
-    "base64",
-    "macros",
-    "server",
-    "transport-sse-server",
+  "base64",
+  "macros",
+  "server",
+  "transport-sse-server",
 ] }
 thiserror.workspace = true
 tldr.workspace = true
@@ -82,7 +82,7 @@ tracing = { workspace = true, features = ["attributes"], optional = true }
 [dev-dependencies]
 axum-test.workspace = true
 tokio = { workspace = true, features = ["full"] }
-tracing-subscriber.workspace = true
+tracing-subscriber = { workspace = true, features = ["fmt"] }
 
 [[example]]
 name = "mdns-client"
