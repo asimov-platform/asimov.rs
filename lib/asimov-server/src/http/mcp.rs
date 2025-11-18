@@ -187,7 +187,12 @@ where
                 Ok(Json(JsonRpcResponse {
                     jsonrpc: JsonRpcVersion2_0,
                     id: req.id,
-                    result: CallToolResult { content, is_error },
+                    result: CallToolResult {
+                        content,
+                        is_error,
+                        structured_content: None,
+                        meta: None,
+                    },
                 })
                 .into_response())
             },

@@ -147,6 +147,9 @@ impl Provider for Server {
         Implementation {
             name: env!("CARGO_CRATE_NAME").to_owned(),
             version: env!("CARGO_PKG_VERSION").to_owned(),
+            title: None,
+            icons: None,
+            website_url: None,
         }
     }
 
@@ -161,6 +164,8 @@ impl Provider for Server {
                 name: prompt.name.clone(),
                 description: prompt.description.clone(),
                 arguments: prompt.arguments.clone(),
+                title: None,
+                icons: None,
             })
             .collect();
 
@@ -195,6 +200,8 @@ impl Provider for Server {
                     description: resource.description.clone(),
                     mime_type: resource.mime_type.clone(),
                     size: resource.size,
+                    title: None,
+                    icons: None,
                 },
                 annotations: None,
             })
@@ -215,6 +222,7 @@ impl Provider for Server {
                     uri_template: template.uri_template.clone(),
                     description: template.description.clone(),
                     mime_type: template.mime_type.clone(),
+                    title: None,
                 },
                 annotations: None,
             })
@@ -241,9 +249,13 @@ impl Provider for Server {
             .values()
             .map(|tool| model::Tool {
                 name: Cow::from(tool.name.clone()),
-                description: tool.description.clone().unwrap_or(String::new()).into(),
+                description: tool.description.clone().map(Cow::from),
                 input_schema: tool.input_schema.clone(),
-                // annotations: None,
+                title: None,
+                icons: None,
+                output_schema: None,
+                annotations: None,
+                meta: None,
             })
             .collect();
         Ok((tools, None))
@@ -292,6 +304,7 @@ mod test {
                 name: "person".to_string(),
                 description: Some("The name of the person to greet".to_string()),
                 required: Some(true),
+                title: None,
             }],
             |args| {
                 let args = args.ok_or(Error::MissingArgument("name".to_string()))?;
@@ -318,7 +331,8 @@ mod test {
                     Some(vec![PromptArgument {
                         name: "person".into(),
                         description: Some("The name of the person to greet".into()),
-                        required: Some(true)
+                        required: Some(true),
+                        title: None
                     }])
                 )
             ]
@@ -369,6 +383,8 @@ mod test {
                     description: Some("An example file".into()),
                     mime_type: Some("text/plain".into()),
                     size: None,
+                    title: None,
+                    icons: None,
                 },
                 annotations: None,
             }]
