@@ -3,16 +3,16 @@
 [workspace]
 members = ["lib/*"]
 default-members = [
-    "lib/asimov-env",
-    "lib/asimov-huggingface",
-    "lib/asimov-installer",
-    "lib/asimov-module",
-    "lib/asimov-patterns",
-    "lib/asimov-prompt",
-    "lib/asimov-registry",
-    "lib/asimov-runner",
-    "lib/asimov-server",
-    "lib/asimov-snapshot",
+  "lib/asimov-env",
+  "lib/asimov-huggingface",
+  "lib/asimov-installer",
+  "lib/asimov-module",
+  "lib/asimov-patterns",
+  "lib/asimov-prompt",
+  "lib/asimov-registry",
+  "lib/asimov-runner",
+  "lib/asimov-server",
+  "lib/asimov-snapshot",
 ]
 resolver = "2"
 
@@ -71,7 +71,7 @@ async-trait = { version = "0.1", default-features = false }
 axum = { version = "0.8", default-features = false, features = ["macros"] }
 axum-embed = { version = "0.1", default-features = false }
 axum-prometheus = { version = "0.8", default-features = false, features = [
-    "prometheus",
+  "prometheus",
 ] }
 axum-test = { version = "17.3", default-features = false }
 bon = { version = "3.6", default-features = false }
@@ -81,24 +81,24 @@ cap-directories = { version = "3.4", default-features = false }
 cap-std = { version = "3.4", default-features = false, features = ["fs_utf8"] }
 cfg_aliases = { version = "0.2", default-features = false }
 clientele = { version = "0.3.8", default-features = false, features = [
-    "argfile",
-    "dotenv",
-    "wild",
+  "argfile",
+  "dotenv",
+  "wild",
 ] }
 derive_more = { version = "2", default-features = false }
 dogma = { version = "0.1.10", default-features = false, features = ["traits"] }
 flate2 = { version = "1", default-features = false }
 futures = { version = "0.3", default-features = false }
 getenv = { version = "0.1.2", default-features = false, features = [
-    "cargo",
-    "posix",
-    "python",
-    "ruby",
-    "windows",
+  "cargo",
+  "posix",
+  "python",
+  "ruby",
+  "windows",
 ] }
 gofer = { version = "0.1.8", default-features = false, features = [
-    "all",
-    "miette",
+  "all",
+  "miette",
 ] }
 hex = { version = "0.4", default-features = false }
 hf-hub = { version = "0.4.2", default-features = false, features = ["ureq"] }
@@ -115,32 +115,32 @@ miette = { version = "7.6", default-features = false, features = ["derive"] }
 num-derive = { version = "0.4", default-features = false }
 num-traits = { version = "0.2", default-features = false }
 openai = { package = "known-types-openai", version = "0.0.8", default-features = false, features = [
-    "alloc",
+  "alloc",
 ] }
-rmcp = { version = "0.1.5", default-features = false }
+rmcp = { version = "0.9", default-features = false }
 #rmcp = { version = "0.2.1", default-features = false } # FIXME
 protoflow = { version = "=0.4.3", default-features = false, features = [
-    "blocks",
-    "derive",
-    "sysml",
+  "blocks",
+  "derive",
+  "sysml",
 ] }
 protoflow-blocks = { version = "=0.4.3", default-features = false, features = [
-    "hash",
+  "hash",
 ] }
 protoflow-core = { version = "=0.4.3", default-features = false }
 reqwest = { version = "0.12", default-features = false, features = [
-    "json",
-    "rustls-tls",
-    "rustls-tls-native-roots",
+  "json",
+  "rustls-tls",
+  "rustls-tls-native-roots",
 ] }
 rdf-model = { version = "0.2.2", default-features = false }
 rust-embed = { version = "8.7", default-features = false, features = [
-    "deterministic-timestamps",
+  "deterministic-timestamps",
 ] }
 secrecy = { version = "0.10", default-features = false }
 serde = { version = "1", default-features = false, features = [
-    "alloc",
-    "derive",
+  "alloc",
+  "derive",
 ] }
 serde_json = { version = "1", default-features = false, features = ["alloc"] }
 serde_yaml_ng = { version = "0.10.0", default-features = false }
@@ -152,16 +152,16 @@ tempfile = { version = "3.20", default-features = false }
 thiserror = { version = "2", default-features = false }
 tldr = { version = "0.1", package = "tldr-traits", default-features = false }
 tokio = { version = "1", default-features = false, features = [
-    "io-util",
-    "rt",
+  "io-util",
+  "rt",
 ] }
 tokio-stream = { version = "0.1", default-features = false }
 tokio-util = { version = "0.7", default-features = false }
 tower-http = { version = "0.6", default-features = false }
 tracing = { version = "0.1", default-features = false }
 tracing-subscriber = { version = "0.3", default-features = false, features = [
-    "alloc",
-    "tracing-log",
+  "alloc",
+  "tracing-log",
 ] }
 url = { version = "2.5", default-features = false }
 uuid = { version = "1.17", default-features = false, features = ["v4"] }
