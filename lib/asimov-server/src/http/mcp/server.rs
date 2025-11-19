@@ -133,7 +133,7 @@ impl Provider for Server {
     type Error = Error;
 
     fn protocol_version(&self) -> ProtocolVersion {
-        ProtocolVersion::LATEST
+        ProtocolVersion::V_2025_06_18
     }
 
     fn capabilities(&self) -> ServerCapabilities {
