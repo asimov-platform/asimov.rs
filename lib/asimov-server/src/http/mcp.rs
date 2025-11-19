@@ -199,7 +199,6 @@ where
             | ProgressNotification(_)
             | RootsListChangedNotification(_) => Ok(StatusCode::ACCEPTED.into_response()),
         },
-        // Response(_) | Error(_) | BatchRequest(_) | BatchResponse(_) => {
         Response(_) | Error(_) => Err(StatusCode::NOT_IMPLEMENTED.into_response()),
     }
 }

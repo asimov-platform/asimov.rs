@@ -18,11 +18,9 @@ use tokio_util::sync::CancellationToken;
 use tower_http::cors::CorsLayer;
 
 pub fn routes() -> Router {
-    let mcp_server = mcp::Server::default();
     let router = Router::new()
         .merge(graphql::routes())
         .merge(gsp::routes())
-        .merge(mcp::routes().with_state(mcp_server))
         .merge(openai::routes())
         .merge(prometheus::routes())
         .merge(sparql::routes())
@@ -51,7 +49,11 @@ pub fn routes() -> Router {
         .route("/", get(http_handler))
 }
 
-pub async fn start(addr: impl ToSocketAddrs, cancel: CancellationToken) -> std::io::Result<()> {
+pub async fn start(
+    addr: impl ToSocketAddrs,
+    cancel: CancellationToken,
+    router: Option<Router>,
+) -> std::io::Result<()> {
     let listener = TcpListener::bind(addr).await?;
 
     #[cfg(feature = "tracing")]
@@ -60,7 +62,9 @@ pub async fn start(addr: impl ToSocketAddrs, cancel: CancellationToken) -> std::
         listener.local_addr().unwrap()
     );
 
-    axum::serve(listener, routes())
+    let router = router.unwrap_or_else(routes);
+
+    axum::serve(listener, router)
         .with_graceful_shutdown(cancel.cancelled_owned())
         .await
 }

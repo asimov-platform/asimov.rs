@@ -2,8 +2,9 @@
 
 use std::{borrow::Cow, collections::BTreeMap};
 
+pub use rmcp::model;
 use rmcp::model::{
-    self, Annotated, Content, Implementation, ProtocolVersion, RawResource, ResourceContents,
+    Annotated, Content, Implementation, ProtocolVersion, RawResource, ResourceContents,
     ServerCapabilities,
 };
 use serde_json::{Map, Value};
