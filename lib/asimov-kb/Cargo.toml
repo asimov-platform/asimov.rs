@@ -18,9 +18,11 @@ publish.workspace = true
 default = ["all", "std"]
 all = ["tracing"]
 std = ["dogma/std"]
-rocket = ["dep:rocket"]
 tracing = []
 unstable = []
+
+# Integrations:
+rocket = ["dep:rocket"]
 
 [dependencies]
 derive_more = { version = "2", features = ["display"] }
