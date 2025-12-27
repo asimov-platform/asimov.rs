@@ -8,6 +8,7 @@ default-members = [
     "lib/asimov-installer",
     "lib/asimov-kb",
     "lib/asimov-module",
+    "lib/asimov-nexus",
     "lib/asimov-patterns",
     "lib/asimov-prompt",
     "lib/asimov-registry",
@@ -49,6 +50,7 @@ asimov-installer = "25.0.2"
 asimov-kb = "25.0.2"
 asimov-ledger = "25.0.2"
 asimov-module = "25.0.2"
+asimov-nexus = "25.0.2"
 asimov-ontology = "25.0.2"
 asimov-patterns = "25.0.2"
 asimov-platform = "25.0.2"
@@ -186,6 +188,7 @@ asimov-installer = { path = "lib/asimov-installer" }
 asimov-kb = { path = "lib/asimov-kb" }
 asimov-ledger = { path = "lib/asimov-ledger" }
 asimov-module = { path = "lib/asimov-module" }
+asimov-nexus = { path = "lib/asimov-nexus" }
 asimov-ontology = { path = "lib/asimov-ontology" }
 asimov-patterns = { path = "lib/asimov-patterns" }
 asimov-platform = { path = "lib/asimov-platform" }
