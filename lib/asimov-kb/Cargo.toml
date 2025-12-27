@@ -1,0 +1,29 @@
+[package]
+name = "asimov-kb"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description.workspace = true
+#documentation.workspace = true
+readme.workspace = true
+homepage.workspace = true
+repository.workspace = true
+license.workspace = true
+keywords.workspace = true
+categories.workspace = true
+publish.workspace = true
+
+[features]
+default = ["all", "std"]
+all = ["tracing"]
+std = ["dogma/std"]
+rocket = ["dep:rocket"]
+tracing = []
+unstable = []
+
+[dependencies]
+derive_more = { version = "2", features = ["display"] }
+dogma.workspace = true
+regex = "1.12"
+rocket = { version = "0.5", default-features = false, optional = true }
