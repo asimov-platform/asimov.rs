@@ -29,6 +29,13 @@ impl FromStr for EventId {
     }
 }
 
+#[cfg(feature = "eloquent")]
+impl eloquent::ToSql for EventId {
+    fn to_sql(&self) -> Result<String, eloquent::error::EloquentError> {
+        self.as_id().to_sql()
+    }
+}
+
 #[cfg(feature = "rocket")]
 impl<'r> rocket::request::FromParam<'r> for EventId {
     type Error = IdError;

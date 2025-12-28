@@ -97,6 +97,14 @@ impl FromStr for Id {
     }
 }
 
+#[cfg(feature = "eloquent")]
+impl eloquent::ToSql for Id {
+    fn to_sql(&self) -> Result<String, eloquent::error::EloquentError> {
+        let hex: String = self.bytes.iter().map(|b| format!("{b:02X}")).collect();
+        Ok(format!("X'{hex}'"))
+    }
+}
+
 #[cfg(feature = "rocket")]
 impl<'r> rocket::request::FromParam<'r> for Id {
     type Error = IdError;
