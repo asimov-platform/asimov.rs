@@ -906,6 +906,7 @@ name = "asimov-kb"
 version = "25.0.2"
 dependencies = [
  "bs58",
+ "clap",
  "derive_more 2.0.1",
  "dogma",
  "rocket",

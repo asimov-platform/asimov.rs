@@ -5,6 +5,7 @@ use core::str::FromStr;
 use derive_more::Display;
 
 #[derive(Clone, Copy, Debug, Display, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[cfg_attr(feature = "clap", derive(clap::ValueEnum))]
 pub enum IdClass {
     #[display("E")]
     Event,
