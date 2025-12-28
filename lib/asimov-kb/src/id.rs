@@ -38,8 +38,16 @@ impl Id {
         self.bytes.as_slice()
     }
 
+    pub fn as_uuid(&self) -> uuid::Uuid {
+        uuid::Uuid::from_bytes(self.bytes)
+    }
+
     pub fn into_bytes(self) -> [u8; 16] {
         self.bytes
+    }
+
+    pub fn into_uuid(self) -> uuid::Uuid {
+        uuid::Uuid::from_bytes(self.bytes)
     }
 
     #[cfg(feature = "std")]
