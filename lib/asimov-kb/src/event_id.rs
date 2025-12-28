@@ -8,6 +8,10 @@ use derive_more::Display;
 pub struct EventId(pub(crate) Id);
 
 impl EventId {
+    pub fn new() -> Self {
+        Self(Id::new(IdClass::Event))
+    }
+
     pub fn as_id(&self) -> &Id {
         &self.0
     }

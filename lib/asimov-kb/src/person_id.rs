@@ -8,6 +8,10 @@ use derive_more::Display;
 pub struct PersonId(pub(crate) Id);
 
 impl PersonId {
+    pub fn new() -> Self {
+        Self(Id::new(IdClass::Person))
+    }
+
     pub fn as_id(&self) -> &Id {
         &self.0
     }
