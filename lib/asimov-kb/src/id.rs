@@ -3,27 +3,43 @@
 use crate::{IdClass, IdError};
 use core::{ops::RangeInclusive, str::FromStr};
 use derive_more::Display;
-use regex::Regex;
 
 pub const ID_LENGTH_MIN: usize = 1 + 16;
 pub const ID_LENGTH_MAX: usize = 1 + 22;
 pub const ID_LENGTH: RangeInclusive<usize> = ID_LENGTH_MIN..=ID_LENGTH_MAX;
-pub const ID_REGEX: &str = r"^[1-9A-HJ-NP-Za-km-z]+$";
 
 #[derive(Clone, Debug, Display, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct Id(pub(crate) String);
+#[display("{class}{}", bs58::encode(bytes).into_string())]
+pub struct Id {
+    pub(crate) class: IdClass,
+    pub(crate) bytes: [u8; 16],
+}
 
 impl Id {
-    pub fn as_str(&self) -> &str {
-        self.0.as_str()
+    pub fn zero(class: IdClass) -> Self {
+        Self {
+            class,
+            bytes: [0u8; 16],
+        }
+    }
+
+    pub fn new(class: IdClass) -> Self {
+        Self {
+            class,
+            bytes: uuid::Uuid::now_v7().into_bytes(),
+        }
     }
 
     pub fn class(&self) -> IdClass {
-        match self.0.chars().next().unwrap() {
-            'E' => IdClass::Event,
-            'P' => IdClass::Person,
-            _ => unreachable!(),
-        }
+        self.class
+    }
+
+    pub fn as_bytes(&self) -> &[u8] {
+        self.bytes.as_slice()
+    }
+
+    pub fn into_bytes(self) -> [u8; 16] {
+        self.bytes
     }
 
     #[cfg(feature = "std")]
@@ -35,12 +51,13 @@ impl Id {
     pub fn dir_path(&self) -> std::path::PathBuf {
         self.class()
             .dir_path()
-            .join(format!("{}/{}", self.shard(), self.0))
+            .join(format!("{}/{}", self.shard(), self))
     }
 
     fn shard(&self) -> String {
-        let id_len = self.0.chars().count();
-        self.0
+        let id_str = bs58::encode(self.bytes).into_string();
+        let id_len = id_str.chars().count();
+        id_str
             .chars()
             .skip(id_len.saturating_sub(2))
             .collect::<String>()
@@ -52,31 +69,23 @@ impl FromStr for Id {
     type Err = IdError;
 
     fn from_str(input: &str) -> Result<Self, Self::Err> {
-        #[cfg(feature = "std")]
-        fn matches(input: &str) -> bool {
-            use std::sync::LazyLock;
-            static ID_MATCHER: LazyLock<Regex> = LazyLock::new(|| Regex::new(ID_REGEX).unwrap());
-            ID_MATCHER.is_match(input)
+        let class = IdClass::from_str(input)?;
+        let mut id = Id::zero(class);
+        use bs58::decode::Error::*;
+        match bs58::decode(&input[1..]).onto(&mut id.bytes) {
+            Ok(len) => {
+                if len == id.bytes.len() {
+                    Ok(id)
+                } else {
+                    Err(IdError::InvalidLength)
+                }
+            },
+            Err(err) => Err(match err {
+                BufferTooSmall => IdError::InvalidLength,
+                InvalidCharacter { .. } | NonAsciiCharacter { .. } => IdError::InvalidEncoding,
+                _ => unreachable!(),
+            }),
         }
-        #[cfg(not(feature = "std"))]
-        fn matches(_input: &str) -> bool {
-            true
-        }
-
-        if !ID_LENGTH.contains(&input.len()) {
-            return Err(IdError::InvalidLength);
-        }
-
-        if !matches(&input[1..]) {
-            return Err(IdError::InvalidEncoding);
-        }
-
-        let class_char = input.chars().nth(0).unwrap();
-        if class_char != 'E' && class_char != 'P' {
-            return Err(IdError::UnknownClass);
-        }
-
-        Ok(Id(input.into()))
     }
 }
 
