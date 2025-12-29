@@ -79,6 +79,14 @@ impl From<(IdClass, [u8; 16])> for Id {
     }
 }
 
+impl From<(IdClass, &Vec<u8>)> for Id {
+    fn from((class, bytes_vec): (IdClass, &Vec<u8>)) -> Self {
+        let mut bytes = [0u8; 16];
+        bytes[0..].copy_from_slice(&bytes_vec[0..16]);
+        Self { class, bytes }
+    }
+}
+
 impl FromStr for Id {
     type Err = IdError;
 
