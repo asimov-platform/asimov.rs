@@ -17,6 +17,12 @@ impl EventId {
     }
 }
 
+impl From<[u8; 16]> for EventId {
+    fn from(bytes: [u8; 16]) -> Self {
+        Self(Id::from((IdClass::Event, bytes)))
+    }
+}
+
 impl FromStr for EventId {
     type Err = IdError;
 

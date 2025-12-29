@@ -17,6 +17,12 @@ impl PersonId {
     }
 }
 
+impl From<[u8; 16]> for PersonId {
+    fn from(bytes: [u8; 16]) -> Self {
+        Self(Id::from((IdClass::Person, bytes)))
+    }
+}
+
 impl FromStr for PersonId {
     type Err = IdError;
 

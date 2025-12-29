@@ -73,6 +73,12 @@ impl Id {
     }
 }
 
+impl From<(IdClass, [u8; 16])> for Id {
+    fn from((class, bytes): (IdClass, [u8; 16])) -> Self {
+        Self { class, bytes }
+    }
+}
+
 impl FromStr for Id {
     type Err = IdError;
 
