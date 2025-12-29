@@ -15,6 +15,10 @@ impl PersonId {
     pub fn as_id(&self) -> &Id {
         &self.0
     }
+
+    pub fn into_id(self) -> Id {
+        self.0
+    }
 }
 
 impl From<[u8; 16]> for PersonId {
@@ -54,5 +58,12 @@ impl<'r> rocket::request::FromParam<'r> for PersonId {
 
     fn from_param(input: &'r str) -> Result<Self, Self::Error> {
         Self::from_str(input)
+    }
+}
+
+#[cfg(feature = "turso")]
+impl turso::IntoValue for PersonId {
+    fn into_value(self) -> turso::Result<turso::Value> {
+        self.into_id().into_value()
     }
 }

@@ -127,3 +127,10 @@ impl<'r> rocket::request::FromParam<'r> for Id {
         Self::from_str(input)
     }
 }
+
+#[cfg(feature = "turso")]
+impl turso::IntoValue for Id {
+    fn into_value(self) -> turso::Result<turso::Value> {
+        Ok(turso::Value::Blob(self.bytes.to_vec()))
+    }
+}
