@@ -6,6 +6,8 @@ use rust_decimal::{Decimal, prelude::ToPrimitive};
 
 #[derive(Clone, Copy, Debug, Display, Eq, Hash, PartialEq, PartialOrd, Ord)]
 #[display("{:.9}", self.0)]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+#[cfg_attr(feature = "serde", serde(try_from = "String", into = "String"))]
 pub struct Credits(pub(crate) Decimal);
 
 impl Credits {
@@ -63,5 +65,19 @@ impl FromStr for Credits {
 
     fn from_str(input: &str) -> Result<Self, Self::Err> {
         Decimal::from_str(input).map(Self)
+    }
+}
+
+impl TryFrom<String> for Credits {
+    type Error = rust_decimal::Error;
+
+    fn try_from(input: String) -> Result<Self, Self::Error> {
+        Self::from_str(&input)
+    }
+}
+
+impl Into<String> for Credits {
+    fn into(self) -> String {
+        self.to_string()
     }
 }

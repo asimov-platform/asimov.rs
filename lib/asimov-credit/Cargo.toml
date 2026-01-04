@@ -21,7 +21,13 @@ std = ["rust_decimal/std", "dogma/std"]
 tracing = []
 unstable = []
 
+# Integrations:
+serde = ["dep:serde"]
+
 [dependencies]
 derive_more = { version = "2", features = ["display"] }
 dogma.workspace = true
 rust_decimal = { version = "1.39", default-features = false }
+
+# Integrations:
+serde = { workspace = true, optional = true }

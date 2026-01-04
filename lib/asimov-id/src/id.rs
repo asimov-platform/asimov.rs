@@ -10,6 +10,8 @@ pub const ID_LENGTH: RangeInclusive<usize> = ID_LENGTH_MIN..=ID_LENGTH_MAX;
 
 #[derive(Clone, Debug, Display, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[display("{}", self.0)]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+#[cfg_attr(feature = "serde", serde(try_from = "String", into = "String"))]
 pub struct Id(pub(crate) String);
 
 impl Id {
@@ -57,6 +59,20 @@ impl FromStr for Id {
     fn from_str(input: &str) -> Result<Self, Self::Err> {
         Self::validate(input)?;
         Ok(Self(input.into()))
+    }
+}
+
+impl TryFrom<String> for Id {
+    type Error = IdError;
+
+    fn try_from(input: String) -> Result<Self, Self::Error> {
+        Self::from_str(&input)
+    }
+}
+
+impl Into<String> for Id {
+    fn into(self) -> String {
+        self.into_string()
     }
 }
 

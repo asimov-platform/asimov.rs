@@ -902,6 +902,7 @@ dependencies = [
  "derive_more 2.0.1",
  "dogma",
  "rust_decimal",
+ "serde",
 ]
 
 [[package]]
@@ -964,6 +965,7 @@ dependencies = [
  "dogma",
  "eloquent",
  "rocket",
+ "serde",
  "turso",
 ]
 
