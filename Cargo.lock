@@ -948,6 +948,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "asimov-id"
+version = "25.0.2"
+dependencies = [
+ "clap",
+ "derive_more 2.0.1",
+ "dogma",
+ "eloquent",
+ "rocket",
+ "turso",
+]
+
+[[package]]
 name = "asimov-installer"
 version = "25.0.2"
 dependencies = [

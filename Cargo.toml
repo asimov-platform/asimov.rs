@@ -6,6 +6,7 @@ default-members = [
     "lib/asimov-credit",
     "lib/asimov-env",
     "lib/asimov-huggingface",
+    "lib/asimov-id",
     "lib/asimov-installer",
     "lib/asimov-kb",
     "lib/asimov-module",
@@ -48,6 +49,7 @@ asimov-env = "25.0.2"
 asimov-flow = "25.0.2"
 asimov-graph = "25.0.2"
 asimov-huggingface = "25.0.2"
+asimov-id = "25.0.2"
 asimov-installer = "25.0.2"
 asimov-kb = "25.0.2"
 asimov-ledger = "25.0.2"
@@ -187,6 +189,7 @@ asimov-env = { path = "lib/asimov-env" }
 asimov-flow = { path = "lib/asimov-flow" }
 asimov-graph = { path = "lib/asimov-graph" }
 asimov-huggingface = { path = "lib/asimov-huggingface" }
+asimov-id = { path = "lib/asimov-id" }
 asimov-installer = { path = "lib/asimov-installer" }
 asimov-kb = { path = "lib/asimov-kb" }
 asimov-ledger = { path = "lib/asimov-ledger" }
