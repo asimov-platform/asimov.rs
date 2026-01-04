@@ -3,6 +3,7 @@
 [workspace]
 members = ["lib/*"]
 default-members = [
+    "lib/asimov-credit",
     "lib/asimov-env",
     "lib/asimov-huggingface",
     "lib/asimov-installer",
@@ -40,6 +41,7 @@ asimov-cache = "25.0.2"
 asimov-config = "25.0.2"
 asimov-construct = "25.0.2"
 asimov-core = "25.0.2"
+asimov-credit = "25.0.2"
 asimov-dataset = "25.0.2"
 asimov-directory = "25.0.2"
 asimov-env = "25.0.2"
@@ -178,6 +180,7 @@ asimov-cache = { path = "lib/asimov-cache" }
 asimov-config = { path = "lib/asimov-config" }
 asimov-construct = { path = "lib/asimov-construct" }
 asimov-core = { path = "lib/asimov-core" }
+asimov-credit = { path = "lib/asimov-credit" }
 asimov-dataset = { path = "lib/asimov-dataset" }
 asimov-directory = { path = "lib/asimov-directory" }
 asimov-env = { path = "lib/asimov-env" }
