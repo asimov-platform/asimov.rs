@@ -860,6 +860,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "asimov-cloud"
+version = "25.0.2"
+dependencies = [
+ "derive_more 2.0.1",
+ "dogma",
+]
+
+[[package]]
 name = "asimov-config"
 version = "25.0.2"
 dependencies = [

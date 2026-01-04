@@ -3,6 +3,7 @@
 [workspace]
 members = ["lib/*"]
 default-members = [
+    "lib/asimov-cloud",
     "lib/asimov-credit",
     "lib/asimov-env",
     "lib/asimov-huggingface",
@@ -39,6 +40,7 @@ publish = true
 asimov-account = "25.0.2"
 asimov-agent = "25.0.2"
 asimov-cache = "25.0.2"
+asimov-cloud = "25.0.2"
 asimov-config = "25.0.2"
 asimov-construct = "25.0.2"
 asimov-core = "25.0.2"
@@ -179,6 +181,7 @@ zip = { version = "4", default-features = false }
 asimov-account = { path = "lib/asimov-account" }
 asimov-agent = { path = "lib/asimov-agent" }
 asimov-cache = { path = "lib/asimov-cache" }
+asimov-cloud = { path = "lib/asimov-cloud" }
 asimov-config = { path = "lib/asimov-config" }
 asimov-construct = { path = "lib/asimov-construct" }
 asimov-core = { path = "lib/asimov-core" }
