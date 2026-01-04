@@ -863,7 +863,10 @@ dependencies = [
 name = "asimov-cloud"
 version = "25.0.2"
 dependencies = [
- "derive_more 2.0.1",
+ "asimov-credit",
+ "asimov-id",
+ "asimov-kb",
+ "asimov-nexus",
  "dogma",
 ]
 
