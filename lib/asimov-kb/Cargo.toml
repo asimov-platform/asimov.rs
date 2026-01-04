@@ -25,6 +25,7 @@ unstable = []
 clap = ["dep:clap"]
 eloquent = ["dep:eloquent"]
 rocket = ["dep:rocket"]
+serde = ["dep:serde"]
 turso = ["dep:turso"]
 
 [dependencies]
@@ -37,4 +38,5 @@ uuid = { version = "1.19", default-features = false, features = ["serde", "v7"] 
 clap = { version = "4.5", default-features = false, features = ["derive", "std"], optional = true }
 eloquent = { version = "2.0", default-features = false, optional = true }
 rocket = { version = "0.5", default-features = false, optional = true }
+serde = { workspace = true, optional = true }
 turso = { version = "0.3", default-features = false, optional = true }

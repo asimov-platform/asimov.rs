@@ -902,10 +902,13 @@ dependencies = [
 name = "asimov-credit"
 version = "25.0.2"
 dependencies = [
+ "clap",
  "derive_more 2.0.1",
  "dogma",
+ "eloquent",
  "rust_decimal",
  "serde",
+ "turso",
 ]
 
 [[package]]
@@ -1010,6 +1013,7 @@ dependencies = [
  "dogma",
  "eloquent",
  "rocket",
+ "serde",
  "turso",
  "uuid",
 ]

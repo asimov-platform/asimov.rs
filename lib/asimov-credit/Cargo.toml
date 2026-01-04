@@ -17,12 +17,15 @@ publish.workspace = true
 [features]
 default = ["all", "std"]
 all = ["tracing"]
-std = ["rust_decimal/std", "dogma/std"]
+std = ["dogma/std", "rust_decimal/std"]
 tracing = []
 unstable = []
 
 # Integrations:
+clap = ["dep:clap"]
+eloquent = ["dep:eloquent"]
 serde = ["dep:serde"]
+turso = ["dep:turso"]
 
 [dependencies]
 derive_more = { version = "2", features = ["display"] }
@@ -30,4 +33,7 @@ dogma.workspace = true
 rust_decimal = { version = "1.39", default-features = false }
 
 # Integrations:
+clap = { version = "4.5", default-features = false, features = ["derive", "std"], optional = true }
+eloquent = { version = "2.0", default-features = false, optional = true }
 serde = { workspace = true, optional = true }
+turso = { version = "0.3", default-features = false, optional = true }

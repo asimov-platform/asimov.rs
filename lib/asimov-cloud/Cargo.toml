@@ -17,9 +17,23 @@ publish.workspace = true
 [features]
 default = ["all", "std"]
 all = ["tracing"]
-std = ["dogma/std"]
+std = [
+    "asimov-credit/std",
+    "asimov-id/std",
+    "asimov-kb/std",
+    "asimov-nexus/std",
+    "dogma/std",
+]
 tracing = []
 unstable = []
+
+# Integrations:
+clap = ["asimov-credit/clap", "asimov-id/clap", "asimov-kb/clap"]
+eloquent = ["asimov-credit/eloquent", "asimov-id/eloquent", "asimov-kb/eloquent"]
+rocket = ["asimov-id/rocket", "asimov-kb/rocket"]
+serde = ["asimov-credit/serde", "asimov-id/serde", "asimov-kb/serde"]
+turso = ["asimov-credit/turso", "asimov-id/turso", "asimov-kb/turso"]
+validator = ["asimov-nexus/validator"]
 
 [dependencies]
 asimov-credit.workspace = true

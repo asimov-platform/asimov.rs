@@ -29,4 +29,6 @@ asimov-kb.workspace = true
 derive_more = { version = "2", features = ["display"] }
 dogma.workspace = true
 serde.workspace = true
+
+# Integrations:
 validator = { version = "0.16.1", features = ["derive"], optional = true }
