@@ -906,6 +906,7 @@ dependencies = [
  "derive_more 2.0.1",
  "dogma",
  "eloquent",
+ "libsql",
  "rust_decimal",
  "serde",
  "turso",
@@ -970,6 +971,7 @@ dependencies = [
  "derive_more 2.0.1",
  "dogma",
  "eloquent",
+ "libsql",
  "rocket",
  "serde",
  "turso",
@@ -1012,6 +1014,7 @@ dependencies = [
  "derive_more 2.0.1",
  "dogma",
  "eloquent",
+ "libsql",
  "rocket",
  "serde",
  "turso",
@@ -3881,6 +3884,17 @@ dependencies = [
  "bitflags",
  "libc",
  "redox_syscall",
+]
+
+[[package]]
+name = "libsql"
+version = "0.9.29"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2329faffc510cc3c6b4f00169a39177cc7099d3ed7647fc92f7cf26e53a8d976"
+dependencies = [
+ "async-trait",
+ "thiserror 1.0.69",
+ "tracing",
 ]
 
 [[package]]

@@ -1,10 +1,12 @@
 // This is free and unencumbered software released into the public domain.
 
 use core::str::FromStr;
-use derive_more::Display;
+use derive_more::{AddAssign, Display, SubAssign};
 use rust_decimal::{Decimal, prelude::ToPrimitive};
 
-#[derive(Clone, Copy, Debug, Display, Eq, Hash, PartialEq, PartialOrd, Ord)]
+#[derive(
+    Clone, Copy, Debug, Display, Eq, Hash, PartialEq, PartialOrd, Ord, AddAssign, SubAssign,
+)]
 #[display("{:.9}", self.0)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[cfg_attr(feature = "serde", serde(try_from = "String", into = "String"))]
@@ -21,8 +23,9 @@ impl Credits {
 
     pub fn as_nanos(&self) -> i64 {
         let mut result = self.0.clone();
-        result.rescale(0);
-        result.to_i64().unwrap()
+        result.rescale(9);
+        assert!(result.scale() == 9);
+        result.mantissa() as _
     }
 
     pub fn as_decimal(&self) -> &Decimal {
@@ -39,6 +42,12 @@ impl Credits {
 
     pub fn to_f64(&self) -> Option<f64> {
         self.0.to_f64()
+    }
+}
+
+impl Default for Credits {
+    fn default() -> Self {
+        Self::ZERO
     }
 }
 

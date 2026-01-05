@@ -30,6 +30,7 @@ unstable = []
 # Integrations:
 clap = ["asimov-credit/clap", "asimov-id/clap", "asimov-kb/clap"]
 eloquent = ["asimov-credit/eloquent", "asimov-id/eloquent", "asimov-kb/eloquent"]
+libsql = ["asimov-credit/libsql", "asimov-id/libsql", "asimov-kb/libsql"]
 rocket = ["asimov-id/rocket", "asimov-kb/rocket"]
 serde = ["asimov-credit/serde", "asimov-id/serde", "asimov-kb/serde"]
 turso = ["asimov-credit/turso", "asimov-id/turso", "asimov-kb/turso"]

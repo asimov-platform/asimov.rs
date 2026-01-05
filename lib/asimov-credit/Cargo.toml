@@ -24,16 +24,18 @@ unstable = []
 # Integrations:
 clap = ["dep:clap"]
 eloquent = ["dep:eloquent"]
+libsql = ["dep:libsql"]
 serde = ["dep:serde"]
 turso = ["dep:turso"]
 
 [dependencies]
-derive_more = { version = "2", features = ["display"] }
+derive_more = { version = "2", features = ["add_assign", "display"] }
 dogma.workspace = true
 rust_decimal = { version = "1.39", default-features = false }
 
 # Integrations:
 clap = { version = "4.5", default-features = false, features = ["derive", "std"], optional = true }
 eloquent = { version = "2.0", default-features = false, optional = true }
+libsql = { version = "0.9", default-features = false, optional = true }
 serde = { workspace = true, optional = true }
 turso = { version = "0.3", default-features = false, optional = true }

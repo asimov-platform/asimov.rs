@@ -119,6 +119,13 @@ impl eloquent::ToSql for Id {
     }
 }
 
+#[cfg(feature = "libsql")]
+impl libsql::params::IntoValue for Id {
+    fn into_value(self) -> libsql::Result<libsql::Value> {
+        Ok(libsql::Value::Blob(self.bytes.to_vec()))
+    }
+}
+
 #[cfg(feature = "rocket")]
 impl<'r> rocket::request::FromParam<'r> for Id {
     type Error = IdError;
