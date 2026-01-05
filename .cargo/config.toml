@@ -1,5 +1,9 @@
 # See: https://doc.rust-lang.org/cargo/reference/config.html
-# See: https://docs.shipyard.rs/configuration/git-fetch-with-cli.html
 
+# See: https://docs.shipyard.rs/configuration/git-fetch-with-cli.html
 [net]
 git-fetch-with-cli = true
+
+# See: https://docs.rs/getrandom/latest/getrandom/#opt-in-backends
+[target.wasm32-unknown-unknown]
+rustflags = ['--cfg', 'getrandom_backend="wasm_js"']
