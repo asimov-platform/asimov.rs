@@ -2,3 +2,6 @@
 
 mod credits;
 pub use credits::*;
+
+mod error;
+pub use error::*;

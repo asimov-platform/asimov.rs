@@ -41,4 +41,7 @@ asimov-credit.workspace = true
 asimov-id.workspace = true
 asimov-kb.workspace = true
 asimov-nexus.workspace = true
+derive_more = { version = "2", features = ["display"] }
 dogma.workspace = true
+reqwest.workspace = true
+thiserror.workspace = true

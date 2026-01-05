@@ -32,6 +32,7 @@ turso = ["dep:turso"]
 derive_more = { version = "2", features = ["add_assign", "display"] }
 dogma.workspace = true
 rust_decimal = { version = "1.39", default-features = false }
+thiserror.workspace = true
 
 # Integrations:
 clap = { version = "4.5", default-features = false, features = ["derive", "std"], optional = true }

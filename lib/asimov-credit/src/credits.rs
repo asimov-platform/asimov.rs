@@ -1,5 +1,6 @@
 // This is free and unencumbered software released into the public domain.
 
+use crate::CreditsError;
 use core::str::FromStr;
 use derive_more::{AddAssign, Display, SubAssign};
 use rust_decimal::{Decimal, prelude::ToPrimitive};
@@ -36,12 +37,34 @@ impl Credits {
         self.0
     }
 
+    #[inline]
     pub fn to_f32(&self) -> Option<f32> {
         self.0.to_f32()
     }
 
+    #[inline]
     pub fn to_f64(&self) -> Option<f64> {
         self.0.to_f64()
+    }
+
+    #[inline]
+    pub fn is_integer(&self) -> bool {
+        self.0.is_integer()
+    }
+
+    #[inline]
+    pub fn is_sign_negative(&self) -> bool {
+        self.0.is_sign_negative()
+    }
+
+    #[inline]
+    pub fn is_sign_positive(&self) -> bool {
+        self.0.is_sign_positive()
+    }
+
+    #[inline]
+    pub fn is_zero(&self) -> bool {
+        self.0.is_zero()
     }
 }
 
@@ -70,15 +93,15 @@ impl From<u64> for Credits {
 }
 
 impl FromStr for Credits {
-    type Err = rust_decimal::Error;
+    type Err = CreditsError;
 
     fn from_str(input: &str) -> Result<Self, Self::Err> {
-        Decimal::from_str(input).map(Self)
+        Ok(Self(Decimal::from_str(input)?))
     }
 }
 
 impl TryFrom<String> for Credits {
-    type Error = rust_decimal::Error;
+    type Error = CreditsError;
 
     fn try_from(input: String) -> Result<Self, Self::Error> {
         Self::from_str(&input)
