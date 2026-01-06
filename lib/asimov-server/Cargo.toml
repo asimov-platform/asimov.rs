@@ -61,7 +61,7 @@ rmcp = { workspace = true, features = [
 ] }
 thiserror.workspace = true
 tldr.workspace = true
-tokio.workspace = true
+tokio = { workspace = true, features = ["io-util", "rt"] }
 tokio-util.workspace = true
 uuid.workspace = true
 

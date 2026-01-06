@@ -47,6 +47,9 @@ thiserror.workspace = true
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 reqwest = { workspace = true }
+tokio = { workspace = true, features = ["io-util", "rt"] }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 reqwest = { workspace = true, features = ["json"] }
+tokio = { workspace = true, features = ["rt"] }
+tokio_with_wasm = { version = "0.8", features = ["rt"] }
