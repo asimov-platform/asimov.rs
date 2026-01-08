@@ -7,6 +7,8 @@ use derive_more::Display;
 #[derive(Clone, Copy, Debug, Display, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "clap", derive(clap::ValueEnum))]
 pub enum IdClass {
+    #[display("B")]
+    Blob,
     #[display("E")]
     Event,
     #[display("P")]
@@ -17,6 +19,7 @@ impl IdClass {
     #[cfg(feature = "std")]
     pub fn yaml_path(&self) -> std::path::PathBuf {
         match self {
+            Self::Blob => "blob.yaml",
             Self::Event => "event.yaml",
             Self::Person => "person.yaml",
         }
@@ -26,6 +29,7 @@ impl IdClass {
     #[cfg(feature = "std")]
     pub fn dir_path(&self) -> std::path::PathBuf {
         match self {
+            Self::Blob => "blobs",
             Self::Event => "events",
             Self::Person => "people",
         }
@@ -38,6 +42,7 @@ impl FromStr for IdClass {
 
     fn from_str(input: &str) -> Result<Self, Self::Err> {
         Ok(match input.chars().next().unwrap_or_default() {
+            'B' => Self::Blob,
             'E' => Self::Event,
             'P' => Self::Person,
             _ => return Err(IdError::UnknownClass),

@@ -1,32 +1,21 @@
 // This is free and unencumbered software released into the public domain.
 
 use crate::{IdClass, IdError};
-use core::{ops::RangeInclusive, str::FromStr};
+use core::{str::FromStr};
 use derive_more::Display;
-
-pub const ID_LENGTH_MIN: usize = 1 + 16;
-pub const ID_LENGTH_MAX: usize = 1 + 22;
-pub const ID_LENGTH: RangeInclusive<usize> = ID_LENGTH_MIN..=ID_LENGTH_MAX;
 
 #[derive(Clone, Debug, Display, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[display("{class}{}", bs58::encode(bytes).into_string())]
-pub struct Id {
+pub struct Id<const N: usize = 16> {
     pub(crate) class: IdClass,
-    pub(crate) bytes: [u8; 16],
+    pub(crate) bytes: [u8; N],
 }
 
-impl Id {
+impl<const N: usize> Id<N> {
     pub fn zero(class: IdClass) -> Self {
         Self {
             class,
-            bytes: [0u8; 16],
-        }
-    }
-
-    pub fn new(class: IdClass) -> Self {
-        Self {
-            class,
-            bytes: uuid::Uuid::now_v7().into_bytes(),
+            bytes: [0u8; N],
         }
     }
 
@@ -38,16 +27,8 @@ impl Id {
         self.bytes.as_slice()
     }
 
-    pub fn as_uuid(&self) -> uuid::Uuid {
-        uuid::Uuid::from_bytes(self.bytes)
-    }
-
-    pub fn into_bytes(self) -> [u8; 16] {
+    pub fn into_bytes(self) -> [u8; N] {
         self.bytes
-    }
-
-    pub fn into_uuid(self) -> uuid::Uuid {
-        uuid::Uuid::from_bytes(self.bytes)
     }
 
     #[cfg(feature = "std")]
@@ -73,21 +54,39 @@ impl Id {
     }
 }
 
-impl From<(IdClass, [u8; 16])> for Id {
-    fn from((class, bytes): (IdClass, [u8; 16])) -> Self {
+impl Id<16> {
+    pub fn new_uuid(class: IdClass) -> Self {
+        Self {
+            class,
+            bytes: uuid::Uuid::now_v7().into_bytes(),
+        }
+    }
+
+    pub fn as_uuid(&self) -> uuid::Uuid {
+        uuid::Uuid::from_bytes(self.bytes)
+    }
+
+    pub fn into_uuid(self) -> uuid::Uuid {
+        uuid::Uuid::from_bytes(self.bytes)
+    }
+}
+
+impl<const N: usize> From<(IdClass, [u8; N])> for Id<N> {
+    fn from((class, bytes): (IdClass, [u8; N])) -> Self {
         Self { class, bytes }
     }
 }
 
-impl From<(IdClass, &Vec<u8>)> for Id {
+impl<const N: usize> From<(IdClass, &Vec<u8>)> for Id<N> {
     fn from((class, bytes_vec): (IdClass, &Vec<u8>)) -> Self {
-        let mut bytes = [0u8; 16];
-        bytes[0..].copy_from_slice(&bytes_vec[0..16]);
+        let mut bytes = [0u8; N];
+        let len = N.min(bytes_vec.len());
+        bytes[..len].copy_from_slice(&bytes_vec[..len]);
         Self { class, bytes }
     }
 }
 
-impl FromStr for Id {
+impl<const N: usize> FromStr for Id<N> {
     type Err = IdError;
 
     fn from_str(input: &str) -> Result<Self, Self::Err> {
@@ -112,7 +111,7 @@ impl FromStr for Id {
 }
 
 #[cfg(feature = "eloquent")]
-impl eloquent::ToSql for Id {
+impl<const N: usize> eloquent::ToSql for Id<N> {
     fn to_sql(&self) -> Result<String, eloquent::error::EloquentError> {
         let hex: String = self.bytes.iter().map(|b| format!("{b:02X}")).collect();
         Ok(format!("X'{hex}'"))
@@ -120,14 +119,14 @@ impl eloquent::ToSql for Id {
 }
 
 #[cfg(feature = "libsql")]
-impl libsql::params::IntoValue for Id {
+impl<const N: usize> libsql::params::IntoValue for Id<N> {
     fn into_value(self) -> libsql::Result<libsql::Value> {
         Ok(libsql::Value::Blob(self.bytes.to_vec()))
     }
 }
 
 #[cfg(feature = "rocket")]
-impl<'r> rocket::request::FromParam<'r> for Id {
+impl<'r, const N: usize> rocket::request::FromParam<'r> for Id<N> {
     type Error = IdError;
 
     fn from_param(input: &'r str) -> Result<Self, Self::Error> {
@@ -136,7 +135,7 @@ impl<'r> rocket::request::FromParam<'r> for Id {
 }
 
 #[cfg(feature = "turso")]
-impl turso::IntoValue for Id {
+impl<const N: usize> turso::IntoValue for Id<N> {
     fn into_value(self) -> turso::Result<turso::Value> {
         Ok(turso::Value::Blob(self.bytes.to_vec()))
     }

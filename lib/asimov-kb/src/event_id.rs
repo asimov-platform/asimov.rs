@@ -1,15 +1,19 @@
 // This is free and unencumbered software released into the public domain.
 
 use crate::{Id, IdClass, IdError};
-use core::str::FromStr;
+use core::{str::FromStr, ops::RangeInclusive};
 use derive_more::Display;
 
 #[derive(Clone, Debug, Display, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct EventId(pub(crate) Id);
+pub struct EventId(pub(crate) Id<16>);
 
 impl EventId {
+    pub const ID_LEN_MIN: usize = 1 + 16;
+    pub const ID_LEN_MAX: usize = 1 + 22;
+    pub const ID_LEN: RangeInclusive<usize> = Self::ID_LEN_MIN..=Self::ID_LEN_MAX;
+
     pub fn new() -> Self {
-        Self(Id::new(IdClass::Event))
+        Self(Id::new_uuid(IdClass::Event))
     }
 
     pub fn as_id(&self) -> &Id {

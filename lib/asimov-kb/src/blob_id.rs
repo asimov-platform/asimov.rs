@@ -5,44 +5,40 @@ use core::{str::FromStr, ops::RangeInclusive};
 use derive_more::Display;
 
 #[derive(Clone, Debug, Display, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct PersonId(pub(crate) Id<16>);
+pub struct BlobId(pub(crate) Id<32>);
 
-impl PersonId {
-    pub const ID_LEN_MIN: usize = 1 + 16;
-    pub const ID_LEN_MAX: usize = 1 + 22;
+impl BlobId {
+    pub const ID_LEN_MIN: usize = 1 + 16; // TODO
+    pub const ID_LEN_MAX: usize = 1 + 22; // TODO
     pub const ID_LEN: RangeInclusive<usize> = Self::ID_LEN_MIN..=Self::ID_LEN_MAX;
 
-    pub fn new() -> Self {
-        Self(Id::new_uuid(IdClass::Person))
-    }
-
-    pub fn as_id(&self) -> &Id {
+    pub fn as_id(&self) -> &Id<32> {
         &self.0
     }
 
-    pub fn into_id(self) -> Id {
+    pub fn into_id(self) -> Id<32> {
         self.0
     }
 }
 
-impl From<[u8; 16]> for PersonId {
-    fn from(bytes: [u8; 16]) -> Self {
-        Self(Id::from((IdClass::Person, bytes)))
+impl From<[u8; 32]> for BlobId {
+    fn from(bytes: [u8; 32]) -> Self {
+        Self(Id::from((IdClass::Blob, bytes)))
     }
 }
 
-impl From<&Vec<u8>> for PersonId {
+impl From<&Vec<u8>> for BlobId {
     fn from(bytes: &Vec<u8>) -> Self {
-        Self(Id::from((IdClass::Person, bytes)))
+        Self(Id::from((IdClass::Blob, bytes)))
     }
 }
 
-impl FromStr for PersonId {
+impl FromStr for BlobId {
     type Err = IdError;
 
     fn from_str(input: &str) -> Result<Self, Self::Err> {
         let id = Id::from_str(input)?;
-        if id.class() != IdClass::Person {
+        if id.class() != IdClass::Blob {
             return Err(IdError::UnknownClass);
         }
         Ok(Self(id))
@@ -50,21 +46,21 @@ impl FromStr for PersonId {
 }
 
 #[cfg(feature = "eloquent")]
-impl eloquent::ToSql for PersonId {
+impl eloquent::ToSql for BlobId {
     fn to_sql(&self) -> Result<String, eloquent::error::EloquentError> {
         self.as_id().to_sql()
     }
 }
 
 #[cfg(feature = "libsql")]
-impl libsql::params::IntoValue for PersonId {
+impl libsql::params::IntoValue for BlobId {
     fn into_value(self) -> libsql::Result<libsql::Value> {
         self.into_id().into_value()
     }
 }
 
 #[cfg(feature = "rocket")]
-impl<'r> rocket::request::FromParam<'r> for PersonId {
+impl<'r> rocket::request::FromParam<'r> for BlobId {
     type Error = IdError;
 
     fn from_param(input: &'r str) -> Result<Self, Self::Error> {
@@ -73,7 +69,7 @@ impl<'r> rocket::request::FromParam<'r> for PersonId {
 }
 
 #[cfg(feature = "turso")]
-impl turso::IntoValue for PersonId {
+impl turso::IntoValue for BlobId {
     fn into_value(self) -> turso::Result<turso::Value> {
         self.into_id().into_value()
     }

@@ -1,5 +1,8 @@
 // This is free and unencumbered software released into the public domain.
 
+mod blob_id;
+pub use blob_id::*;
+
 mod event_id;
 pub use event_id::*;
 
