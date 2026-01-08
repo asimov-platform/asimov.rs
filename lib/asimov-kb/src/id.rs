@@ -1,7 +1,7 @@
 // This is free and unencumbered software released into the public domain.
 
 use crate::{IdClass, IdError};
-use core::{str::FromStr};
+use core::str::FromStr;
 use derive_more::Display;
 
 #[derive(Clone, Debug, Display, Eq, Hash, Ord, PartialEq, PartialOrd)]
@@ -43,6 +43,7 @@ impl<const N: usize> Id<N> {
             .join(format!("{}/{}", self.shard(), self))
     }
 
+    #[cfg(feature = "std")]
     fn shard(&self) -> String {
         let id_str = bs58::encode(self.bytes).into_string();
         let id_len = id_str.chars().count();
@@ -54,6 +55,7 @@ impl<const N: usize> Id<N> {
     }
 }
 
+#[cfg(feature = "uuid")]
 impl Id<16> {
     pub fn new_uuid(class: IdClass) -> Self {
         Self {

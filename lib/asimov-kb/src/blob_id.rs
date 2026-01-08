@@ -1,7 +1,7 @@
 // This is free and unencumbered software released into the public domain.
 
 use crate::{Id, IdClass, IdError};
-use core::{str::FromStr, ops::RangeInclusive};
+use core::{ops::RangeInclusive, str::FromStr};
 use derive_more::Display;
 
 #[derive(Clone, Debug, Display, Eq, Hash, Ord, PartialEq, PartialOrd)]
@@ -27,9 +27,22 @@ impl From<[u8; 32]> for BlobId {
     }
 }
 
+impl From<&[u8; 32]> for BlobId {
+    fn from(bytes: &[u8; 32]) -> Self {
+        Self(Id::from((IdClass::Blob, bytes.clone())))
+    }
+}
+
 impl From<&Vec<u8>> for BlobId {
     fn from(bytes: &Vec<u8>) -> Self {
         Self(Id::from((IdClass::Blob, bytes)))
+    }
+}
+
+#[cfg(feature = "iroh")]
+impl From<&iroh_blobs::Hash> for BlobId {
+    fn from(bytes: &iroh_blobs::Hash) -> Self {
+        Self(Id::from((IdClass::Blob, bytes.as_bytes().clone())))
     }
 }
 

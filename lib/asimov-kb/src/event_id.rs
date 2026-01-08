@@ -1,7 +1,7 @@
 // This is free and unencumbered software released into the public domain.
 
 use crate::{Id, IdClass, IdError};
-use core::{str::FromStr, ops::RangeInclusive};
+use core::{ops::RangeInclusive, str::FromStr};
 use derive_more::Display;
 
 #[derive(Clone, Debug, Display, Eq, Hash, Ord, PartialEq, PartialOrd)]
@@ -12,6 +12,7 @@ impl EventId {
     pub const ID_LEN_MAX: usize = 1 + 22;
     pub const ID_LEN: RangeInclusive<usize> = Self::ID_LEN_MIN..=Self::ID_LEN_MAX;
 
+    #[cfg(feature = "uuid")]
     pub fn new() -> Self {
         Self(Id::new_uuid(IdClass::Event))
     }
