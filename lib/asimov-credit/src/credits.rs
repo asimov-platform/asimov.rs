@@ -66,6 +66,14 @@ impl Credits {
     pub fn is_zero(&self) -> bool {
         self.0.is_zero()
     }
+
+    pub fn glyph(&self) -> &str {
+        "Ⓐ"
+    }
+
+    pub fn to_string_with_glyph(&self) -> String {
+        format!("Ⓐ{}", self)
+    }
 }
 
 impl Default for Credits {

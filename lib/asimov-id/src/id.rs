@@ -51,6 +51,14 @@ impl Id {
     pub fn into_string(self) -> String {
         self.0
     }
+
+    pub fn glyph(&self) -> &str {
+        "Ⓐ"
+    }
+
+    pub fn to_string_with_glyph(&self) -> String {
+        format!("Ⓐ{}", self)
+    }
 }
 
 impl Borrow<str> for Id {
