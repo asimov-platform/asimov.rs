@@ -28,6 +28,7 @@ clap = ["dep:clap"]
 eloquent = ["dep:eloquent"]
 iroh = ["dep:iroh-blobs"]
 libsql = ["dep:libsql"]
+p2panda = ["dep:p2panda-core"]
 rocket = ["dep:rocket"]
 serde = ["dep:serde"]
 turso = ["dep:turso"]
@@ -44,6 +45,7 @@ clap = { version = "4.5", default-features = false, features = ["derive", "std"]
 eloquent = { version = "2.0", default-features = false, optional = true }
 iroh-blobs = { version = "0.97", default-features = false, optional = true }
 libsql = { version = "0.9", default-features = false, optional = true }
+p2panda-core = { version = "0.4", default-features = false, optional = true }
 rocket = { version = "0.5", default-features = false, optional = true }
 serde = { workspace = true, optional = true }
 turso = { version = "0.3", default-features = false, optional = true }

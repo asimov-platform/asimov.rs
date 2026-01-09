@@ -21,6 +21,18 @@ impl BlobId {
     }
 }
 
+impl FromStr for BlobId {
+    type Err = IdError;
+
+    fn from_str(input: &str) -> Result<Self, Self::Err> {
+        let id = Id::from_str(input)?;
+        if id.class() != IdClass::Blob {
+            return Err(IdError::UnknownClass);
+        }
+        Ok(Self(id))
+    }
+}
+
 impl From<[u8; 32]> for BlobId {
     fn from(bytes: [u8; 32]) -> Self {
         Self(Id::from((IdClass::Blob, bytes)))
@@ -46,15 +58,24 @@ impl From<&iroh_blobs::Hash> for BlobId {
     }
 }
 
-impl FromStr for BlobId {
-    type Err = IdError;
+#[cfg(feature = "p2panda")]
+impl From<&p2panda_core::Hash> for BlobId {
+    fn from(bytes: &p2panda_core::Hash) -> Self {
+        Self(Id::from((IdClass::Blob, bytes.as_bytes().clone())))
+    }
+}
 
-    fn from_str(input: &str) -> Result<Self, Self::Err> {
-        let id = Id::from_str(input)?;
-        if id.class() != IdClass::Blob {
-            return Err(IdError::UnknownClass);
-        }
-        Ok(Self(id))
+#[cfg(feature = "iroh")]
+impl Into<iroh_blobs::Hash> for BlobId {
+    fn into(self) -> iroh_blobs::Hash {
+        iroh_blobs::Hash::from(self.into_id().into_bytes())
+    }
+}
+
+#[cfg(feature = "p2panda")]
+impl Into<p2panda_core::Hash> for BlobId {
+    fn into(self) -> p2panda_core::Hash {
+        p2panda_core::Hash::from(self.into_id().into_bytes())
     }
 }
 

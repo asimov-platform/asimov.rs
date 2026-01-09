@@ -26,18 +26,6 @@ impl PersonId {
     }
 }
 
-impl From<[u8; 16]> for PersonId {
-    fn from(bytes: [u8; 16]) -> Self {
-        Self(Id::from((IdClass::Person, bytes)))
-    }
-}
-
-impl From<&Vec<u8>> for PersonId {
-    fn from(bytes: &Vec<u8>) -> Self {
-        Self(Id::from((IdClass::Person, bytes)))
-    }
-}
-
 impl FromStr for PersonId {
     type Err = IdError;
 
@@ -47,6 +35,18 @@ impl FromStr for PersonId {
             return Err(IdError::UnknownClass);
         }
         Ok(Self(id))
+    }
+}
+
+impl From<[u8; 16]> for PersonId {
+    fn from(bytes: [u8; 16]) -> Self {
+        Self(Id::from((IdClass::Person, bytes)))
+    }
+}
+
+impl From<&Vec<u8>> for PersonId {
+    fn from(bytes: &Vec<u8>) -> Self {
+        Self(Id::from((IdClass::Person, bytes)))
     }
 }
 

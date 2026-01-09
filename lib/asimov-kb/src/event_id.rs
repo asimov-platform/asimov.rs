@@ -26,18 +26,6 @@ impl EventId {
     }
 }
 
-impl From<[u8; 16]> for EventId {
-    fn from(bytes: [u8; 16]) -> Self {
-        Self(Id::from((IdClass::Event, bytes)))
-    }
-}
-
-impl From<&Vec<u8>> for EventId {
-    fn from(bytes: &Vec<u8>) -> Self {
-        Self(Id::from((IdClass::Event, bytes)))
-    }
-}
-
 impl FromStr for EventId {
     type Err = IdError;
 
@@ -47,6 +35,18 @@ impl FromStr for EventId {
             return Err(IdError::UnknownClass);
         }
         Ok(Self(id))
+    }
+}
+
+impl From<[u8; 16]> for EventId {
+    fn from(bytes: [u8; 16]) -> Self {
+        Self(Id::from((IdClass::Event, bytes)))
+    }
+}
+
+impl From<&Vec<u8>> for EventId {
+    fn from(bytes: &Vec<u8>) -> Self {
+        Self(Id::from((IdClass::Event, bytes)))
     }
 }
 
