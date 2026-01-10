@@ -996,11 +996,15 @@ dependencies = [
 name = "asimov-id"
 version = "25.0.3"
 dependencies = [
+ "bs58",
  "clap",
  "derive_more 2.0.1",
  "dogma",
+ "ed25519-dalek 2.2.0",
  "eloquent",
+ "iroh",
  "libsql",
+ "p2panda-core",
  "rocket",
  "serde",
  "turso",

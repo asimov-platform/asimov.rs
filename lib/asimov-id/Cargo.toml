@@ -16,27 +16,35 @@ publish.workspace = true
 
 [features]
 default = ["all", "std"]
-all = ["tracing"]
-std = ["dogma/std"]
+all = ["ed25519", "tracing"]
+ed25519 = ["ed25519-dalek"]
+std = ["bs58/std", "dogma/std", "ed25519-dalek?/std"]
 tracing = []
 unstable = []
 
 # Integrations:
 clap = ["dep:clap"]
+ed25519-dalek = ["dep:ed25519-dalek"]
 eloquent = ["dep:eloquent"]
+iroh = ["dep:iroh"]
 libsql = ["dep:libsql"]
+p2panda = ["dep:p2panda-core"]
 rocket = ["dep:rocket"]
 serde = ["dep:serde"]
 turso = ["dep:turso"]
 
 [dependencies]
+bs58 = { version = "0.5", default-features = false, features = ["alloc"] }
 derive_more = { version = "2", features = ["display"] }
 dogma.workspace = true
 
 # Integrations:
 clap = { version = "4.5", default-features = false, features = ["derive", "std"], optional = true }
+ed25519-dalek = { version = "2.2", default-features = false, features = ["alloc"], optional = true }
 eloquent = { version = "2.0", default-features = false, optional = true }
+iroh = { version = "0.95", default-features = false, optional = true }
 libsql = { version = "0.9", default-features = false, optional = true }
+p2panda-core = { version = "0.4", default-features = false, optional = true }
 rocket = { version = "0.5", default-features = false, optional = true }
 serde = { workspace = true, optional = true }
 turso = { version = "0.3", default-features = false, optional = true }

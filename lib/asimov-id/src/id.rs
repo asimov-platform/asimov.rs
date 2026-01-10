@@ -1,12 +1,14 @@
 // This is free and unencumbered software released into the public domain.
 
+//! ASIMOV account IDs.
+
 use crate::IdError;
 use core::{borrow::Borrow, ops::RangeInclusive, str::FromStr};
 use derive_more::Display;
 
-pub const ID_LENGTH_MIN: usize = 1;
-pub const ID_LENGTH_MAX: usize = 63;
-pub const ID_LENGTH: RangeInclusive<usize> = ID_LENGTH_MIN..=ID_LENGTH_MAX;
+pub const ID_LEN_MIN: usize = 1;
+pub const ID_LEN_MAX: usize = 63;
+pub const ID_LEN: RangeInclusive<usize> = ID_LEN_MIN..=ID_LEN_MAX;
 
 #[derive(Clone, Debug, Display, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[display("{}", self.0)]
@@ -29,7 +31,7 @@ impl Id {
             .find(|c| !matches!(c, 'a'..='z' | 'A'..='Z' | '0'..='9' | '_' | '-'))
             .map_or(Ok(()), |c| Err(IdError::InvalidChar(c)))?;
 
-        if input.len() < ID_LENGTH_MIN || input.len() > ID_LENGTH_MAX {
+        if input.len() < ID_LEN_MIN || input.len() > ID_LEN_MAX {
             return Err(IdError::InvalidLength(input.len()));
         }
 
@@ -61,12 +63,6 @@ impl Id {
     }
 }
 
-impl Borrow<str> for Id {
-    fn borrow(&self) -> &str {
-        &self.0
-    }
-}
-
 impl FromStr for Id {
     type Err = IdError;
 
@@ -81,6 +77,18 @@ impl TryFrom<String> for Id {
 
     fn try_from(input: String) -> Result<Self, Self::Error> {
         Self::from_str(&input)
+    }
+}
+
+impl AsRef<[u8]> for Id {
+    fn as_ref(&self) -> &[u8] {
+        self.as_bytes()
+    }
+}
+
+impl Borrow<str> for Id {
+    fn borrow(&self) -> &str {
+        &self.0
     }
 }
 
