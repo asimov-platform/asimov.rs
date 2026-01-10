@@ -41,7 +41,7 @@ dogma.workspace = true
 # Integrations:
 clap = { version = "4.5", default-features = false, features = ["derive", "std"], optional = true }
 ed25519-dalek = { version = "2.2", default-features = false, features = ["alloc"], optional = true }
-eloquent = { version = "2.0", default-features = false, optional = true }
+eloquent = { workspace = true, optional = true }
 iroh = { version = "0.95", default-features = false, optional = true }
 libsql = { version = "0.9", default-features = false, optional = true }
 p2panda-core = { version = "0.4", default-features = false, optional = true }

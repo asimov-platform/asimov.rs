@@ -42,7 +42,7 @@ dogma.workspace = true
 # Integrations:
 blake3 = { version = "1.8", default-features = false, optional = true }
 clap = { version = "4.5", default-features = false, features = ["derive", "std"], optional = true }
-eloquent = { version = "2.0", default-features = false, optional = true }
+eloquent = { workspace = true, optional = true }
 iroh-blobs = { version = "0.97", default-features = false, optional = true }
 libsql = { version = "0.9", default-features = false, optional = true }
 p2panda-core = { version = "0.4", default-features = false, optional = true }

@@ -3120,18 +3120,18 @@ dependencies = [
 
 [[package]]
 name = "eloquent"
-version = "2.0.4"
+version = "2.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ebac9654d805c45acdc34fbd1662c9fb2f0f83212a5d1af5d535c378233ff1b9"
+checksum = "331e36c81905858f2cfb8bf2ebe08cf7bc5d3e49dcceaef325dc166412e9e264"
 dependencies = [
  "eloquent_core",
 ]
 
 [[package]]
 name = "eloquent_core"
-version = "2.0.4"
+version = "2.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d29024f25aa28620ab42d49ab4d1ca77ec5fa8140389a9d3ad8b7ac980a7b640"
+checksum = "f7ec8a476461a1bed4e36790a1a294f8505859e96d70394e9dea43ab332aac2b"
 dependencies = [
  "log",
  "sqlformat",
@@ -8062,12 +8062,12 @@ dependencies = [
 
 [[package]]
 name = "sqlformat"
-version = "0.3.5"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a0d7b3e8a3b6f2ee93ac391a0f757c13790caa0147892e3545cd549dd5b54bc0"
+checksum = "0705994df478b895f05b8e290e0d46e53187b26f8d889d37b2a0881234922d94"
 dependencies = [
  "unicode_categories",
- "winnow 0.6.26",
+ "winnow 0.7.13",
 ]
 
 [[package]]

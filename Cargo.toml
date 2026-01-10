@@ -97,6 +97,7 @@ clientele = { version = "0.3.8", default-features = false, features = [
 ] }
 derive_more = { version = "2", default-features = false }
 dogma = { version = "0.1.10", default-features = false, features = ["traits"] }
+eloquent = { version = "2.1", default-features = false }
 flate2 = { version = "1", default-features = false }
 futures = { version = "0.3", default-features = false }
 getenv = { version = "0.1.2", default-features = false, features = [
