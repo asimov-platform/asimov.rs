@@ -170,6 +170,7 @@ tracing-subscriber = { version = "0.3", default-features = false, features = [
     "alloc",
     "tracing-log",
 ] }
+turso = { version = "0.4", default-features = false }
 url = { version = "2.5", default-features = false }
 uuid = { version = "1.17", default-features = false, features = ["v4"] }
 zip = { version = "4", default-features = false }
