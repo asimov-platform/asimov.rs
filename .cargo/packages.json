@@ -1,0 +1,3403 @@
+[
+  {
+    "package": {
+      "name": "asimov-account",
+      "version": {
+        "workspace": true
+      },
+      "authors": {
+        "workspace": true
+      },
+      "edition": {
+        "workspace": true
+      },
+      "rust-version": {
+        "workspace": true
+      },
+      "description": {
+        "workspace": true
+      },
+      "readme": {
+        "workspace": true
+      },
+      "homepage": {
+        "workspace": true
+      },
+      "repository": {
+        "workspace": true
+      },
+      "license": {
+        "workspace": true
+      },
+      "keywords": {
+        "workspace": true
+      },
+      "categories": {
+        "workspace": true
+      },
+      "publish": {
+        "workspace": true
+      }
+    },
+    "features": {
+      "default": [
+        "all",
+        "std"
+      ],
+      "all": [
+        "tracing"
+      ],
+      "std": [
+        "dogma/std"
+      ],
+      "tracing": [],
+      "unstable": []
+    },
+    "dependencies": {
+      "dogma": {
+        "workspace": true
+      }
+    }
+  },
+  {
+    "package": {
+      "name": "asimov-agent",
+      "version": {
+        "workspace": true
+      },
+      "authors": {
+        "workspace": true
+      },
+      "edition": {
+        "workspace": true
+      },
+      "rust-version": {
+        "workspace": true
+      },
+      "description": {
+        "workspace": true
+      },
+      "readme": {
+        "workspace": true
+      },
+      "homepage": {
+        "workspace": true
+      },
+      "repository": {
+        "workspace": true
+      },
+      "license": {
+        "workspace": true
+      },
+      "keywords": {
+        "workspace": true
+      },
+      "categories": {
+        "workspace": true
+      },
+      "publish": {
+        "workspace": true
+      }
+    },
+    "features": {
+      "default": [
+        "all",
+        "std"
+      ],
+      "all": [
+        "tracing"
+      ],
+      "std": [
+        "dogma/std"
+      ],
+      "tracing": [],
+      "unstable": []
+    },
+    "dependencies": {
+      "dogma": {
+        "workspace": true
+      }
+    }
+  },
+  {
+    "package": {
+      "name": "asimov-cache",
+      "version": {
+        "workspace": true
+      },
+      "authors": {
+        "workspace": true
+      },
+      "edition": {
+        "workspace": true
+      },
+      "rust-version": {
+        "workspace": true
+      },
+      "description": {
+        "workspace": true
+      },
+      "readme": {
+        "workspace": true
+      },
+      "homepage": {
+        "workspace": true
+      },
+      "repository": {
+        "workspace": true
+      },
+      "license": {
+        "workspace": true
+      },
+      "keywords": {
+        "workspace": true
+      },
+      "categories": {
+        "workspace": true
+      },
+      "publish": {
+        "workspace": true
+      }
+    },
+    "features": {
+      "default": [
+        "all",
+        "std"
+      ],
+      "all": [
+        "tracing"
+      ],
+      "std": [
+        "dogma/std"
+      ],
+      "tracing": [],
+      "unstable": []
+    },
+    "dependencies": {
+      "dogma": {
+        "workspace": true
+      }
+    }
+  },
+  {
+    "package": {
+      "name": "asimov-cloud",
+      "version": {
+        "workspace": true
+      },
+      "authors": {
+        "workspace": true
+      },
+      "edition": {
+        "workspace": true
+      },
+      "rust-version": {
+        "workspace": true
+      },
+      "description": {
+        "workspace": true
+      },
+      "readme": {
+        "workspace": true
+      },
+      "homepage": {
+        "workspace": true
+      },
+      "repository": {
+        "workspace": true
+      },
+      "license": {
+        "workspace": true
+      },
+      "keywords": {
+        "workspace": true
+      },
+      "categories": {
+        "workspace": true
+      },
+      "publish": {
+        "workspace": true
+      }
+    },
+    "features": {
+      "default": [
+        "all",
+        "std"
+      ],
+      "all": [
+        "tracing"
+      ],
+      "std": [
+        "asimov-credit/std",
+        "asimov-id/std",
+        "asimov-kb/std",
+        "asimov-nexus/std",
+        "dogma/std"
+      ],
+      "tracing": [],
+      "unstable": [],
+      "clap": [
+        "asimov-credit/clap",
+        "asimov-id/clap",
+        "asimov-kb/clap"
+      ],
+      "eloquent": [
+        "asimov-credit/eloquent",
+        "asimov-id/eloquent",
+        "asimov-kb/eloquent"
+      ],
+      "libsql": [
+        "asimov-credit/libsql",
+        "asimov-id/libsql",
+        "asimov-kb/libsql"
+      ],
+      "rocket": [
+        "asimov-id/rocket",
+        "asimov-kb/rocket"
+      ],
+      "serde": [
+        "asimov-credit/serde",
+        "asimov-id/serde",
+        "asimov-kb/serde"
+      ],
+      "turso": [
+        "asimov-credit/turso",
+        "asimov-id/turso",
+        "asimov-kb/turso"
+      ],
+      "validator": [
+        "asimov-nexus/validator"
+      ]
+    },
+    "dependencies": {
+      "asimov-credit": {
+        "workspace": true
+      },
+      "asimov-id": {
+        "workspace": true
+      },
+      "asimov-kb": {
+        "workspace": true
+      },
+      "asimov-nexus": {
+        "workspace": true
+      },
+      "derive_more": {
+        "version": "2",
+        "features": [
+          "display"
+        ]
+      },
+      "dogma": {
+        "workspace": true
+      },
+      "thiserror": {
+        "workspace": true
+      }
+    },
+    "target": {
+      "cfg(not(target_family = \"wasm\"))": {
+        "dependencies": {
+          "reqwest": {
+            "workspace": true
+          },
+          "tokio": {
+            "workspace": true,
+            "features": [
+              "io-util",
+              "rt"
+            ]
+          }
+        }
+      },
+      "cfg(target_family = \"wasm\")": {
+        "dependencies": {
+          "reqwest": {
+            "workspace": true,
+            "features": [
+              "json"
+            ]
+          },
+          "tokio": {
+            "workspace": true,
+            "features": [
+              "rt"
+            ]
+          },
+          "tokio_with_wasm": {
+            "version": "0.8",
+            "features": [
+              "rt"
+            ]
+          }
+        }
+      }
+    }
+  },
+  {
+    "package": {
+      "name": "asimov-config",
+      "version": {
+        "workspace": true
+      },
+      "authors": {
+        "workspace": true
+      },
+      "edition": {
+        "workspace": true
+      },
+      "rust-version": {
+        "workspace": true
+      },
+      "description": {
+        "workspace": true
+      },
+      "readme": {
+        "workspace": true
+      },
+      "homepage": {
+        "workspace": true
+      },
+      "repository": {
+        "workspace": true
+      },
+      "license": {
+        "workspace": true
+      },
+      "keywords": {
+        "workspace": true
+      },
+      "categories": {
+        "workspace": true
+      },
+      "publish": {
+        "workspace": true
+      }
+    },
+    "features": {
+      "default": [
+        "all",
+        "std"
+      ],
+      "all": [
+        "tracing"
+      ],
+      "std": [
+        "dogma/std"
+      ],
+      "tracing": [],
+      "unstable": []
+    },
+    "dependencies": {
+      "dogma": {
+        "workspace": true
+      }
+    }
+  },
+  {
+    "package": {
+      "name": "asimov-construct",
+      "version": {
+        "workspace": true
+      },
+      "authors": {
+        "workspace": true
+      },
+      "edition": {
+        "workspace": true
+      },
+      "rust-version": {
+        "workspace": true
+      },
+      "description": {
+        "workspace": true
+      },
+      "readme": {
+        "workspace": true
+      },
+      "homepage": {
+        "workspace": true
+      },
+      "repository": {
+        "workspace": true
+      },
+      "license": {
+        "workspace": true
+      },
+      "keywords": {
+        "workspace": true
+      },
+      "categories": {
+        "workspace": true
+      },
+      "publish": {
+        "workspace": true
+      }
+    },
+    "features": {
+      "default": [
+        "all",
+        "std"
+      ],
+      "all": [
+        "tracing"
+      ],
+      "std": [
+        "dogma/std"
+      ],
+      "tracing": [],
+      "unstable": []
+    },
+    "dependencies": {
+      "dogma": {
+        "workspace": true
+      }
+    }
+  },
+  {
+    "package": {
+      "name": "asimov-core",
+      "version": {
+        "workspace": true
+      },
+      "authors": {
+        "workspace": true
+      },
+      "edition": {
+        "workspace": true
+      },
+      "rust-version": {
+        "workspace": true
+      },
+      "description": {
+        "workspace": true
+      },
+      "readme": {
+        "workspace": true
+      },
+      "homepage": {
+        "workspace": true
+      },
+      "repository": {
+        "workspace": true
+      },
+      "license": {
+        "workspace": true
+      },
+      "keywords": {
+        "workspace": true
+      },
+      "categories": [
+        "api-bindings",
+        "data-structures",
+        "text-processing"
+      ],
+      "publish": false
+    },
+    "features": {
+      "default": [
+        "all",
+        "serde",
+        "std"
+      ],
+      "all": [
+        "tracing"
+      ],
+      "serde": [
+        "protoflow-core/serde",
+        "dep:serde"
+      ],
+      "std": [
+        "asimov-sys/std",
+        "dogma/std",
+        "protoflow-core/std",
+        "tracing?/std",
+        "dep:cap-directories",
+        "dep:cap-std"
+      ],
+      "tracing": [
+        "dep:tracing",
+        "protoflow-core/tracing"
+      ],
+      "unstable": []
+    },
+    "dependencies": {
+      "asimov-sys": {
+        "workspace": true
+      },
+      "dogma": {
+        "workspace": true
+      },
+      "know": {
+        "workspace": true
+      },
+      "protoflow-core": {
+        "workspace": true
+      },
+      "cap-directories": {
+        "workspace": true,
+        "optional": true
+      },
+      "cap-std": {
+        "workspace": true,
+        "features": [
+          "fs_utf8"
+        ],
+        "optional": true
+      },
+      "serde": {
+        "workspace": true,
+        "optional": true
+      },
+      "tracing": {
+        "workspace": true,
+        "optional": true
+      }
+    }
+  },
+  {
+    "package": {
+      "name": "asimov-credit",
+      "version": {
+        "workspace": true
+      },
+      "authors": {
+        "workspace": true
+      },
+      "edition": {
+        "workspace": true
+      },
+      "rust-version": {
+        "workspace": true
+      },
+      "description": {
+        "workspace": true
+      },
+      "readme": {
+        "workspace": true
+      },
+      "homepage": {
+        "workspace": true
+      },
+      "repository": {
+        "workspace": true
+      },
+      "license": {
+        "workspace": true
+      },
+      "keywords": {
+        "workspace": true
+      },
+      "categories": {
+        "workspace": true
+      },
+      "publish": {
+        "workspace": true
+      }
+    },
+    "features": {
+      "default": [
+        "all",
+        "std"
+      ],
+      "all": [
+        "tracing"
+      ],
+      "std": [
+        "dogma/std",
+        "rust_decimal/std"
+      ],
+      "tracing": [],
+      "unstable": [],
+      "clap": [
+        "dep:clap"
+      ],
+      "eloquent": [
+        "dep:eloquent"
+      ],
+      "libsql": [
+        "dep:libsql"
+      ],
+      "serde": [
+        "dep:serde"
+      ],
+      "turso": [
+        "dep:turso"
+      ]
+    },
+    "dependencies": {
+      "derive_more": {
+        "version": "2",
+        "features": [
+          "add_assign",
+          "display"
+        ]
+      },
+      "dogma": {
+        "workspace": true
+      },
+      "rust_decimal": {
+        "version": "1.39",
+        "default-features": false
+      },
+      "thiserror": {
+        "workspace": true
+      },
+      "clap": {
+        "version": "4.5",
+        "default-features": false,
+        "features": [
+          "derive",
+          "std"
+        ],
+        "optional": true
+      },
+      "eloquent": {
+        "workspace": true,
+        "optional": true
+      },
+      "libsql": {
+        "version": "0.9",
+        "default-features": false,
+        "optional": true
+      },
+      "serde": {
+        "workspace": true,
+        "optional": true
+      },
+      "turso": {
+        "workspace": true,
+        "optional": true
+      }
+    }
+  },
+  {
+    "package": {
+      "name": "asimov-dataset",
+      "version": {
+        "workspace": true
+      },
+      "authors": {
+        "workspace": true
+      },
+      "edition": {
+        "workspace": true
+      },
+      "rust-version": {
+        "workspace": true
+      },
+      "description": {
+        "workspace": true
+      },
+      "readme": {
+        "workspace": true
+      },
+      "homepage": {
+        "workspace": true
+      },
+      "repository": {
+        "workspace": true
+      },
+      "license": {
+        "workspace": true
+      },
+      "keywords": {
+        "workspace": true
+      },
+      "categories": {
+        "workspace": true
+      },
+      "publish": {
+        "workspace": true
+      }
+    },
+    "features": {
+      "default": [
+        "all",
+        "std"
+      ],
+      "all": [
+        "tracing"
+      ],
+      "std": [
+        "dogma/std"
+      ],
+      "tracing": [],
+      "unstable": []
+    },
+    "dependencies": {
+      "dogma": {
+        "workspace": true
+      }
+    }
+  },
+  {
+    "package": {
+      "name": "asimov-directory",
+      "version": {
+        "workspace": true
+      },
+      "authors": {
+        "workspace": true
+      },
+      "edition": {
+        "workspace": true
+      },
+      "rust-version": {
+        "workspace": true
+      },
+      "description": {
+        "workspace": true
+      },
+      "readme": {
+        "workspace": true
+      },
+      "homepage": {
+        "workspace": true
+      },
+      "repository": {
+        "workspace": true
+      },
+      "license": {
+        "workspace": true
+      },
+      "keywords": {
+        "workspace": true
+      },
+      "categories": {
+        "workspace": true
+      },
+      "publish": {
+        "workspace": true
+      }
+    },
+    "features": {
+      "default": [
+        "all",
+        "std"
+      ],
+      "all": [
+        "tracing"
+      ],
+      "std": [
+        "dogma/std"
+      ],
+      "tracing": [],
+      "unstable": []
+    },
+    "dependencies": {
+      "dogma": {
+        "workspace": true
+      }
+    }
+  },
+  {
+    "package": {
+      "name": "asimov-env",
+      "version": {
+        "workspace": true
+      },
+      "authors": {
+        "workspace": true
+      },
+      "edition": {
+        "workspace": true
+      },
+      "rust-version": {
+        "workspace": true
+      },
+      "description": {
+        "workspace": true
+      },
+      "readme": {
+        "workspace": true
+      },
+      "homepage": {
+        "workspace": true
+      },
+      "repository": {
+        "workspace": true
+      },
+      "license": {
+        "workspace": true
+      },
+      "keywords": {
+        "workspace": true
+      },
+      "categories": [
+        "api-bindings",
+        "development-tools"
+      ],
+      "publish": {
+        "workspace": true
+      }
+    },
+    "features": {
+      "default": [
+        "all",
+        "std"
+      ],
+      "all": [
+        "tracing"
+      ],
+      "std": [
+        "dogma/std",
+        "getenv/std",
+        "dep:cap-directories",
+        "dep:cap-std"
+      ],
+      "tracing": [],
+      "unstable": []
+    },
+    "dependencies": {
+      "dogma": {
+        "workspace": true
+      },
+      "getenv": {
+        "workspace": true
+      },
+      "cap-directories": {
+        "workspace": true,
+        "optional": true
+      },
+      "cap-std": {
+        "workspace": true,
+        "optional": true
+      }
+    }
+  },
+  {
+    "package": {
+      "name": "asimov-flow",
+      "version": {
+        "workspace": true
+      },
+      "authors": {
+        "workspace": true
+      },
+      "edition": {
+        "workspace": true
+      },
+      "rust-version": {
+        "workspace": true
+      },
+      "description": {
+        "workspace": true
+      },
+      "readme": {
+        "workspace": true
+      },
+      "homepage": {
+        "workspace": true
+      },
+      "repository": {
+        "workspace": true
+      },
+      "license": {
+        "workspace": true
+      },
+      "keywords": {
+        "workspace": true
+      },
+      "categories": [
+        "concurrency",
+        "network-programming",
+        "no-std"
+      ],
+      "publish": false
+    },
+    "features": {
+      "default": [
+        "all",
+        "std"
+      ],
+      "all": [
+        "derive",
+        "serde",
+        "tracing",
+        "yaml"
+      ],
+      "derive": [
+        "protoflow/derive"
+      ],
+      "serde": [
+        "asimov-core/serde",
+        "protoflow/serde",
+        "dep:serde"
+      ],
+      "std": [
+        "asimov-core/std",
+        "protoflow/std"
+      ],
+      "tokio": [
+        "protoflow/tokio"
+      ],
+      "tracing": [
+        "protoflow/tracing",
+        "protoflow-blocks/tracing"
+      ],
+      "unstable": [
+        "asimov-core/unstable"
+      ],
+      "yaml": [
+        "serde",
+        "dep:serde_yaml_ng"
+      ]
+    },
+    "dependencies": {
+      "asimov-core": {
+        "workspace": true
+      },
+      "protoflow": {
+        "workspace": true
+      },
+      "protoflow-blocks": {
+        "workspace": true
+      },
+      "serde": {
+        "workspace": true,
+        "optional": true
+      },
+      "serde_yaml_ng": {
+        "workspace": true,
+        "optional": true
+      }
+    }
+  },
+  {
+    "package": {
+      "name": "asimov-graph",
+      "version": {
+        "workspace": true
+      },
+      "authors": {
+        "workspace": true
+      },
+      "edition": {
+        "workspace": true
+      },
+      "rust-version": {
+        "workspace": true
+      },
+      "description": {
+        "workspace": true
+      },
+      "readme": {
+        "workspace": true
+      },
+      "homepage": {
+        "workspace": true
+      },
+      "repository": {
+        "workspace": true
+      },
+      "license": {
+        "workspace": true
+      },
+      "keywords": {
+        "workspace": true
+      },
+      "categories": {
+        "workspace": true
+      },
+      "publish": {
+        "workspace": true
+      }
+    },
+    "features": {
+      "default": [
+        "all",
+        "std"
+      ],
+      "all": [
+        "tracing"
+      ],
+      "std": [
+        "dogma/std"
+      ],
+      "tracing": [],
+      "unstable": []
+    },
+    "dependencies": {
+      "dogma": {
+        "workspace": true
+      }
+    }
+  },
+  {
+    "package": {
+      "name": "asimov-huggingface",
+      "version": {
+        "workspace": true
+      },
+      "authors": {
+        "workspace": true
+      },
+      "edition": {
+        "workspace": true
+      },
+      "rust-version": {
+        "workspace": true
+      },
+      "description": {
+        "workspace": true
+      },
+      "readme": {
+        "workspace": true
+      },
+      "homepage": {
+        "workspace": true
+      },
+      "repository": {
+        "workspace": true
+      },
+      "license": {
+        "workspace": true
+      },
+      "keywords": {
+        "workspace": true
+      },
+      "categories": [],
+      "publish": {
+        "workspace": true
+      }
+    },
+    "features": {
+      "default": [],
+      "std": [],
+      "tracing": [],
+      "unstable": []
+    },
+    "dependencies": {
+      "hf-hub": {
+        "workspace": true
+      },
+      "indicatif": {
+        "workspace": true
+      },
+      "thiserror": {
+        "workspace": true
+      }
+    }
+  },
+  {
+    "package": {
+      "name": "asimov-id",
+      "version": {
+        "workspace": true
+      },
+      "authors": {
+        "workspace": true
+      },
+      "edition": {
+        "workspace": true
+      },
+      "rust-version": {
+        "workspace": true
+      },
+      "description": {
+        "workspace": true
+      },
+      "readme": {
+        "workspace": true
+      },
+      "homepage": {
+        "workspace": true
+      },
+      "repository": {
+        "workspace": true
+      },
+      "license": {
+        "workspace": true
+      },
+      "keywords": {
+        "workspace": true
+      },
+      "categories": {
+        "workspace": true
+      },
+      "publish": {
+        "workspace": true
+      }
+    },
+    "features": {
+      "default": [
+        "all",
+        "std"
+      ],
+      "all": [
+        "ed25519",
+        "tracing"
+      ],
+      "ed25519": [
+        "ed25519-dalek"
+      ],
+      "std": [
+        "bs58/std",
+        "dogma/std",
+        "ed25519-dalek?/std"
+      ],
+      "tracing": [],
+      "unstable": [],
+      "clap": [
+        "dep:clap"
+      ],
+      "ed25519-dalek": [
+        "dep:ed25519-dalek"
+      ],
+      "eloquent": [
+        "dep:eloquent"
+      ],
+      "iroh": [
+        "dep:iroh"
+      ],
+      "libsql": [
+        "dep:libsql"
+      ],
+      "p2panda": [
+        "dep:p2panda-core"
+      ],
+      "rocket": [
+        "dep:rocket"
+      ],
+      "serde": [
+        "dep:serde"
+      ],
+      "turso": [
+        "dep:turso"
+      ]
+    },
+    "dependencies": {
+      "bs58": {
+        "version": "0.5",
+        "default-features": false,
+        "features": [
+          "alloc"
+        ]
+      },
+      "derive_more": {
+        "version": "2",
+        "features": [
+          "display"
+        ]
+      },
+      "dogma": {
+        "workspace": true
+      },
+      "clap": {
+        "version": "4.5",
+        "default-features": false,
+        "features": [
+          "derive",
+          "std"
+        ],
+        "optional": true
+      },
+      "ed25519-dalek": {
+        "version": "2.2",
+        "default-features": false,
+        "features": [
+          "alloc"
+        ],
+        "optional": true
+      },
+      "eloquent": {
+        "workspace": true,
+        "optional": true
+      },
+      "iroh": {
+        "version": "0.95",
+        "default-features": false,
+        "optional": true
+      },
+      "libsql": {
+        "version": "0.9",
+        "default-features": false,
+        "optional": true
+      },
+      "p2panda-core": {
+        "version": "0.4",
+        "default-features": false,
+        "optional": true
+      },
+      "rocket": {
+        "version": "0.5",
+        "default-features": false,
+        "optional": true
+      },
+      "serde": {
+        "workspace": true,
+        "optional": true
+      },
+      "turso": {
+        "workspace": true,
+        "optional": true
+      }
+    }
+  },
+  {
+    "package": {
+      "name": "asimov-installer",
+      "version": {
+        "workspace": true
+      },
+      "authors": {
+        "workspace": true
+      },
+      "edition": {
+        "workspace": true
+      },
+      "rust-version": {
+        "workspace": true
+      },
+      "description": {
+        "workspace": true
+      },
+      "readme": {
+        "workspace": true
+      },
+      "homepage": {
+        "workspace": true
+      },
+      "repository": {
+        "workspace": true
+      },
+      "license": {
+        "workspace": true
+      },
+      "keywords": {
+        "workspace": true
+      },
+      "categories": {
+        "workspace": true
+      },
+      "publish": {
+        "workspace": true
+      }
+    },
+    "features": {
+      "default": [
+        "all",
+        "std"
+      ],
+      "all": [
+        "cli",
+        "tracing"
+      ],
+      "cli": [
+        "std",
+        "dep:clientele",
+        "clientele?/clap"
+      ],
+      "std": [
+        "dep:asimov-env",
+        "dep:getenv",
+        "clientele?/std",
+        "dogma/std",
+        "getenv?/std",
+        "serde/std",
+        "serde_json/std",
+        "sha2/std",
+        "tracing?/std",
+        "tracing-subscriber?/fmt",
+        "tracing-subscriber?/std"
+      ],
+      "unstable": [],
+      "tracing": [
+        "dep:tracing",
+        "dep:tracing-subscriber",
+        "clientele?/tracing"
+      ]
+    },
+    "dependencies": {
+      "asimov-huggingface": {
+        "workspace": true
+      },
+      "asimov-module": {
+        "workspace": true
+      },
+      "asimov-registry": {
+        "workspace": true
+      },
+      "bon": {
+        "workspace": true
+      },
+      "dogma": {
+        "workspace": true
+      },
+      "flate2": {
+        "workspace": true
+      },
+      "reqwest": {
+        "workspace": true
+      },
+      "secrecy": {
+        "workspace": true
+      },
+      "serde": {
+        "workspace": true
+      },
+      "serde_json": {
+        "workspace": true
+      },
+      "serde_yaml_ng": {
+        "workspace": true
+      },
+      "sha2": {
+        "workspace": true
+      },
+      "tar": {
+        "workspace": true
+      },
+      "tempfile": {
+        "workspace": true
+      },
+      "thiserror": {
+        "workspace": true
+      },
+      "tokio": {
+        "workspace": true,
+        "features": [
+          "fs"
+        ]
+      },
+      "zip": {
+        "workspace": true,
+        "features": [
+          "deflate"
+        ]
+      },
+      "asimov-env": {
+        "workspace": true,
+        "optional": true
+      },
+      "clientele": {
+        "workspace": true,
+        "optional": true
+      },
+      "getenv": {
+        "workspace": true,
+        "optional": true
+      },
+      "tracing": {
+        "workspace": true,
+        "optional": true,
+        "features": [
+          "attributes"
+        ]
+      },
+      "tracing-subscriber": {
+        "workspace": true,
+        "optional": true
+      }
+    }
+  },
+  {
+    "package": {
+      "name": "asimov-kb",
+      "version": {
+        "workspace": true
+      },
+      "authors": {
+        "workspace": true
+      },
+      "edition": {
+        "workspace": true
+      },
+      "rust-version": {
+        "workspace": true
+      },
+      "description": {
+        "workspace": true
+      },
+      "readme": {
+        "workspace": true
+      },
+      "homepage": {
+        "workspace": true
+      },
+      "repository": {
+        "workspace": true
+      },
+      "license": {
+        "workspace": true
+      },
+      "keywords": {
+        "workspace": true
+      },
+      "categories": {
+        "workspace": true
+      },
+      "publish": {
+        "workspace": true
+      }
+    },
+    "features": {
+      "default": [
+        "all",
+        "std"
+      ],
+      "all": [
+        "new",
+        "tracing"
+      ],
+      "new": [
+        "blake3",
+        "uuid"
+      ],
+      "std": [
+        "bs58/std",
+        "dogma/std",
+        "uuid/std"
+      ],
+      "tracing": [],
+      "unstable": [],
+      "blake3": [
+        "dep:blake3"
+      ],
+      "clap": [
+        "dep:clap"
+      ],
+      "eloquent": [
+        "dep:eloquent"
+      ],
+      "iroh": [
+        "dep:iroh-blobs"
+      ],
+      "libsql": [
+        "dep:libsql"
+      ],
+      "p2panda": [
+        "dep:p2panda-core"
+      ],
+      "rocket": [
+        "dep:rocket"
+      ],
+      "serde": [
+        "dep:serde"
+      ],
+      "turso": [
+        "dep:turso"
+      ],
+      "uuid": [
+        "dep:uuid"
+      ]
+    },
+    "dependencies": {
+      "bs58": {
+        "version": "0.5",
+        "default-features": false,
+        "features": [
+          "alloc"
+        ]
+      },
+      "derive_more": {
+        "version": "2",
+        "features": [
+          "display"
+        ]
+      },
+      "dogma": {
+        "workspace": true
+      },
+      "blake3": {
+        "version": "1.8",
+        "default-features": false,
+        "optional": true
+      },
+      "clap": {
+        "version": "4.5",
+        "default-features": false,
+        "features": [
+          "derive",
+          "std"
+        ],
+        "optional": true
+      },
+      "eloquent": {
+        "workspace": true,
+        "optional": true
+      },
+      "iroh-blobs": {
+        "version": "0.97",
+        "default-features": false,
+        "optional": true
+      },
+      "libsql": {
+        "version": "0.9",
+        "default-features": false,
+        "optional": true
+      },
+      "p2panda-core": {
+        "version": "0.4",
+        "default-features": false,
+        "optional": true
+      },
+      "rocket": {
+        "version": "0.5",
+        "default-features": false,
+        "optional": true
+      },
+      "serde": {
+        "workspace": true,
+        "optional": true
+      },
+      "turso": {
+        "workspace": true,
+        "optional": true
+      }
+    },
+    "target": {
+      "cfg(not(target_arch = \"wasm32\"))": {
+        "dependencies": {
+          "uuid": {
+            "version": "1.19",
+            "default-features": false,
+            "features": [
+              "serde",
+              "v7"
+            ],
+            "optional": true
+          }
+        }
+      },
+      "cfg(target_arch = \"wasm32\")": {
+        "dependencies": {
+          "uuid": {
+            "version": "1.19",
+            "default-features": false,
+            "features": [
+              "js",
+              "serde",
+              "v7"
+            ],
+            "optional": true
+          }
+        }
+      }
+    }
+  },
+  {
+    "package": {
+      "name": "asimov-ledger",
+      "version": {
+        "workspace": true
+      },
+      "authors": {
+        "workspace": true
+      },
+      "edition": {
+        "workspace": true
+      },
+      "rust-version": {
+        "workspace": true
+      },
+      "description": {
+        "workspace": true
+      },
+      "readme": {
+        "workspace": true
+      },
+      "homepage": {
+        "workspace": true
+      },
+      "repository": {
+        "workspace": true
+      },
+      "license": {
+        "workspace": true
+      },
+      "keywords": {
+        "workspace": true
+      },
+      "categories": [
+        "api-bindings",
+        "cryptography::cryptocurrencies"
+      ],
+      "publish": {
+        "workspace": true
+      }
+    },
+    "features": {
+      "default": [
+        "all",
+        "std"
+      ],
+      "all": [
+        "tracing"
+      ],
+      "std": [
+        "dogma/std"
+      ],
+      "tracing": [],
+      "unstable": []
+    },
+    "dependencies": {
+      "alloy": {
+        "workspace": true,
+        "features": [
+          "contract",
+          "sol-types"
+        ]
+      },
+      "dogma": {
+        "workspace": true
+      }
+    }
+  },
+  {
+    "package": {
+      "name": "asimov-module",
+      "version": {
+        "workspace": true
+      },
+      "authors": {
+        "workspace": true
+      },
+      "edition": {
+        "workspace": true
+      },
+      "rust-version": {
+        "workspace": true
+      },
+      "description": {
+        "workspace": true
+      },
+      "readme": {
+        "workspace": true
+      },
+      "homepage": {
+        "workspace": true
+      },
+      "repository": {
+        "workspace": true
+      },
+      "license": {
+        "workspace": true
+      },
+      "keywords": {
+        "workspace": true
+      },
+      "categories": [
+        "api-bindings",
+        "development-tools"
+      ],
+      "publish": {
+        "workspace": true
+      }
+    },
+    "features": {
+      "default": [
+        "all",
+        "std"
+      ],
+      "all": [
+        "cli",
+        "tracing",
+        "serde"
+      ],
+      "cli": [
+        "std",
+        "dep:clientele",
+        "clientele?/clap"
+      ],
+      "std": [
+        "clientele?/std",
+        "dep:asimov-env",
+        "dep:getenv",
+        "dogma/std",
+        "getenv?/std",
+        "iri-string/std",
+        "serde_json?/std",
+        "serde?/std",
+        "slab/std",
+        "thiserror/std",
+        "tracing-subscriber?/fmt",
+        "tracing-subscriber?/std",
+        "tracing?/std",
+        "url/std"
+      ],
+      "unstable": [],
+      "json": [
+        "dep:serde_json"
+      ],
+      "serde": [
+        "dep:serde",
+        "json",
+        "yaml"
+      ],
+      "tracing": [
+        "dep:tracing",
+        "dep:tracing-subscriber",
+        "clientele?/tracing"
+      ],
+      "yaml": [
+        "dep:serde_yaml_ng"
+      ]
+    },
+    "dependencies": {
+      "dogma": {
+        "workspace": true
+      },
+      "secrecy": {
+        "workspace": true
+      },
+      "slab": {
+        "workspace": true
+      },
+      "thiserror": {
+        "workspace": true
+      },
+      "url": {
+        "workspace": true
+      },
+      "iri-string": {
+        "version": "0.7",
+        "default-features": false,
+        "features": [
+          "alloc"
+        ]
+      },
+      "mime": {
+        "version": "0.3",
+        "default-features": false
+      },
+      "asimov-env": {
+        "workspace": true,
+        "optional": true
+      },
+      "clientele": {
+        "workspace": true,
+        "optional": true
+      },
+      "getenv": {
+        "workspace": true,
+        "optional": true
+      },
+      "serde": {
+        "workspace": true,
+        "optional": true
+      },
+      "serde_json": {
+        "workspace": true,
+        "optional": true
+      },
+      "serde_yaml_ng": {
+        "workspace": true,
+        "optional": true
+      },
+      "tracing": {
+        "workspace": true,
+        "optional": true
+      },
+      "tracing-subscriber": {
+        "workspace": true,
+        "optional": true
+      }
+    },
+    "dev-dependencies": {
+      "serde_yaml_ng": {
+        "workspace": true
+      }
+    }
+  },
+  {
+    "package": {
+      "name": "asimov-nexus",
+      "version": {
+        "workspace": true
+      },
+      "authors": {
+        "workspace": true
+      },
+      "edition": {
+        "workspace": true
+      },
+      "rust-version": {
+        "workspace": true
+      },
+      "description": {
+        "workspace": true
+      },
+      "readme": {
+        "workspace": true
+      },
+      "homepage": {
+        "workspace": true
+      },
+      "repository": {
+        "workspace": true
+      },
+      "license": {
+        "workspace": true
+      },
+      "keywords": {
+        "workspace": true
+      },
+      "categories": {
+        "workspace": true
+      },
+      "publish": {
+        "workspace": true
+      }
+    },
+    "features": {
+      "default": [
+        "all",
+        "std"
+      ],
+      "all": [
+        "tracing"
+      ],
+      "std": [
+        "dogma/std"
+      ],
+      "tracing": [],
+      "unstable": [],
+      "validator": [
+        "dep:validator"
+      ]
+    },
+    "dependencies": {
+      "asimov-kb": {
+        "workspace": true
+      },
+      "derive_more": {
+        "version": "2",
+        "features": [
+          "display"
+        ]
+      },
+      "dogma": {
+        "workspace": true
+      },
+      "serde": {
+        "workspace": true
+      },
+      "validator": {
+        "version": "0.16.1",
+        "features": [
+          "derive"
+        ],
+        "optional": true
+      }
+    }
+  },
+  {
+    "package": {
+      "name": "asimov-ontology",
+      "version": {
+        "workspace": true
+      },
+      "authors": {
+        "workspace": true
+      },
+      "edition": {
+        "workspace": true
+      },
+      "rust-version": {
+        "workspace": true
+      },
+      "description": {
+        "workspace": true
+      },
+      "readme": {
+        "workspace": true
+      },
+      "homepage": {
+        "workspace": true
+      },
+      "repository": {
+        "workspace": true
+      },
+      "license": {
+        "workspace": true
+      },
+      "keywords": {
+        "workspace": true
+      },
+      "categories": {
+        "workspace": true
+      },
+      "publish": {
+        "workspace": true
+      }
+    },
+    "features": {
+      "default": [
+        "all",
+        "std"
+      ],
+      "all": [
+        "tracing"
+      ],
+      "std": [
+        "dogma/std"
+      ],
+      "tracing": [],
+      "unstable": []
+    },
+    "dependencies": {
+      "dogma": {
+        "workspace": true
+      }
+    }
+  },
+  {
+    "package": {
+      "name": "asimov-patterns",
+      "version": {
+        "workspace": true
+      },
+      "authors": {
+        "workspace": true
+      },
+      "edition": {
+        "workspace": true
+      },
+      "rust-version": {
+        "workspace": true
+      },
+      "description": {
+        "workspace": true
+      },
+      "readme": {
+        "workspace": true
+      },
+      "homepage": {
+        "workspace": true
+      },
+      "repository": {
+        "workspace": true
+      },
+      "license": {
+        "workspace": true
+      },
+      "keywords": {
+        "workspace": true
+      },
+      "categories": [
+        "text-processing",
+        "parsing",
+        "rust-patterns"
+      ],
+      "publish": {
+        "workspace": true
+      }
+    },
+    "features": {
+      "default": [
+        "all",
+        "std"
+      ],
+      "all": [],
+      "std": [],
+      "unstable": []
+    },
+    "dependencies": {
+      "async-trait": {
+        "workspace": true
+      },
+      "bon": {
+        "workspace": true
+      },
+      "rdf-model": {
+        "workspace": true
+      }
+    }
+  },
+  {
+    "package": {
+      "name": "asimov-platform",
+      "version": {
+        "workspace": true
+      },
+      "authors": {
+        "workspace": true
+      },
+      "edition": {
+        "workspace": true
+      },
+      "rust-version": {
+        "workspace": true
+      },
+      "description": {
+        "workspace": true
+      },
+      "readme": {
+        "workspace": true
+      },
+      "homepage": {
+        "workspace": true
+      },
+      "repository": {
+        "workspace": true
+      },
+      "license": {
+        "workspace": true
+      },
+      "keywords": {
+        "workspace": true
+      },
+      "categories": {
+        "workspace": true
+      },
+      "publish": {
+        "workspace": true
+      }
+    },
+    "features": {
+      "default": [
+        "all",
+        "std"
+      ],
+      "all": [
+        "tracing"
+      ],
+      "std": [
+        "dogma/std"
+      ],
+      "tracing": [],
+      "unstable": []
+    },
+    "dependencies": {
+      "dogma": {
+        "workspace": true
+      }
+    }
+  },
+  {
+    "package": {
+      "name": "asimov-prompt",
+      "version": {
+        "workspace": true
+      },
+      "authors": {
+        "workspace": true
+      },
+      "edition": {
+        "workspace": true
+      },
+      "rust-version": {
+        "workspace": true
+      },
+      "description": {
+        "workspace": true
+      },
+      "readme": {
+        "workspace": true
+      },
+      "homepage": {
+        "workspace": true
+      },
+      "repository": {
+        "workspace": true
+      },
+      "license": {
+        "workspace": true
+      },
+      "keywords": {
+        "workspace": true
+      },
+      "categories": [
+        "text-processing",
+        "data-structures",
+        "value-formatting",
+        "encoding",
+        "parsing"
+      ],
+      "publish": {
+        "workspace": true
+      }
+    },
+    "features": {
+      "default": [
+        "all",
+        "std"
+      ],
+      "all": [
+        "tracing"
+      ],
+      "std": [
+        "derive_more/std",
+        "dogma/std",
+        "openai?/std"
+      ],
+      "tracing": [],
+      "unstable": []
+    },
+    "dependencies": {
+      "bon": {
+        "workspace": true
+      },
+      "derive_more": {
+        "workspace": true,
+        "features": [
+          "display",
+          "from",
+          "from_str"
+        ]
+      },
+      "dogma": {
+        "workspace": true
+      },
+      "openai": {
+        "workspace": true,
+        "optional": true
+      }
+    }
+  },
+  {
+    "package": {
+      "name": "asimov-protocol",
+      "version": {
+        "workspace": true
+      },
+      "authors": {
+        "workspace": true
+      },
+      "edition": {
+        "workspace": true
+      },
+      "rust-version": {
+        "workspace": true
+      },
+      "description": {
+        "workspace": true
+      },
+      "readme": {
+        "workspace": true
+      },
+      "homepage": {
+        "workspace": true
+      },
+      "repository": {
+        "workspace": true
+      },
+      "license": {
+        "workspace": true
+      },
+      "keywords": {
+        "workspace": true
+      },
+      "categories": [
+        "api-bindings",
+        "data-structures",
+        "network-programming"
+      ],
+      "publish": {
+        "workspace": true
+      }
+    },
+    "features": {
+      "default": [
+        "all",
+        "std"
+      ],
+      "all": [
+        "tracing"
+      ],
+      "std": [
+        "dogma/std"
+      ],
+      "tracing": [],
+      "unstable": []
+    },
+    "dependencies": {
+      "dogma": {
+        "workspace": true
+      }
+    }
+  },
+  {
+    "package": {
+      "name": "asimov-proxy",
+      "version": {
+        "workspace": true
+      },
+      "authors": {
+        "workspace": true
+      },
+      "edition": {
+        "workspace": true
+      },
+      "rust-version": {
+        "workspace": true
+      },
+      "description": {
+        "workspace": true
+      },
+      "readme": {
+        "workspace": true
+      },
+      "homepage": {
+        "workspace": true
+      },
+      "repository": {
+        "workspace": true
+      },
+      "license": {
+        "workspace": true
+      },
+      "keywords": {
+        "workspace": true
+      },
+      "categories": {
+        "workspace": true
+      },
+      "publish": {
+        "workspace": true
+      }
+    },
+    "features": {
+      "default": [
+        "all",
+        "std"
+      ],
+      "all": [
+        "tracing"
+      ],
+      "std": [
+        "dogma/std",
+        "gofer/std"
+      ],
+      "tracing": [],
+      "unstable": []
+    },
+    "dependencies": {
+      "dogma": {
+        "workspace": true
+      },
+      "gofer": {
+        "workspace": true
+      },
+      "miette": {
+        "workspace": true
+      },
+      "thiserror": {
+        "workspace": true
+      }
+    }
+  },
+  {
+    "package": {
+      "name": "asimov-registry",
+      "version": {
+        "workspace": true
+      },
+      "authors": {
+        "workspace": true
+      },
+      "edition": {
+        "workspace": true
+      },
+      "rust-version": {
+        "workspace": true
+      },
+      "description": {
+        "workspace": true
+      },
+      "readme": {
+        "workspace": true
+      },
+      "homepage": {
+        "workspace": true
+      },
+      "repository": {
+        "workspace": true
+      },
+      "license": {
+        "workspace": true
+      },
+      "keywords": {
+        "workspace": true
+      },
+      "categories": {
+        "workspace": true
+      },
+      "publish": {
+        "workspace": true
+      }
+    },
+    "features": {
+      "default": [
+        "all",
+        "std"
+      ],
+      "all": [
+        "cli",
+        "tracing"
+      ],
+      "cli": [
+        "std",
+        "dep:clientele",
+        "clientele?/clap"
+      ],
+      "std": [
+        "dep:asimov-env",
+        "dep:getenv",
+        "clientele?/std",
+        "dogma/std",
+        "getenv?/std",
+        "serde/std",
+        "serde_json/std",
+        "tracing?/std",
+        "tracing-subscriber?/fmt",
+        "tracing-subscriber?/std"
+      ],
+      "unstable": [],
+      "tracing": [
+        "dep:tracing",
+        "dep:tracing-subscriber",
+        "clientele?/tracing"
+      ]
+    },
+    "dependencies": {
+      "asimov-module": {
+        "workspace": true
+      },
+      "bon": {
+        "workspace": true
+      },
+      "dogma": {
+        "workspace": true
+      },
+      "reqwest": {
+        "workspace": true
+      },
+      "secrecy": {
+        "workspace": true
+      },
+      "serde": {
+        "workspace": true
+      },
+      "serde_json": {
+        "workspace": true
+      },
+      "serde_yaml_ng": {
+        "workspace": true
+      },
+      "tar": {
+        "workspace": true
+      },
+      "tempfile": {
+        "workspace": true
+      },
+      "thiserror": {
+        "workspace": true
+      },
+      "tokio": {
+        "workspace": true,
+        "features": [
+          "fs"
+        ]
+      },
+      "asimov-env": {
+        "workspace": true,
+        "optional": true
+      },
+      "clientele": {
+        "workspace": true,
+        "optional": true
+      },
+      "getenv": {
+        "workspace": true,
+        "optional": true
+      },
+      "tracing": {
+        "workspace": true,
+        "optional": true
+      },
+      "tracing-subscriber": {
+        "workspace": true,
+        "optional": true
+      }
+    },
+    "dev-dependencies": {
+      "tokio": {
+        "workspace": true,
+        "features": [
+          "full"
+        ]
+      }
+    }
+  },
+  {
+    "package": {
+      "name": "asimov-repository",
+      "version": {
+        "workspace": true
+      },
+      "authors": {
+        "workspace": true
+      },
+      "edition": {
+        "workspace": true
+      },
+      "rust-version": {
+        "workspace": true
+      },
+      "description": {
+        "workspace": true
+      },
+      "readme": {
+        "workspace": true
+      },
+      "homepage": {
+        "workspace": true
+      },
+      "repository": {
+        "workspace": true
+      },
+      "license": {
+        "workspace": true
+      },
+      "keywords": {
+        "workspace": true
+      },
+      "categories": {
+        "workspace": true
+      },
+      "publish": {
+        "workspace": true
+      }
+    },
+    "features": {
+      "default": [
+        "all",
+        "std"
+      ],
+      "all": [
+        "tracing"
+      ],
+      "std": [
+        "dogma/std"
+      ],
+      "tracing": [],
+      "unstable": []
+    },
+    "dependencies": {
+      "dogma": {
+        "workspace": true
+      }
+    }
+  },
+  {
+    "package": {
+      "name": "asimov-runner",
+      "version": {
+        "workspace": true
+      },
+      "authors": {
+        "workspace": true
+      },
+      "edition": {
+        "workspace": true
+      },
+      "rust-version": {
+        "workspace": true
+      },
+      "description": {
+        "workspace": true
+      },
+      "readme": {
+        "workspace": true
+      },
+      "homepage": {
+        "workspace": true
+      },
+      "repository": {
+        "workspace": true
+      },
+      "license": {
+        "workspace": true
+      },
+      "keywords": {
+        "workspace": true
+      },
+      "categories": {
+        "workspace": true
+      },
+      "publish": {
+        "workspace": true
+      }
+    },
+    "features": {
+      "default": [
+        "all",
+        "std"
+      ],
+      "all": [
+        "tracing"
+      ],
+      "std": [
+        "clientele/std",
+        "dogma/std",
+        "tracing?/std"
+      ],
+      "tracing": [
+        "dep:tracing"
+      ],
+      "unstable": []
+    },
+    "dependencies": {
+      "asimov-env": {
+        "workspace": true
+      },
+      "asimov-patterns": {
+        "workspace": true
+      },
+      "asimov-prompt": {
+        "workspace": true
+      },
+      "async-trait": {
+        "workspace": true
+      },
+      "clientele": {
+        "workspace": true
+      },
+      "derive_more": {
+        "workspace": true,
+        "features": [
+          "debug"
+        ]
+      },
+      "dogma": {
+        "workspace": true
+      },
+      "tokio": {
+        "workspace": true,
+        "features": [
+          "process"
+        ]
+      },
+      "tracing": {
+        "workspace": true,
+        "optional": true
+      }
+    },
+    "dev-dependencies": {
+      "tokio": {
+        "workspace": true,
+        "features": [
+          "full"
+        ]
+      }
+    }
+  },
+  {
+    "package": {
+      "name": "asimov-runtime",
+      "version": {
+        "workspace": true
+      },
+      "authors": {
+        "workspace": true
+      },
+      "edition": {
+        "workspace": true
+      },
+      "rust-version": {
+        "workspace": true
+      },
+      "description": {
+        "workspace": true
+      },
+      "readme": {
+        "workspace": true
+      },
+      "homepage": {
+        "workspace": true
+      },
+      "repository": {
+        "workspace": true
+      },
+      "license": {
+        "workspace": true
+      },
+      "keywords": {
+        "workspace": true
+      },
+      "categories": {
+        "workspace": true
+      },
+      "publish": {
+        "workspace": true
+      }
+    },
+    "features": {
+      "default": [
+        "all",
+        "std"
+      ],
+      "all": [
+        "tracing"
+      ],
+      "std": [
+        "dogma/std"
+      ],
+      "tracing": [],
+      "unstable": []
+    },
+    "dependencies": {
+      "dogma": {
+        "workspace": true
+      }
+    }
+  },
+  {
+    "package": {
+      "name": "asimov-sdk",
+      "version": {
+        "workspace": true
+      },
+      "authors": {
+        "workspace": true
+      },
+      "edition": {
+        "workspace": true
+      },
+      "rust-version": {
+        "workspace": true
+      },
+      "description": {
+        "workspace": true
+      },
+      "readme": {
+        "workspace": true
+      },
+      "homepage": {
+        "workspace": true
+      },
+      "repository": {
+        "workspace": true
+      },
+      "license": {
+        "workspace": true
+      },
+      "keywords": {
+        "workspace": true
+      },
+      "categories": [
+        "api-bindings",
+        "data-structures",
+        "text-processing"
+      ],
+      "publish": false
+    },
+    "features": {
+      "default": [
+        "all",
+        "std"
+      ],
+      "all": [
+        "derive",
+        "serde",
+        "tracing"
+      ],
+      "derive": [
+        "protoflow/derive"
+      ],
+      "serde": [
+        "asimov-core/serde",
+        "protoflow/serde"
+      ],
+      "std": [
+        "asimov-core/std",
+        "asimov-sys/std",
+        "protoflow/std",
+        "tokio?/full"
+      ],
+      "tokio": [
+        "protoflow/tokio",
+        "dep:tokio"
+      ],
+      "tracing": [
+        "protoflow/tracing",
+        "protoflow-blocks/tracing"
+      ],
+      "unstable": [
+        "asimov-core/unstable",
+        "asimov-sys/unstable"
+      ],
+      "web": [
+        "protoflow/web"
+      ]
+    },
+    "build-dependencies": {
+      "cfg_aliases": {
+        "workspace": true
+      }
+    },
+    "dependencies": {
+      "asimov-core": {
+        "workspace": true
+      },
+      "asimov-sys": {
+        "workspace": true
+      },
+      "protoflow": {
+        "workspace": true
+      },
+      "protoflow-blocks": {
+        "workspace": true
+      },
+      "stability": {
+        "workspace": true
+      },
+      "tokio": {
+        "workspace": true,
+        "optional": true
+      }
+    },
+    "target": {
+      "cfg(not(wasm))": {
+        "dependencies": {}
+      },
+      "cfg(wasm)": {
+        "dependencies": {}
+      }
+    }
+  },
+  {
+    "package": {
+      "name": "asimov-server",
+      "version": {
+        "workspace": true
+      },
+      "authors": {
+        "workspace": true
+      },
+      "edition": {
+        "workspace": true
+      },
+      "rust-version": {
+        "workspace": true
+      },
+      "description": {
+        "workspace": true
+      },
+      "readme": {
+        "workspace": true
+      },
+      "homepage": {
+        "workspace": true
+      },
+      "repository": {
+        "workspace": true
+      },
+      "license": {
+        "workspace": true
+      },
+      "keywords": {
+        "workspace": true
+      },
+      "categories": {
+        "workspace": true
+      },
+      "publish": {
+        "workspace": true
+      }
+    },
+    "features": {
+      "default": [
+        "all",
+        "std"
+      ],
+      "all": [
+        "app",
+        "http",
+        "tracing"
+      ],
+      "std": [
+        "bs58/std",
+        "dogma/std",
+        "jiff/std",
+        "openai/std",
+        "tracing?/std"
+      ],
+      "tracing": [
+        "dep:tracing",
+        "tower-http/trace"
+      ],
+      "unstable": [
+        "https",
+        "mdns",
+        "ssdp"
+      ],
+      "http": [
+        "persistence",
+        "dep:axum",
+        "dep:axum-prometheus",
+        "dep:http",
+        "dep:tower-http"
+      ],
+      "https": [
+        "http"
+      ],
+      "mdns": [
+        "dep:mdns-sd",
+        "dep:lazy_static",
+        "dep:local-ip-address"
+      ],
+      "ssdp": [],
+      "app": [
+        "http",
+        "dep:axum-embed",
+        "dep:rust-embed"
+      ],
+      "graphql": [
+        "http"
+      ],
+      "gsp": [
+        "http"
+      ],
+      "sparql": [
+        "http"
+      ],
+      "mcp": [
+        "http"
+      ],
+      "persistence": [
+        "dep:serde",
+        "dep:serde_json"
+      ]
+    },
+    "dependencies": {
+      "asimov-runner": {
+        "workspace": true
+      },
+      "asimov-prompt": {
+        "workspace": true,
+        "features": [
+          "openai"
+        ]
+      },
+      "async-trait": {
+        "workspace": true
+      },
+      "async-stream": {
+        "workspace": true
+      },
+      "bs58": {
+        "workspace": true
+      },
+      "dogma": {
+        "workspace": true
+      },
+      "futures": {
+        "workspace": true
+      },
+      "jiff": {
+        "workspace": true
+      },
+      "openai": {
+        "workspace": true,
+        "features": [
+          "serde"
+        ]
+      },
+      "rmcp": {
+        "workspace": true,
+        "features": [
+          "base64",
+          "macros",
+          "server",
+          "transport-sse-server"
+        ]
+      },
+      "thiserror": {
+        "workspace": true
+      },
+      "tldr": {
+        "workspace": true
+      },
+      "tokio": {
+        "workspace": true,
+        "features": [
+          "io-util",
+          "rt"
+        ]
+      },
+      "tokio-util": {
+        "workspace": true
+      },
+      "uuid": {
+        "workspace": true
+      },
+      "axum": {
+        "workspace": true,
+        "features": [
+          "tokio"
+        ],
+        "optional": true
+      },
+      "axum-embed": {
+        "workspace": true,
+        "optional": true
+      },
+      "axum-prometheus": {
+        "workspace": true,
+        "optional": true
+      },
+      "http": {
+        "workspace": true,
+        "optional": true
+      },
+      "lazy_static": {
+        "workspace": true,
+        "optional": true
+      },
+      "local-ip-address": {
+        "workspace": true,
+        "optional": true
+      },
+      "mdns-sd": {
+        "workspace": true,
+        "optional": true
+      },
+      "rust-embed": {
+        "workspace": true,
+        "optional": true
+      },
+      "serde": {
+        "workspace": true,
+        "features": [
+          "derive"
+        ],
+        "optional": true
+      },
+      "serde_json": {
+        "workspace": true,
+        "optional": true
+      },
+      "tower-http": {
+        "workspace": true,
+        "features": [
+          "cors"
+        ],
+        "optional": true
+      },
+      "tracing": {
+        "workspace": true,
+        "features": [
+          "attributes"
+        ],
+        "optional": true
+      }
+    },
+    "dev-dependencies": {
+      "axum-test": {
+        "workspace": true
+      },
+      "tokio": {
+        "workspace": true,
+        "features": [
+          "full"
+        ]
+      },
+      "tracing-subscriber": {
+        "workspace": true
+      }
+    },
+    "example": [
+      {
+        "name": "mdns-client",
+        "path": "examples/mdns-client.rs",
+        "required-features": [
+          "mdns"
+        ]
+      },
+      {
+        "name": "mdns-server",
+        "path": "examples/mdns-server.rs",
+        "required-features": [
+          "mdns"
+        ]
+      },
+      {
+        "name": "persistence",
+        "path": "examples/persistence.rs",
+        "required-features": [
+          "http",
+          "persistence"
+        ]
+      }
+    ]
+  },
+  {
+    "package": {
+      "name": "asimov-snapshot",
+      "version": {
+        "workspace": true
+      },
+      "authors": {
+        "workspace": true
+      },
+      "edition": {
+        "workspace": true
+      },
+      "rust-version": {
+        "workspace": true
+      },
+      "description": {
+        "workspace": true
+      },
+      "readme": {
+        "workspace": true
+      },
+      "homepage": {
+        "workspace": true
+      },
+      "repository": {
+        "workspace": true
+      },
+      "license": {
+        "workspace": true
+      },
+      "keywords": {
+        "workspace": true
+      },
+      "categories": {
+        "workspace": true
+      },
+      "publish": {
+        "workspace": true
+      }
+    },
+    "features": {
+      "default": [
+        "all",
+        "std"
+      ],
+      "all": [
+        "tracing",
+        "storage-fs"
+      ],
+      "std": [
+        "dogma/std",
+        "hex/std",
+        "jiff/std",
+        "tracing/std"
+      ],
+      "storage-fs": [
+        "dep:cap-std",
+        "dep:cap-tempfile",
+        "dep:hex",
+        "dep:sha2",
+        "std"
+      ],
+      "tracing": [],
+      "unstable": []
+    },
+    "dependencies": {
+      "asimov-env": {
+        "workspace": true
+      },
+      "asimov-module": {
+        "workspace": true
+      },
+      "asimov-patterns": {
+        "workspace": true
+      },
+      "asimov-registry": {
+        "workspace": true
+      },
+      "asimov-runner": {
+        "workspace": true
+      },
+      "async-trait": {
+        "workspace": true
+      },
+      "bon": {
+        "workspace": true
+      },
+      "dogma": {
+        "workspace": true
+      },
+      "jiff": {
+        "workspace": true
+      },
+      "tracing": {
+        "workspace": true,
+        "features": [
+          "attributes"
+        ]
+      },
+      "cap-std": {
+        "workspace": true,
+        "optional": true
+      },
+      "cap-tempfile": {
+        "version": "3.4",
+        "optional": true
+      },
+      "hex": {
+        "workspace": true,
+        "optional": true
+      },
+      "sha2": {
+        "workspace": true,
+        "optional": true
+      }
+    },
+    "dev-dependencies": {
+      "tempfile": {
+        "workspace": true
+      },
+      "tracing-subscriber": {
+        "workspace": true,
+        "features": [
+          "fmt"
+        ]
+      }
+    }
+  },
+  {
+    "package": {
+      "name": "asimov-sys",
+      "version": {
+        "workspace": true
+      },
+      "authors": {
+        "workspace": true
+      },
+      "edition": "2021",
+      "rust-version": {
+        "workspace": true
+      },
+      "description": {
+        "workspace": true
+      },
+      "readme": {
+        "workspace": true
+      },
+      "homepage": {
+        "workspace": true
+      },
+      "repository": {
+        "workspace": true
+      },
+      "license": {
+        "workspace": true
+      },
+      "keywords": [
+        "asimov",
+        "ai",
+        "sdk",
+        "ffi"
+      ],
+      "categories": [
+        "external-ffi-bindings"
+      ],
+      "publish": false
+    },
+    "features": {
+      "default": [],
+      "dylib": [
+        "dep:libloading"
+      ],
+      "std": [],
+      "unstable": []
+    },
+    "dependencies": {
+      "num-derive": {
+        "workspace": true
+      },
+      "num-traits": {
+        "workspace": true
+      }
+    },
+    "target": {
+      "cfg(any(unix, windows))": {
+        "dependencies": {
+          "libloading": {
+            "workspace": true,
+            "optional": true
+          }
+        }
+      }
+    }
+  },
+  {
+    "package": {
+      "name": "asimov-token",
+      "version": {
+        "workspace": true
+      },
+      "authors": {
+        "workspace": true
+      },
+      "edition": {
+        "workspace": true
+      },
+      "rust-version": {
+        "workspace": true
+      },
+      "description": {
+        "workspace": true
+      },
+      "readme": {
+        "workspace": true
+      },
+      "homepage": {
+        "workspace": true
+      },
+      "repository": {
+        "workspace": true
+      },
+      "license": {
+        "workspace": true
+      },
+      "keywords": {
+        "workspace": true
+      },
+      "categories": {
+        "workspace": true
+      },
+      "publish": {
+        "workspace": true
+      }
+    },
+    "features": {
+      "default": [
+        "all",
+        "std"
+      ],
+      "all": [
+        "tracing"
+      ],
+      "std": [
+        "dogma/std"
+      ],
+      "tracing": [],
+      "unstable": []
+    },
+    "dependencies": {
+      "dogma": {
+        "workspace": true
+      }
+    }
+  },
+  {
+    "package": {
+      "name": "asimov-universe",
+      "version": {
+        "workspace": true
+      },
+      "authors": {
+        "workspace": true
+      },
+      "edition": {
+        "workspace": true
+      },
+      "rust-version": {
+        "workspace": true
+      },
+      "description": {
+        "workspace": true
+      },
+      "readme": {
+        "workspace": true
+      },
+      "homepage": {
+        "workspace": true
+      },
+      "repository": {
+        "workspace": true
+      },
+      "license": {
+        "workspace": true
+      },
+      "keywords": {
+        "workspace": true
+      },
+      "categories": {
+        "workspace": true
+      },
+      "publish": {
+        "workspace": true
+      }
+    },
+    "features": {
+      "default": [
+        "all",
+        "std"
+      ],
+      "all": [
+        "tracing"
+      ],
+      "std": [
+        "dogma/std"
+      ],
+      "tracing": [],
+      "unstable": []
+    },
+    "dependencies": {
+      "dogma": {
+        "workspace": true
+      }
+    }
+  },
+  {
+    "package": {
+      "name": "asimov-vault",
+      "version": {
+        "workspace": true
+      },
+      "authors": {
+        "workspace": true
+      },
+      "edition": {
+        "workspace": true
+      },
+      "rust-version": {
+        "workspace": true
+      },
+      "description": {
+        "workspace": true
+      },
+      "readme": {
+        "workspace": true
+      },
+      "homepage": {
+        "workspace": true
+      },
+      "repository": {
+        "workspace": true
+      },
+      "license": {
+        "workspace": true
+      },
+      "keywords": {
+        "workspace": true
+      },
+      "categories": [
+        "api-bindings",
+        "database"
+      ],
+      "publish": {
+        "workspace": true
+      }
+    },
+    "features": {
+      "default": [
+        "all",
+        "std"
+      ],
+      "all": [
+        "tracing"
+      ],
+      "std": [
+        "dogma/std"
+      ],
+      "tracing": [],
+      "unstable": []
+    },
+    "dependencies": {
+      "dogma": {
+        "workspace": true
+      }
+    }
+  }
+]
