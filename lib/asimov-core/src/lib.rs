@@ -20,8 +20,6 @@ pub mod error;
 pub use error::*;
 
 pub mod flow {
-    pub use ::protoflow_core::*;
-
     mod definition;
     pub use definition::*;
 

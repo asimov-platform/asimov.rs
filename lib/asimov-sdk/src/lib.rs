@@ -25,7 +25,6 @@ pub use feature::*;
 
 pub mod flow {
     pub use ::asimov_core::flow::FlowExecutionState;
-    pub use ::protoflow::*;
 
     mod definition;
     pub use definition::*;
@@ -62,7 +61,6 @@ pub use ::asimov_core::{MaybeLabeled, MaybeNamed};
 #[doc(hidden)]
 pub mod crates {
     pub use ::asimov_core::crates::*;
-    pub use ::protoflow;
     #[cfg(feature = "tokio")]
     pub use ::tokio;
 }

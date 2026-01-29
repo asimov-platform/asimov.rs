@@ -504,20 +504,17 @@
         "tracing"
       ],
       "serde": [
-        "protoflow-core/serde",
         "dep:serde"
       ],
       "std": [
         "asimov-sys/std",
         "dogma/std",
-        "protoflow-core/std",
         "tracing?/std",
         "dep:cap-directories",
         "dep:cap-std"
       ],
       "tracing": [
-        "dep:tracing",
-        "protoflow-core/tracing"
+        "dep:tracing"
       ],
       "unstable": []
     },
@@ -529,9 +526,6 @@
         "workspace": true
       },
       "know": {
-        "workspace": true
-      },
-      "protoflow-core": {
         "workspace": true
       },
       "cap-directories": {
@@ -917,25 +911,16 @@
         "tracing",
         "yaml"
       ],
-      "derive": [
-        "protoflow/derive"
-      ],
+      "derive": [],
       "serde": [
         "asimov-core/serde",
-        "protoflow/serde",
         "dep:serde"
       ],
       "std": [
-        "asimov-core/std",
-        "protoflow/std"
+        "asimov-core/std"
       ],
-      "tokio": [
-        "protoflow/tokio"
-      ],
-      "tracing": [
-        "protoflow/tracing",
-        "protoflow-blocks/tracing"
-      ],
+      "tokio": [],
+      "tracing": [],
       "unstable": [
         "asimov-core/unstable"
       ],
@@ -946,12 +931,6 @@
     },
     "dependencies": {
       "asimov-core": {
-        "workspace": true
-      },
-      "protoflow": {
-        "workspace": true
-      },
-      "protoflow-blocks": {
         "workspace": true
       },
       "serde": {
@@ -2695,34 +2674,24 @@
         "serde",
         "tracing"
       ],
-      "derive": [
-        "protoflow/derive"
-      ],
+      "derive": [],
       "serde": [
-        "asimov-core/serde",
-        "protoflow/serde"
+        "asimov-core/serde"
       ],
       "std": [
         "asimov-core/std",
         "asimov-sys/std",
-        "protoflow/std",
         "tokio?/full"
       ],
       "tokio": [
-        "protoflow/tokio",
         "dep:tokio"
       ],
-      "tracing": [
-        "protoflow/tracing",
-        "protoflow-blocks/tracing"
-      ],
+      "tracing": [],
       "unstable": [
         "asimov-core/unstable",
         "asimov-sys/unstable"
       ],
-      "web": [
-        "protoflow/web"
-      ]
+      "web": []
     },
     "build-dependencies": {
       "cfg_aliases": {
@@ -2734,12 +2703,6 @@
         "workspace": true
       },
       "asimov-sys": {
-        "workspace": true
-      },
-      "protoflow": {
-        "workspace": true
-      },
-      "protoflow-blocks": {
         "workspace": true
       },
       "stability": {

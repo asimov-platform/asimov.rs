@@ -232,19 +232,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Flow: Upgrade to [Protoflow 0.4.1]
+- Flow: Upgrade to Protoflow 0.4.1
 
 ## 24.0.0-dev.20 - 2024-10-01
 
 ### Changed
 
-- Flow: Upgrade to [Protoflow 0.4.0]
+- Flow: Upgrade to Protoflow 0.4.0
 
 ## 24.0.0-dev.19 - 2024-09-25
 
 ### Changed
 
-- Flow: Upgrade to [Protoflow 0.3.1]
+- Flow: Upgrade to Protoflow 0.3.1
 
 ## 24.0.0-dev.18 - 2024-09-20
 
@@ -258,7 +258,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Flow: Upgrade to [Protoflow 0.3.0]
+- Flow: Upgrade to Protoflow 0.3.0
 
 ## 24.0.0-dev.13 - 2024-09-07
 
@@ -272,13 +272,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Flow: Upgrade to [Protoflow 0.2.1]
+- Flow: Upgrade to Protoflow 0.2.1
 
 ## 24.0.0-dev.8 - 2024-08-21
 
 ### Changed
 
-- Flow: Upgrade to [Protoflow 0.2.0]
+- Flow: Upgrade to Protoflow 0.2.0
 
 ## 24.0.0-dev.7 - 2024-08-09
 
@@ -344,10 +344,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Flow: `Block#execute` now takes a parameter
 
 ## 24.0.0-dev.0 - 2024-06-29
-
-[Protoflow 0.4.1]: https://github.com/asimov-platform/protoflow/compare/0.4.0...0.4.1
-[Protoflow 0.4.0]: https://github.com/asimov-platform/protoflow/compare/0.3.1...0.4.0
-[Protoflow 0.3.1]: https://github.com/asimov-platform/protoflow/compare/0.3.0...0.3.1
-[Protoflow 0.3.0]: https://github.com/asimov-platform/protoflow/compare/0.2.1...0.3.0
-[Protoflow 0.2.1]: https://github.com/asimov-platform/protoflow/compare/0.2.0...0.2.1
-[Protoflow 0.2.0]: https://github.com/asimov-platform/protoflow/compare/0.1.0...0.2.0

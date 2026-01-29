@@ -17,13 +17,13 @@ publish = false
 [features]
 default = ["all", "std"]
 all = ["derive", "serde", "tracing"]
-derive = ["protoflow/derive"]
-serde = ["asimov-core/serde", "protoflow/serde"]
-std = ["asimov-core/std", "asimov-sys/std", "protoflow/std", "tokio?/full"]
-tokio = ["protoflow/tokio", "dep:tokio"]
-tracing = ["protoflow/tracing", "protoflow-blocks/tracing"]
+derive = []
+serde = ["asimov-core/serde"]
+std = ["asimov-core/std", "asimov-sys/std", "tokio?/full"]
+tokio = ["dep:tokio"]
+tracing = []
 unstable = ["asimov-core/unstable", "asimov-sys/unstable"]
-web = ["protoflow/web"]
+web = []
 
 [build-dependencies]
 cfg_aliases.workspace = true
@@ -31,8 +31,6 @@ cfg_aliases.workspace = true
 [dependencies]
 asimov-core.workspace = true
 asimov-sys.workspace = true
-protoflow.workspace = true
-protoflow-blocks.workspace = true
 stability.workspace = true
 
 # Optional dependencies:

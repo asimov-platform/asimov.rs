@@ -17,18 +17,16 @@ publish = false
 [features]
 default = ["all", "std"]
 all = ["derive", "serde", "tracing", "yaml"]
-derive = ["protoflow/derive"]
-serde = ["asimov-core/serde", "protoflow/serde", "dep:serde"]
-std = ["asimov-core/std", "protoflow/std"]
-tokio = ["protoflow/tokio"]
-tracing = ["protoflow/tracing", "protoflow-blocks/tracing"]
+derive = []
+serde = ["asimov-core/serde", "dep:serde"]
+std = ["asimov-core/std"]
+tokio = []
+tracing = []
 unstable = ["asimov-core/unstable"]
 yaml = ["serde", "dep:serde_yaml_ng"]
 
 [dependencies]
 asimov-core.workspace = true
-protoflow.workspace = true
-protoflow-blocks.workspace = true
 
 # Optional dependencies:
 serde = { workspace = true, optional = true }
