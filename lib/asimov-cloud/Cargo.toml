@@ -1,3 +1,5 @@
+# See: https://doc.rust-lang.org/cargo/reference/manifest.html
+
 [package]
 name = "asimov-cloud"
 version.workspace = true
@@ -45,11 +47,11 @@ derive_more = { version = "2", features = ["display"] }
 dogma.workspace = true
 thiserror.workspace = true
 
-[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+[target.'cfg(not(target_family = "wasm"))'.dependencies]
 reqwest = { workspace = true }
 tokio = { workspace = true, features = ["io-util", "rt"] }
 
-[target.'cfg(target_arch = "wasm32")'.dependencies]
+[target.'cfg(target_family = "wasm")'.dependencies]
 reqwest = { workspace = true, features = ["json"] }
 tokio = { workspace = true, features = ["rt"] }
 tokio_with_wasm = { version = "0.8", features = ["rt"] }

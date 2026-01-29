@@ -3,7 +3,7 @@
 [![License](https://img.shields.io/badge/license-Public%20Domain-blue.svg)](https://unlicense.org)
 [![Compatibility](https://img.shields.io/badge/rust-1.85%2B-blue)](https://blog.rust-lang.org/2025/02/20/Rust-1.85.0/)
 [![Package](https://img.shields.io/crates/v/asimov-module)](https://crates.io/crates/asimov-module)
-[![Documentation](https://docs.rs/asimov-module/badge.svg)](https://docs.rs/asimov-module/)
+[![Documentation](https://docs.rs/asimov-module/badge.svg)](https://docs.rs/asimov-module)
 
 [ASIMOV] is a polyglot development platform for trustworthy, neurosymbolic AI.
 
@@ -45,7 +45,7 @@ use asimov::*;
 
 ## 📚 Reference
 
-[docs.rs/asimov-module/](https://docs.rs/asimov-module/)
+[docs.rs/asimov-module](https://docs.rs/asimov-module)
 
 ## 👨‍💻 Development
 

@@ -15,4 +15,5 @@
 
 # Rust artifacts
 /rust-toolchain
+/rust-toolchain.toml
 /target
