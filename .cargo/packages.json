@@ -497,31 +497,28 @@
     "features": {
       "default": [
         "all",
-        "serde",
         "std"
       ],
       "all": [
+        "serde",
         "tracing"
       ],
-      "serde": [
-        "dep:serde"
-      ],
       "std": [
-        "asimov-sys/std",
         "dogma/std",
+        "know/std",
         "tracing?/std",
         "dep:cap-directories",
         "dep:cap-std"
       ],
+      "unstable": [],
+      "serde": [
+        "dep:serde"
+      ],
       "tracing": [
         "dep:tracing"
-      ],
-      "unstable": []
+      ]
     },
     "dependencies": {
-      "asimov-sys": {
-        "workspace": true
-      },
       "dogma": {
         "workspace": true
       },
@@ -905,41 +902,13 @@
         "all",
         "std"
       ],
-      "all": [
-        "derive",
-        "serde",
-        "tracing",
-        "yaml"
-      ],
-      "derive": [],
-      "serde": [
-        "asimov-core/serde",
-        "dep:serde"
-      ],
-      "std": [
-        "asimov-core/std"
-      ],
-      "tokio": [],
-      "tracing": [],
-      "unstable": [
-        "asimov-core/unstable"
-      ],
-      "yaml": [
-        "serde",
-        "dep:serde_yaml_ng"
-      ]
+      "all": [],
+      "std": [],
+      "unstable": []
     },
     "dependencies": {
       "asimov-core": {
         "workspace": true
-      },
-      "serde": {
-        "workspace": true,
-        "optional": true
-      },
-      "serde_yaml_ng": {
-        "workspace": true,
-        "optional": true
       }
     }
   },
@@ -2672,53 +2641,34 @@
       "all": [
         "derive",
         "serde",
+        "tokio",
         "tracing"
+      ],
+      "std": [
+        "asimov-core/std",
+        "tokio?/full"
+      ],
+      "unstable": [
+        "asimov-core/unstable"
       ],
       "derive": [],
       "serde": [
         "asimov-core/serde"
       ],
-      "std": [
-        "asimov-core/std",
-        "asimov-sys/std",
-        "tokio?/full"
-      ],
       "tokio": [
         "dep:tokio"
       ],
-      "tracing": [],
-      "unstable": [
-        "asimov-core/unstable",
-        "asimov-sys/unstable"
-      ],
-      "web": []
-    },
-    "build-dependencies": {
-      "cfg_aliases": {
-        "workspace": true
-      }
+      "tracing": [
+        "asimov-core/tracing"
+      ]
     },
     "dependencies": {
       "asimov-core": {
         "workspace": true
       },
-      "asimov-sys": {
-        "workspace": true
-      },
-      "stability": {
-        "workspace": true
-      },
       "tokio": {
         "workspace": true,
         "optional": true
-      }
-    },
-    "target": {
-      "cfg(not(wasm))": {
-        "dependencies": {}
-      },
-      "cfg(wasm)": {
-        "dependencies": {}
       }
     }
   },
@@ -3113,72 +3063,6 @@
         "features": [
           "fmt"
         ]
-      }
-    }
-  },
-  {
-    "package": {
-      "name": "asimov-sys",
-      "version": {
-        "workspace": true
-      },
-      "authors": {
-        "workspace": true
-      },
-      "edition": "2021",
-      "rust-version": {
-        "workspace": true
-      },
-      "description": {
-        "workspace": true
-      },
-      "readme": {
-        "workspace": true
-      },
-      "homepage": {
-        "workspace": true
-      },
-      "repository": {
-        "workspace": true
-      },
-      "license": {
-        "workspace": true
-      },
-      "keywords": [
-        "asimov",
-        "ai",
-        "sdk",
-        "ffi"
-      ],
-      "categories": [
-        "external-ffi-bindings"
-      ],
-      "publish": false
-    },
-    "features": {
-      "default": [],
-      "dylib": [
-        "dep:libloading"
-      ],
-      "std": [],
-      "unstable": []
-    },
-    "dependencies": {
-      "num-derive": {
-        "workspace": true
-      },
-      "num-traits": {
-        "workspace": true
-      }
-    },
-    "target": {
-      "cfg(any(unix, windows))": {
-        "dependencies": {
-          "libloading": {
-            "workspace": true,
-            "optional": true
-          }
-        }
       }
     }
   },

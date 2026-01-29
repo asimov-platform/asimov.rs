@@ -9,35 +9,10 @@ extern crate core;
 #[cfg(feature = "std")]
 extern crate std;
 
-pub mod block {
-    mod definition;
-    pub use definition::*;
-}
-
 pub mod env;
 
 pub mod error;
 pub use error::*;
-
-pub mod flow {
-    mod definition;
-    pub use definition::*;
-
-    mod execution_state;
-    pub use execution_state::*;
-}
-
-pub mod model {
-    mod manifest;
-    pub use manifest::*;
-}
-
-pub mod module {
-    mod registration;
-    pub use registration::*;
-}
-
-pub mod system {}
 
 pub use ::dogma::traits::{Labeled, Named};
 pub use ::dogma::traits::{MaybeLabeled, MaybeNamed};

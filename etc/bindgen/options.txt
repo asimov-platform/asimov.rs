@@ -1,6 +1,0 @@
---opaque-type=AsiInstance
---must-use-type=AsiResult
---default-enum-style=rust
---with-derive-custom-enum=".*=FromPrimitive,ToPrimitive"
---with-derive-default
---no-layout-tests

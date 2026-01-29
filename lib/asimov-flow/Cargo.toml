@@ -16,18 +16,9 @@ publish = false
 
 [features]
 default = ["all", "std"]
-all = ["derive", "serde", "tracing", "yaml"]
-derive = []
-serde = ["asimov-core/serde", "dep:serde"]
-std = ["asimov-core/std"]
-tokio = []
-tracing = []
-unstable = ["asimov-core/unstable"]
-yaml = ["serde", "dep:serde_yaml_ng"]
+all = []
+std = []
+unstable = []
 
 [dependencies]
 asimov-core.workspace = true
-
-# Optional dependencies:
-serde = { workspace = true, optional = true }
-serde_yaml_ng = { workspace = true, optional = true }

@@ -16,26 +16,20 @@ publish = false
 
 [features]
 default = ["all", "std"]
-all = ["derive", "serde", "tracing"]
-derive = []
-serde = ["asimov-core/serde"]
-std = ["asimov-core/std", "asimov-sys/std", "tokio?/full"]
-tokio = ["dep:tokio"]
-tracing = []
-unstable = ["asimov-core/unstable", "asimov-sys/unstable"]
-web = []
+all = ["derive", "serde", "tokio", "tracing"]
+std = ["asimov-core/std", "tokio?/full"]
+unstable = ["asimov-core/unstable"]
 
-[build-dependencies]
-cfg_aliases.workspace = true
+# Features:
+derive = []
+
+# Integrations:
+serde = ["asimov-core/serde"]
+tokio = ["dep:tokio"]
+tracing = ["asimov-core/tracing"]
 
 [dependencies]
 asimov-core.workspace = true
-asimov-sys.workspace = true
-stability.workspace = true
 
-# Optional dependencies:
+# Integrations:
 tokio = { workspace = true, optional = true }
-
-[target.'cfg(not(wasm))'.dependencies]
-
-[target.'cfg(wasm)'.dependencies]
