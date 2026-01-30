@@ -2,33 +2,14 @@
 
 [workspace]
 members = ["lib/*"]
-default-members = [
-    "lib/asimov-cloud",
-    "lib/asimov-core",
-    "lib/asimov-credit",
-    "lib/asimov-env",
-    "lib/asimov-flow",
-    "lib/asimov-huggingface",
-    "lib/asimov-id",
-    "lib/asimov-installer",
-    "lib/asimov-kb",
-    "lib/asimov-module",
-    "lib/asimov-nexus",
-    "lib/asimov-patterns",
-    "lib/asimov-prompt",
-    "lib/asimov-registry",
-    "lib/asimov-runner",
-    "lib/asimov-sdk",
-    "lib/asimov-server",
-    "lib/asimov-snapshot",
-]
+#default-members = []
 resolver = "2"
 
 [workspace.package]
 version = "25.0.3"
 authors = ["ASIMOV Systems <support@asimov.systems>"]
 edition = "2024"
-rust-version = "1.85"
+#rust-version = "1.85"
 description = "ASIMOV Software Development Kit (SDK) for Rust"
 #documentation = "https://docs.rs/asimov-sdk"
 readme = true
