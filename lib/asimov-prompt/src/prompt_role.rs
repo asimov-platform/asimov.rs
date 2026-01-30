@@ -22,13 +22,13 @@ pub enum PromptRole {
 }
 
 impl Named for PromptRole {
-    fn name(&self) -> Cow<str> {
+    fn name(&self) -> Cow<'_, str> {
         self.to_string().into()
     }
 }
 
 impl Labeled for PromptRole {
-    fn label(&self) -> Cow<str> {
+    fn label(&self) -> Cow<'_, str> {
         use PromptRole::*;
         Cow::from(match self {
             System => "System",
