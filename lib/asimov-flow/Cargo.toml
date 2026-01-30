@@ -17,8 +17,14 @@ publish = false
 [features]
 default = ["all", "std"]
 all = []
-std = []
+std = ["tokio?/full"]
 unstable = []
+
+# Integrations:
+tokio = ["dep:tokio"]
 
 [dependencies]
 asimov-core.workspace = true
+
+# Integrations:
+tokio = { workspace = true, optional = true }

@@ -21,42 +21,42 @@ categories = []
 publish = true
 
 [workspace.dependencies]
-asimov-account = "25.0.3"
-asimov-agent = "25.0.3"
-asimov-cache = "25.0.3"
-asimov-cloud = "25.0.3"
-asimov-config = "25.0.3"
-asimov-construct = "25.0.3"
-asimov-core = "25.0.3"
-asimov-credit = "25.0.3"
-asimov-dataset = "25.0.3"
-asimov-directory = "25.0.3"
-asimov-env = "25.0.3"
-asimov-flow = "25.0.3"
-asimov-graph = "25.0.3"
-asimov-huggingface = "25.0.3"
-asimov-id = "25.0.3"
-asimov-installer = "25.0.3"
-asimov-kb = "25.0.3"
-asimov-ledger = "25.0.3"
-asimov-module = "25.0.3"
-asimov-nexus = "25.0.3"
-asimov-ontology = "25.0.3"
-asimov-patterns = "25.0.3"
-asimov-platform = "25.0.3"
-asimov-prompt = "25.0.3"
-asimov-protocol = "25.0.3"
-asimov-proxy = "25.0.3"
-asimov-registry = "25.0.3"
-asimov-repository = "25.0.3"
-asimov-runner = "25.0.3"
-asimov-runtime = "25.0.3"
-asimov-sdk = "25.0.3"
-asimov-server = "25.0.3"
-asimov-snapshot = "25.0.3"
-asimov-token = "25.0.3"
-asimov-universe = "25.0.3"
-asimov-vault = "25.0.3"
+asimov-account = { version = "25.0.3", default-features = false }
+asimov-agent = { version = "25.0.3", default-features = false }
+asimov-cache = { version = "25.0.3", default-features = false }
+asimov-cloud = { version = "25.0.3", default-features = false }
+asimov-config = { version = "25.0.3", default-features = false }
+asimov-construct = { version = "25.0.3", default-features = false }
+asimov-core = { version = "25.0.3", default-features = false }
+asimov-credit = { version = "25.0.3", default-features = false }
+asimov-dataset = { version = "25.0.3", default-features = false }
+asimov-directory = { version = "25.0.3", default-features = false }
+asimov-env = { version = "25.0.3", default-features = false }
+asimov-flow = { version = "25.0.3", default-features = false }
+asimov-graph = { version = "25.0.3", default-features = false }
+asimov-huggingface = { version = "25.0.3", default-features = false }
+asimov-id = { version = "25.0.3", default-features = false }
+asimov-installer = { version = "25.0.3", default-features = false }
+asimov-kb = { version = "25.0.3", default-features = false }
+asimov-ledger = { version = "25.0.3", default-features = false }
+asimov-module = { version =  "25.0.3", default-features = false }
+asimov-nexus = { version = "25.0.3", default-features = false }
+asimov-ontology = { version = "25.0.3", default-features = false }
+asimov-patterns = { version = "25.0.3", default-features = false }
+asimov-platform = { version = "25.0.3", default-features = false }
+asimov-prompt = { version = "25.0.3", default-features = false }
+asimov-protocol = { version = "25.0.3", default-features = false }
+asimov-proxy = { version = "25.0.3", default-features = false }
+asimov-registry = { version = "25.0.3", default-features = false }
+asimov-repository = { version = "25.0.3", default-features = false }
+asimov-runner = { version = "25.0.3", default-features = false }
+asimov-runtime = { version = "25.0.3", default-features = false }
+asimov-sdk = { version = "25.0.3", default-features = false }
+asimov-server = { version = "25.0.3", default-features = false }
+asimov-snapshot = { version = "25.0.3", default-features = false }
+asimov-token = { version = "25.0.3", default-features = false }
+asimov-universe = { version = "25.0.3", default-features = false }
+asimov-vault = { version = "25.0.3", default-features = false }
 
 alloy = { version = "0.5", default-features = false }
 async-stream = { version = "0.3", default-features = false }

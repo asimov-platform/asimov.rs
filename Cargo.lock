@@ -924,6 +924,7 @@ name = "asimov-flow"
 version = "25.0.3"
 dependencies = [
  "asimov-core",
+ "tokio",
 ]
 
 [[package]]
@@ -1153,7 +1154,20 @@ dependencies = [
 name = "asimov-sdk"
 version = "25.0.3"
 dependencies = [
+ "asimov-config",
  "asimov-core",
+ "asimov-credit",
+ "asimov-env",
+ "asimov-flow",
+ "asimov-id",
+ "asimov-installer",
+ "asimov-kb",
+ "asimov-module",
+ "asimov-patterns",
+ "asimov-prompt",
+ "asimov-registry",
+ "asimov-runner",
+ "asimov-snapshot",
  "tokio",
 ]
 

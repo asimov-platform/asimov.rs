@@ -16,20 +16,79 @@ publish = false
 
 [features]
 default = ["all", "std"]
-all = ["derive", "serde", "tokio", "tracing"]
-std = ["asimov-core/std", "tokio?/full"]
-unstable = ["asimov-core/unstable"]
+all = [
+    "config",
+    "core",
+    "credit",
+    "env",
+    "flow",
+    "id",
+    "installer",
+    "kb",
+    "module",
+    "patterns",
+    "prompt",
+    "registry",
+    "runner",
+    "snapshot",
+]
+std = [
+    "asimov-config?/std",
+    "asimov-core?/std",
+    "asimov-credit?/std",
+    "asimov-env?/std",
+    "asimov-flow?/std",
+    "asimov-id?/std",
+    "asimov-installer?/std",
+    "asimov-kb?/std",
+    "asimov-module?/std",
+    "asimov-patterns?/std",
+    "asimov-prompt?/std",
+    "asimov-registry?/std",
+    "asimov-runner?/std",
+    "asimov-snapshot?/std",
+]
+unstable = ["asimov-core?/unstable"]
+
+# Packages:
+config = ["dep:asimov-config"]
+core = ["dep:asimov-core"]
+credit = ["dep:asimov-credit"]
+env = ["dep:asimov-env"]
+flow = ["dep:asimov-flow"]
+id = ["dep:asimov-id"]
+installer = ["dep:asimov-installer"]
+kb = ["dep:asimov-kb"]
+module = ["dep:asimov-module"]
+patterns = ["dep:asimov-patterns"]
+prompt = ["dep:asimov-prompt"]
+registry = ["dep:asimov-registry"]
+runner = ["dep:asimov-runner"]
+snapshot = ["dep:asimov-snapshot"]
 
 # Features:
 derive = []
 
 # Integrations:
 serde = ["asimov-core/serde"]
-tokio = ["dep:tokio"]
+tokio = ["asimov-flow/tokio"]
 tracing = ["asimov-core/tracing"]
 
 [dependencies]
-asimov-core.workspace = true
+asimov-config = { workspace = true, optional = true }
+asimov-core = { workspace = true, optional = true }
+asimov-credit = { workspace = true, optional = true }
+asimov-env = { workspace = true, optional = true }
+asimov-flow = { workspace = true, optional = true }
+asimov-id = { workspace = true, optional = true }
+asimov-installer = { workspace = true, optional = true }
+asimov-kb = { workspace = true, optional = true }
+asimov-module = { workspace = true, optional = true }
+asimov-patterns = { workspace = true, optional = true }
+asimov-prompt = { workspace = true, optional = true }
+asimov-registry = { workspace = true, optional = true }
+asimov-runner = { workspace = true, optional = true }
+asimov-snapshot = { workspace = true, optional = true }
 
-# Integrations:
-tokio = { workspace = true, optional = true }
+[dev-dependencies]
+tokio.workspace = true
