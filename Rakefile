@@ -61,6 +61,18 @@ end
 
 def load_projects(input_paths)
   input_paths.map do |input_path|
-    Tomlrb.load_file(input_path, symbolize_keys: true)
+    manifest = Tomlrb.load_file(input_path, symbolize_keys: true)
+    remove_workspace_only(manifest)
+  end
+end
+
+def remove_workspace_only(data, in_deps: false)
+  case data
+    when Hash
+      data.reject { |_, v| !in_deps && (v == {workspace: true}) }
+          .to_h { |k, v| [k, remove_workspace_only(v, in_deps: k.to_s.include?("dependencies"))] }
+    when Array
+      data.map { |item| remove_workspace_only(item, in_deps: in_deps) }
+    else data
   end
 end

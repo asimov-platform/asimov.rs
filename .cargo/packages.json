@@ -1,43 +1,7 @@
 [
   {
     "package": {
-      "name": "asimov-account",
-      "version": {
-        "workspace": true
-      },
-      "authors": {
-        "workspace": true
-      },
-      "edition": {
-        "workspace": true
-      },
-      "rust-version": {
-        "workspace": true
-      },
-      "description": {
-        "workspace": true
-      },
-      "readme": {
-        "workspace": true
-      },
-      "homepage": {
-        "workspace": true
-      },
-      "repository": {
-        "workspace": true
-      },
-      "license": {
-        "workspace": true
-      },
-      "keywords": {
-        "workspace": true
-      },
-      "categories": {
-        "workspace": true
-      },
-      "publish": {
-        "workspace": true
-      }
+      "name": "asimov-account"
     },
     "features": {
       "default": [
@@ -61,43 +25,7 @@
   },
   {
     "package": {
-      "name": "asimov-agent",
-      "version": {
-        "workspace": true
-      },
-      "authors": {
-        "workspace": true
-      },
-      "edition": {
-        "workspace": true
-      },
-      "rust-version": {
-        "workspace": true
-      },
-      "description": {
-        "workspace": true
-      },
-      "readme": {
-        "workspace": true
-      },
-      "homepage": {
-        "workspace": true
-      },
-      "repository": {
-        "workspace": true
-      },
-      "license": {
-        "workspace": true
-      },
-      "keywords": {
-        "workspace": true
-      },
-      "categories": {
-        "workspace": true
-      },
-      "publish": {
-        "workspace": true
-      }
+      "name": "asimov-agent"
     },
     "features": {
       "default": [
@@ -121,43 +49,7 @@
   },
   {
     "package": {
-      "name": "asimov-cache",
-      "version": {
-        "workspace": true
-      },
-      "authors": {
-        "workspace": true
-      },
-      "edition": {
-        "workspace": true
-      },
-      "rust-version": {
-        "workspace": true
-      },
-      "description": {
-        "workspace": true
-      },
-      "readme": {
-        "workspace": true
-      },
-      "homepage": {
-        "workspace": true
-      },
-      "repository": {
-        "workspace": true
-      },
-      "license": {
-        "workspace": true
-      },
-      "keywords": {
-        "workspace": true
-      },
-      "categories": {
-        "workspace": true
-      },
-      "publish": {
-        "workspace": true
-      }
+      "name": "asimov-cache"
     },
     "features": {
       "default": [
@@ -181,43 +73,7 @@
   },
   {
     "package": {
-      "name": "asimov-cloud",
-      "version": {
-        "workspace": true
-      },
-      "authors": {
-        "workspace": true
-      },
-      "edition": {
-        "workspace": true
-      },
-      "rust-version": {
-        "workspace": true
-      },
-      "description": {
-        "workspace": true
-      },
-      "readme": {
-        "workspace": true
-      },
-      "homepage": {
-        "workspace": true
-      },
-      "repository": {
-        "workspace": true
-      },
-      "license": {
-        "workspace": true
-      },
-      "keywords": {
-        "workspace": true
-      },
-      "categories": {
-        "workspace": true
-      },
-      "publish": {
-        "workspace": true
-      }
+      "name": "asimov-cloud"
     },
     "features": {
       "default": [
@@ -336,43 +192,7 @@
   },
   {
     "package": {
-      "name": "asimov-config",
-      "version": {
-        "workspace": true
-      },
-      "authors": {
-        "workspace": true
-      },
-      "edition": {
-        "workspace": true
-      },
-      "rust-version": {
-        "workspace": true
-      },
-      "description": {
-        "workspace": true
-      },
-      "readme": {
-        "workspace": true
-      },
-      "homepage": {
-        "workspace": true
-      },
-      "repository": {
-        "workspace": true
-      },
-      "license": {
-        "workspace": true
-      },
-      "keywords": {
-        "workspace": true
-      },
-      "categories": {
-        "workspace": true
-      },
-      "publish": {
-        "workspace": true
-      }
+      "name": "asimov-config"
     },
     "features": {
       "default": [
@@ -396,43 +216,7 @@
   },
   {
     "package": {
-      "name": "asimov-construct",
-      "version": {
-        "workspace": true
-      },
-      "authors": {
-        "workspace": true
-      },
-      "edition": {
-        "workspace": true
-      },
-      "rust-version": {
-        "workspace": true
-      },
-      "description": {
-        "workspace": true
-      },
-      "readme": {
-        "workspace": true
-      },
-      "homepage": {
-        "workspace": true
-      },
-      "repository": {
-        "workspace": true
-      },
-      "license": {
-        "workspace": true
-      },
-      "keywords": {
-        "workspace": true
-      },
-      "categories": {
-        "workspace": true
-      },
-      "publish": {
-        "workspace": true
-      }
+      "name": "asimov-construct"
     },
     "features": {
       "default": [
@@ -457,36 +241,6 @@
   {
     "package": {
       "name": "asimov-core",
-      "version": {
-        "workspace": true
-      },
-      "authors": {
-        "workspace": true
-      },
-      "edition": {
-        "workspace": true
-      },
-      "rust-version": {
-        "workspace": true
-      },
-      "description": {
-        "workspace": true
-      },
-      "readme": {
-        "workspace": true
-      },
-      "homepage": {
-        "workspace": true
-      },
-      "repository": {
-        "workspace": true
-      },
-      "license": {
-        "workspace": true
-      },
-      "keywords": {
-        "workspace": true
-      },
       "categories": [
         "api-bindings",
         "data-structures",
@@ -548,43 +302,7 @@
   },
   {
     "package": {
-      "name": "asimov-credit",
-      "version": {
-        "workspace": true
-      },
-      "authors": {
-        "workspace": true
-      },
-      "edition": {
-        "workspace": true
-      },
-      "rust-version": {
-        "workspace": true
-      },
-      "description": {
-        "workspace": true
-      },
-      "readme": {
-        "workspace": true
-      },
-      "homepage": {
-        "workspace": true
-      },
-      "repository": {
-        "workspace": true
-      },
-      "license": {
-        "workspace": true
-      },
-      "keywords": {
-        "workspace": true
-      },
-      "categories": {
-        "workspace": true
-      },
-      "publish": {
-        "workspace": true
-      }
+      "name": "asimov-credit"
     },
     "features": {
       "default": [
@@ -664,43 +382,7 @@
   },
   {
     "package": {
-      "name": "asimov-dataset",
-      "version": {
-        "workspace": true
-      },
-      "authors": {
-        "workspace": true
-      },
-      "edition": {
-        "workspace": true
-      },
-      "rust-version": {
-        "workspace": true
-      },
-      "description": {
-        "workspace": true
-      },
-      "readme": {
-        "workspace": true
-      },
-      "homepage": {
-        "workspace": true
-      },
-      "repository": {
-        "workspace": true
-      },
-      "license": {
-        "workspace": true
-      },
-      "keywords": {
-        "workspace": true
-      },
-      "categories": {
-        "workspace": true
-      },
-      "publish": {
-        "workspace": true
-      }
+      "name": "asimov-dataset"
     },
     "features": {
       "default": [
@@ -724,43 +406,7 @@
   },
   {
     "package": {
-      "name": "asimov-directory",
-      "version": {
-        "workspace": true
-      },
-      "authors": {
-        "workspace": true
-      },
-      "edition": {
-        "workspace": true
-      },
-      "rust-version": {
-        "workspace": true
-      },
-      "description": {
-        "workspace": true
-      },
-      "readme": {
-        "workspace": true
-      },
-      "homepage": {
-        "workspace": true
-      },
-      "repository": {
-        "workspace": true
-      },
-      "license": {
-        "workspace": true
-      },
-      "keywords": {
-        "workspace": true
-      },
-      "categories": {
-        "workspace": true
-      },
-      "publish": {
-        "workspace": true
-      }
+      "name": "asimov-directory"
     },
     "features": {
       "default": [
@@ -785,43 +431,10 @@
   {
     "package": {
       "name": "asimov-env",
-      "version": {
-        "workspace": true
-      },
-      "authors": {
-        "workspace": true
-      },
-      "edition": {
-        "workspace": true
-      },
-      "rust-version": {
-        "workspace": true
-      },
-      "description": {
-        "workspace": true
-      },
-      "readme": {
-        "workspace": true
-      },
-      "homepage": {
-        "workspace": true
-      },
-      "repository": {
-        "workspace": true
-      },
-      "license": {
-        "workspace": true
-      },
-      "keywords": {
-        "workspace": true
-      },
       "categories": [
         "api-bindings",
         "development-tools"
-      ],
-      "publish": {
-        "workspace": true
-      }
+      ]
     },
     "features": {
       "default": [
@@ -860,36 +473,6 @@
   {
     "package": {
       "name": "asimov-flow",
-      "version": {
-        "workspace": true
-      },
-      "authors": {
-        "workspace": true
-      },
-      "edition": {
-        "workspace": true
-      },
-      "rust-version": {
-        "workspace": true
-      },
-      "description": {
-        "workspace": true
-      },
-      "readme": {
-        "workspace": true
-      },
-      "homepage": {
-        "workspace": true
-      },
-      "repository": {
-        "workspace": true
-      },
-      "license": {
-        "workspace": true
-      },
-      "keywords": {
-        "workspace": true
-      },
       "categories": [
         "concurrency",
         "network-programming",
@@ -914,43 +497,7 @@
   },
   {
     "package": {
-      "name": "asimov-graph",
-      "version": {
-        "workspace": true
-      },
-      "authors": {
-        "workspace": true
-      },
-      "edition": {
-        "workspace": true
-      },
-      "rust-version": {
-        "workspace": true
-      },
-      "description": {
-        "workspace": true
-      },
-      "readme": {
-        "workspace": true
-      },
-      "homepage": {
-        "workspace": true
-      },
-      "repository": {
-        "workspace": true
-      },
-      "license": {
-        "workspace": true
-      },
-      "keywords": {
-        "workspace": true
-      },
-      "categories": {
-        "workspace": true
-      },
-      "publish": {
-        "workspace": true
-      }
+      "name": "asimov-graph"
     },
     "features": {
       "default": [
@@ -975,40 +522,7 @@
   {
     "package": {
       "name": "asimov-huggingface",
-      "version": {
-        "workspace": true
-      },
-      "authors": {
-        "workspace": true
-      },
-      "edition": {
-        "workspace": true
-      },
-      "rust-version": {
-        "workspace": true
-      },
-      "description": {
-        "workspace": true
-      },
-      "readme": {
-        "workspace": true
-      },
-      "homepage": {
-        "workspace": true
-      },
-      "repository": {
-        "workspace": true
-      },
-      "license": {
-        "workspace": true
-      },
-      "keywords": {
-        "workspace": true
-      },
-      "categories": [],
-      "publish": {
-        "workspace": true
-      }
+      "categories": []
     },
     "features": {
       "default": [],
@@ -1030,43 +544,7 @@
   },
   {
     "package": {
-      "name": "asimov-id",
-      "version": {
-        "workspace": true
-      },
-      "authors": {
-        "workspace": true
-      },
-      "edition": {
-        "workspace": true
-      },
-      "rust-version": {
-        "workspace": true
-      },
-      "description": {
-        "workspace": true
-      },
-      "readme": {
-        "workspace": true
-      },
-      "homepage": {
-        "workspace": true
-      },
-      "repository": {
-        "workspace": true
-      },
-      "license": {
-        "workspace": true
-      },
-      "keywords": {
-        "workspace": true
-      },
-      "categories": {
-        "workspace": true
-      },
-      "publish": {
-        "workspace": true
-      }
+      "name": "asimov-id"
     },
     "features": {
       "default": [
@@ -1185,43 +663,7 @@
   },
   {
     "package": {
-      "name": "asimov-installer",
-      "version": {
-        "workspace": true
-      },
-      "authors": {
-        "workspace": true
-      },
-      "edition": {
-        "workspace": true
-      },
-      "rust-version": {
-        "workspace": true
-      },
-      "description": {
-        "workspace": true
-      },
-      "readme": {
-        "workspace": true
-      },
-      "homepage": {
-        "workspace": true
-      },
-      "repository": {
-        "workspace": true
-      },
-      "license": {
-        "workspace": true
-      },
-      "keywords": {
-        "workspace": true
-      },
-      "categories": {
-        "workspace": true
-      },
-      "publish": {
-        "workspace": true
-      }
+      "name": "asimov-installer"
     },
     "features": {
       "default": [
@@ -1342,43 +784,7 @@
   },
   {
     "package": {
-      "name": "asimov-kb",
-      "version": {
-        "workspace": true
-      },
-      "authors": {
-        "workspace": true
-      },
-      "edition": {
-        "workspace": true
-      },
-      "rust-version": {
-        "workspace": true
-      },
-      "description": {
-        "workspace": true
-      },
-      "readme": {
-        "workspace": true
-      },
-      "homepage": {
-        "workspace": true
-      },
-      "repository": {
-        "workspace": true
-      },
-      "license": {
-        "workspace": true
-      },
-      "keywords": {
-        "workspace": true
-      },
-      "categories": {
-        "workspace": true
-      },
-      "publish": {
-        "workspace": true
-      }
+      "name": "asimov-kb"
     },
     "features": {
       "default": [
@@ -1528,43 +934,10 @@
   {
     "package": {
       "name": "asimov-ledger",
-      "version": {
-        "workspace": true
-      },
-      "authors": {
-        "workspace": true
-      },
-      "edition": {
-        "workspace": true
-      },
-      "rust-version": {
-        "workspace": true
-      },
-      "description": {
-        "workspace": true
-      },
-      "readme": {
-        "workspace": true
-      },
-      "homepage": {
-        "workspace": true
-      },
-      "repository": {
-        "workspace": true
-      },
-      "license": {
-        "workspace": true
-      },
-      "keywords": {
-        "workspace": true
-      },
       "categories": [
         "api-bindings",
         "cryptography::cryptocurrencies"
-      ],
-      "publish": {
-        "workspace": true
-      }
+      ]
     },
     "features": {
       "default": [
@@ -1596,43 +969,10 @@
   {
     "package": {
       "name": "asimov-module",
-      "version": {
-        "workspace": true
-      },
-      "authors": {
-        "workspace": true
-      },
-      "edition": {
-        "workspace": true
-      },
-      "rust-version": {
-        "workspace": true
-      },
-      "description": {
-        "workspace": true
-      },
-      "readme": {
-        "workspace": true
-      },
-      "homepage": {
-        "workspace": true
-      },
-      "repository": {
-        "workspace": true
-      },
-      "license": {
-        "workspace": true
-      },
-      "keywords": {
-        "workspace": true
-      },
       "categories": [
         "api-bindings",
         "development-tools"
-      ],
-      "publish": {
-        "workspace": true
-      }
+      ]
     },
     "features": {
       "default": [
@@ -1751,43 +1091,7 @@
   },
   {
     "package": {
-      "name": "asimov-nexus",
-      "version": {
-        "workspace": true
-      },
-      "authors": {
-        "workspace": true
-      },
-      "edition": {
-        "workspace": true
-      },
-      "rust-version": {
-        "workspace": true
-      },
-      "description": {
-        "workspace": true
-      },
-      "readme": {
-        "workspace": true
-      },
-      "homepage": {
-        "workspace": true
-      },
-      "repository": {
-        "workspace": true
-      },
-      "license": {
-        "workspace": true
-      },
-      "keywords": {
-        "workspace": true
-      },
-      "categories": {
-        "workspace": true
-      },
-      "publish": {
-        "workspace": true
-      }
+      "name": "asimov-nexus"
     },
     "features": {
       "default": [
@@ -1833,43 +1137,7 @@
   },
   {
     "package": {
-      "name": "asimov-ontology",
-      "version": {
-        "workspace": true
-      },
-      "authors": {
-        "workspace": true
-      },
-      "edition": {
-        "workspace": true
-      },
-      "rust-version": {
-        "workspace": true
-      },
-      "description": {
-        "workspace": true
-      },
-      "readme": {
-        "workspace": true
-      },
-      "homepage": {
-        "workspace": true
-      },
-      "repository": {
-        "workspace": true
-      },
-      "license": {
-        "workspace": true
-      },
-      "keywords": {
-        "workspace": true
-      },
-      "categories": {
-        "workspace": true
-      },
-      "publish": {
-        "workspace": true
-      }
+      "name": "asimov-ontology"
     },
     "features": {
       "default": [
@@ -1894,44 +1162,11 @@
   {
     "package": {
       "name": "asimov-patterns",
-      "version": {
-        "workspace": true
-      },
-      "authors": {
-        "workspace": true
-      },
-      "edition": {
-        "workspace": true
-      },
-      "rust-version": {
-        "workspace": true
-      },
-      "description": {
-        "workspace": true
-      },
-      "readme": {
-        "workspace": true
-      },
-      "homepage": {
-        "workspace": true
-      },
-      "repository": {
-        "workspace": true
-      },
-      "license": {
-        "workspace": true
-      },
-      "keywords": {
-        "workspace": true
-      },
       "categories": [
         "text-processing",
         "parsing",
         "rust-patterns"
-      ],
-      "publish": {
-        "workspace": true
-      }
+      ]
     },
     "features": {
       "default": [
@@ -1956,43 +1191,7 @@
   },
   {
     "package": {
-      "name": "asimov-platform",
-      "version": {
-        "workspace": true
-      },
-      "authors": {
-        "workspace": true
-      },
-      "edition": {
-        "workspace": true
-      },
-      "rust-version": {
-        "workspace": true
-      },
-      "description": {
-        "workspace": true
-      },
-      "readme": {
-        "workspace": true
-      },
-      "homepage": {
-        "workspace": true
-      },
-      "repository": {
-        "workspace": true
-      },
-      "license": {
-        "workspace": true
-      },
-      "keywords": {
-        "workspace": true
-      },
-      "categories": {
-        "workspace": true
-      },
-      "publish": {
-        "workspace": true
-      }
+      "name": "asimov-platform"
     },
     "features": {
       "default": [
@@ -2017,46 +1216,13 @@
   {
     "package": {
       "name": "asimov-prompt",
-      "version": {
-        "workspace": true
-      },
-      "authors": {
-        "workspace": true
-      },
-      "edition": {
-        "workspace": true
-      },
-      "rust-version": {
-        "workspace": true
-      },
-      "description": {
-        "workspace": true
-      },
-      "readme": {
-        "workspace": true
-      },
-      "homepage": {
-        "workspace": true
-      },
-      "repository": {
-        "workspace": true
-      },
-      "license": {
-        "workspace": true
-      },
-      "keywords": {
-        "workspace": true
-      },
       "categories": [
         "text-processing",
         "data-structures",
         "value-formatting",
         "encoding",
         "parsing"
-      ],
-      "publish": {
-        "workspace": true
-      }
+      ]
     },
     "features": {
       "default": [
@@ -2098,44 +1264,11 @@
   {
     "package": {
       "name": "asimov-protocol",
-      "version": {
-        "workspace": true
-      },
-      "authors": {
-        "workspace": true
-      },
-      "edition": {
-        "workspace": true
-      },
-      "rust-version": {
-        "workspace": true
-      },
-      "description": {
-        "workspace": true
-      },
-      "readme": {
-        "workspace": true
-      },
-      "homepage": {
-        "workspace": true
-      },
-      "repository": {
-        "workspace": true
-      },
-      "license": {
-        "workspace": true
-      },
-      "keywords": {
-        "workspace": true
-      },
       "categories": [
         "api-bindings",
         "data-structures",
         "network-programming"
-      ],
-      "publish": {
-        "workspace": true
-      }
+      ]
     },
     "features": {
       "default": [
@@ -2159,43 +1292,7 @@
   },
   {
     "package": {
-      "name": "asimov-proxy",
-      "version": {
-        "workspace": true
-      },
-      "authors": {
-        "workspace": true
-      },
-      "edition": {
-        "workspace": true
-      },
-      "rust-version": {
-        "workspace": true
-      },
-      "description": {
-        "workspace": true
-      },
-      "readme": {
-        "workspace": true
-      },
-      "homepage": {
-        "workspace": true
-      },
-      "repository": {
-        "workspace": true
-      },
-      "license": {
-        "workspace": true
-      },
-      "keywords": {
-        "workspace": true
-      },
-      "categories": {
-        "workspace": true
-      },
-      "publish": {
-        "workspace": true
-      }
+      "name": "asimov-proxy"
     },
     "features": {
       "default": [
@@ -2229,43 +1326,7 @@
   },
   {
     "package": {
-      "name": "asimov-registry",
-      "version": {
-        "workspace": true
-      },
-      "authors": {
-        "workspace": true
-      },
-      "edition": {
-        "workspace": true
-      },
-      "rust-version": {
-        "workspace": true
-      },
-      "description": {
-        "workspace": true
-      },
-      "readme": {
-        "workspace": true
-      },
-      "homepage": {
-        "workspace": true
-      },
-      "repository": {
-        "workspace": true
-      },
-      "license": {
-        "workspace": true
-      },
-      "keywords": {
-        "workspace": true
-      },
-      "categories": {
-        "workspace": true
-      },
-      "publish": {
-        "workspace": true
-      }
+      "name": "asimov-registry"
     },
     "features": {
       "default": [
@@ -2372,43 +1433,7 @@
   },
   {
     "package": {
-      "name": "asimov-repository",
-      "version": {
-        "workspace": true
-      },
-      "authors": {
-        "workspace": true
-      },
-      "edition": {
-        "workspace": true
-      },
-      "rust-version": {
-        "workspace": true
-      },
-      "description": {
-        "workspace": true
-      },
-      "readme": {
-        "workspace": true
-      },
-      "homepage": {
-        "workspace": true
-      },
-      "repository": {
-        "workspace": true
-      },
-      "license": {
-        "workspace": true
-      },
-      "keywords": {
-        "workspace": true
-      },
-      "categories": {
-        "workspace": true
-      },
-      "publish": {
-        "workspace": true
-      }
+      "name": "asimov-repository"
     },
     "features": {
       "default": [
@@ -2432,43 +1457,7 @@
   },
   {
     "package": {
-      "name": "asimov-runner",
-      "version": {
-        "workspace": true
-      },
-      "authors": {
-        "workspace": true
-      },
-      "edition": {
-        "workspace": true
-      },
-      "rust-version": {
-        "workspace": true
-      },
-      "description": {
-        "workspace": true
-      },
-      "readme": {
-        "workspace": true
-      },
-      "homepage": {
-        "workspace": true
-      },
-      "repository": {
-        "workspace": true
-      },
-      "license": {
-        "workspace": true
-      },
-      "keywords": {
-        "workspace": true
-      },
-      "categories": {
-        "workspace": true
-      },
-      "publish": {
-        "workspace": true
-      }
+      "name": "asimov-runner"
     },
     "features": {
       "default": [
@@ -2535,43 +1524,7 @@
   },
   {
     "package": {
-      "name": "asimov-runtime",
-      "version": {
-        "workspace": true
-      },
-      "authors": {
-        "workspace": true
-      },
-      "edition": {
-        "workspace": true
-      },
-      "rust-version": {
-        "workspace": true
-      },
-      "description": {
-        "workspace": true
-      },
-      "readme": {
-        "workspace": true
-      },
-      "homepage": {
-        "workspace": true
-      },
-      "repository": {
-        "workspace": true
-      },
-      "license": {
-        "workspace": true
-      },
-      "keywords": {
-        "workspace": true
-      },
-      "categories": {
-        "workspace": true
-      },
-      "publish": {
-        "workspace": true
-      }
+      "name": "asimov-runtime"
     },
     "features": {
       "default": [
@@ -2596,36 +1549,6 @@
   {
     "package": {
       "name": "asimov-sdk",
-      "version": {
-        "workspace": true
-      },
-      "authors": {
-        "workspace": true
-      },
-      "edition": {
-        "workspace": true
-      },
-      "rust-version": {
-        "workspace": true
-      },
-      "description": {
-        "workspace": true
-      },
-      "readme": {
-        "workspace": true
-      },
-      "homepage": {
-        "workspace": true
-      },
-      "repository": {
-        "workspace": true
-      },
-      "license": {
-        "workspace": true
-      },
-      "keywords": {
-        "workspace": true
-      },
       "categories": [
         "api-bindings",
         "data-structures",
@@ -2674,43 +1597,7 @@
   },
   {
     "package": {
-      "name": "asimov-server",
-      "version": {
-        "workspace": true
-      },
-      "authors": {
-        "workspace": true
-      },
-      "edition": {
-        "workspace": true
-      },
-      "rust-version": {
-        "workspace": true
-      },
-      "description": {
-        "workspace": true
-      },
-      "readme": {
-        "workspace": true
-      },
-      "homepage": {
-        "workspace": true
-      },
-      "repository": {
-        "workspace": true
-      },
-      "license": {
-        "workspace": true
-      },
-      "keywords": {
-        "workspace": true
-      },
-      "categories": {
-        "workspace": true
-      },
-      "publish": {
-        "workspace": true
-      }
+      "name": "asimov-server"
     },
     "features": {
       "default": [
@@ -2940,43 +1827,7 @@
   },
   {
     "package": {
-      "name": "asimov-snapshot",
-      "version": {
-        "workspace": true
-      },
-      "authors": {
-        "workspace": true
-      },
-      "edition": {
-        "workspace": true
-      },
-      "rust-version": {
-        "workspace": true
-      },
-      "description": {
-        "workspace": true
-      },
-      "readme": {
-        "workspace": true
-      },
-      "homepage": {
-        "workspace": true
-      },
-      "repository": {
-        "workspace": true
-      },
-      "license": {
-        "workspace": true
-      },
-      "keywords": {
-        "workspace": true
-      },
-      "categories": {
-        "workspace": true
-      },
-      "publish": {
-        "workspace": true
-      }
+      "name": "asimov-snapshot"
     },
     "features": {
       "default": [
@@ -3068,43 +1919,7 @@
   },
   {
     "package": {
-      "name": "asimov-token",
-      "version": {
-        "workspace": true
-      },
-      "authors": {
-        "workspace": true
-      },
-      "edition": {
-        "workspace": true
-      },
-      "rust-version": {
-        "workspace": true
-      },
-      "description": {
-        "workspace": true
-      },
-      "readme": {
-        "workspace": true
-      },
-      "homepage": {
-        "workspace": true
-      },
-      "repository": {
-        "workspace": true
-      },
-      "license": {
-        "workspace": true
-      },
-      "keywords": {
-        "workspace": true
-      },
-      "categories": {
-        "workspace": true
-      },
-      "publish": {
-        "workspace": true
-      }
+      "name": "asimov-token"
     },
     "features": {
       "default": [
@@ -3128,43 +1943,7 @@
   },
   {
     "package": {
-      "name": "asimov-universe",
-      "version": {
-        "workspace": true
-      },
-      "authors": {
-        "workspace": true
-      },
-      "edition": {
-        "workspace": true
-      },
-      "rust-version": {
-        "workspace": true
-      },
-      "description": {
-        "workspace": true
-      },
-      "readme": {
-        "workspace": true
-      },
-      "homepage": {
-        "workspace": true
-      },
-      "repository": {
-        "workspace": true
-      },
-      "license": {
-        "workspace": true
-      },
-      "keywords": {
-        "workspace": true
-      },
-      "categories": {
-        "workspace": true
-      },
-      "publish": {
-        "workspace": true
-      }
+      "name": "asimov-universe"
     },
     "features": {
       "default": [
@@ -3189,43 +1968,10 @@
   {
     "package": {
       "name": "asimov-vault",
-      "version": {
-        "workspace": true
-      },
-      "authors": {
-        "workspace": true
-      },
-      "edition": {
-        "workspace": true
-      },
-      "rust-version": {
-        "workspace": true
-      },
-      "description": {
-        "workspace": true
-      },
-      "readme": {
-        "workspace": true
-      },
-      "homepage": {
-        "workspace": true
-      },
-      "repository": {
-        "workspace": true
-      },
-      "license": {
-        "workspace": true
-      },
-      "keywords": {
-        "workspace": true
-      },
       "categories": [
         "api-bindings",
         "database"
-      ],
-      "publish": {
-        "workspace": true
-      }
+      ]
     },
     "features": {
       "default": [
