@@ -31,7 +31,7 @@ turso = ["dep:turso"]
 [dependencies]
 derive_more = { version = "2", features = ["add_assign", "display"] }
 dogma.workspace = true
-rust_decimal = { version = "1.39", default-features = false }
+rust_decimal = { version = "1.40", default-features = false }
 thiserror.workspace = true
 
 # Integrations:

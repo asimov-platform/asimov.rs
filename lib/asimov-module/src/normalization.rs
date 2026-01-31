@@ -1,7 +1,7 @@
 // This is free and unencumbered software released into the public domain.
 
+use alloc::string::{String, ToString};
 use iri_string::types::{IriReferenceStr, IriReferenceString};
-use std::string::{String, ToString};
 
 /// Normalizes module names by removing dots and converting to lowercase.
 /// Allows domain names like `near.ai` or names stylized with capital letters.
@@ -67,6 +67,7 @@ pub fn normalize_url(url: &str) -> Result<String, NormalizeError> {
     // TODO: utilize `path.normalize_lexically()` once it stabilizes
     // https://github.com/rust-lang/rust/issues/134694
 
+    #[cfg(feature = "std")]
     let path = if scheme == "file" && path.starts_with("~/") {
         let rest = path.strip_prefix("~/").unwrap(); // safe, the prefix was just checked just
 
@@ -89,6 +90,7 @@ pub fn normalize_url(url: &str) -> Result<String, NormalizeError> {
     } else {
         path.to_string()
     };
+
     #[cfg(windows)]
     let path = if scheme == "file" && !path.starts_with("/") {
         "/".to_string() + &path.replace('\\', "/")

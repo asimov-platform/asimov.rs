@@ -5,5 +5,5 @@ use thiserror::Error;
 #[derive(Clone, Debug, Error, PartialEq)]
 pub enum CreditsError {
     #[error("parse error: {0}")]
-    Parse(#[from] rust_decimal::Error),
+    Parse(rust_decimal::Error),
 }

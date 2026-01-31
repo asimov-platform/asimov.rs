@@ -104,7 +104,9 @@ impl FromStr for Credits {
     type Err = CreditsError;
 
     fn from_str(input: &str) -> Result<Self, Self::Err> {
-        Ok(Self(Decimal::from_str(input)?))
+        Ok(Self(
+            Decimal::from_str(input).map_err(|e| CreditsError::Parse(e))?,
+        ))
     }
 }
 
