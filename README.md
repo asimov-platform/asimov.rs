@@ -7,8 +7,6 @@
 
 **[ASIMOV] is a polyglot development platform for [trustworthy, neurosymbolic AI].**
 
-<br/>
-
 <sub>
 
 [[Features](#-features)] |
@@ -23,10 +21,10 @@
 ## ✨ Features
 
 - Defines [flow-based] [program patterns] for refining data into knowledge.
-- Implements a [module system] supporting an ecosystem of [ASIMOV modules].
+- Implements a [module system] enabling an ecosystem of [modules].
 - Enables dataflow systems through reusable components called blocks.
-- Built on the dataflow primitives provided by the [Async-Flow] crate.
 - Compatible with the inventory of dataflow blocks provided by [Flows.rs].
+- Built on the dataflow primitives provided by the [Async-Flow] crate.
 - Supports opting out of any feature using comprehensive feature flags.
 - Adheres to the Rust API Guidelines in its [naming conventions].
 - Cuts red tape: 100% free and unencumbered public domain software.
@@ -141,11 +139,11 @@ git clone https://github.com/asimov-platform/asimov.rs.git
 [![Share on LinkedIn](https://img.shields.io/badge/share%20on-linkedin-3949AB?logo=linkedin)](https://www.linkedin.com/sharing/share-offsite/?url=https://github.com/asimov-platform/asimov.rs)
 
 [ASIMOV]: https://asimov.sh
-[ASIMOV modules]: https://github.com/asimov-modules
 [Async-Flow]: https://github.com/artob/async-flow
 [Flows.rs]: https://github.com/artob/flows.rs
 [flow-based]: https://github.com/artob/awesome-fbp
 [naming conventions]: https://rust-lang.github.io/api-guidelines/naming.html
+[modules]: https://github.com/asimov-modules
 [module system]: https://asimov-specs.github.io/
 [program patterns]: https://asimov-specs.github.io/program-patterns/
 [trustworthy, neurosymbolic AI]: https://asimov.blog/introducing-asimov/
