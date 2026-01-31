@@ -1,12 +1,7 @@
 // This is free and unencumbered software released into the public domain.
 
 use crate::Execute;
-use alloc::{
-    borrow::ToOwned,
-    collections::btree_map::BTreeMap,
-    string::String,
-    vec::{self, Vec},
-};
+use alloc::{collections::btree_map::BTreeMap, string::String, vec::Vec};
 use bon::Builder;
 
 /// Language runtime engine. Consumes text input conforming to a grammar,

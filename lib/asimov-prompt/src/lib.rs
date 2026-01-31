@@ -1,10 +1,12 @@
 // This is free and unencumbered software released into the public domain.
 
-//! ```rust
-//! # use asimov_prompt::*;
-//! ```
-
 #![no_std]
+#![forbid(unsafe_code)]
+
+extern crate alloc;
+
+#[cfg(feature = "std")]
+extern crate std;
 
 mod prompt;
 pub use prompt::*;

@@ -17,7 +17,7 @@ publish.workspace = true
 [features]
 default = ["all", "std"]
 all = ["tracing"]
-std = ["dogma/std", "rust_decimal/std"]
+std = ["asimov-core/std", "rust_decimal/std"]
 tracing = []
 unstable = []
 
@@ -29,8 +29,8 @@ serde = ["dep:serde"]
 turso = ["dep:turso"]
 
 [dependencies]
+asimov-core.workspace = true
 derive_more = { version = "2", features = ["add_assign", "display"] }
-dogma.workspace = true
 rust_decimal = { version = "1.40", default-features = false }
 thiserror.workspace = true
 

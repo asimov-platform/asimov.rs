@@ -16,13 +16,15 @@ publish.workspace = true
 
 [features]
 default = ["all", "std"]
-all = ["tracing"]
-std = ["dogma/std", "gofer/std"]
-tracing = []
+all = []
+std = ["asimov-core/std", "gofer/std"]
 unstable = []
 
+# Features:
+tracing = []
+
 [dependencies]
-dogma.workspace = true
+asimov-core.workspace = true
 gofer.workspace = true
 miette.workspace = true
 thiserror.workspace = true

@@ -8,17 +8,15 @@
         "all",
         "std"
       ],
-      "all": [
-        "tracing"
-      ],
+      "all": [],
       "std": [
-        "dogma/std"
+        "asimov-core/std"
       ],
-      "tracing": [],
-      "unstable": []
+      "unstable": [],
+      "tracing": []
     },
     "dependencies": {
-      "dogma": {
+      "asimov-core": {
         "workspace": true
       }
     }
@@ -32,17 +30,15 @@
         "all",
         "std"
       ],
-      "all": [
-        "tracing"
-      ],
+      "all": [],
       "std": [
-        "dogma/std"
+        "asimov-core/std"
       ],
-      "tracing": [],
-      "unstable": []
+      "unstable": [],
+      "tracing": []
     },
     "dependencies": {
-      "dogma": {
+      "asimov-core": {
         "workspace": true
       }
     }
@@ -56,17 +52,15 @@
         "all",
         "std"
       ],
-      "all": [
-        "tracing"
-      ],
+      "all": [],
       "std": [
-        "dogma/std"
+        "asimov-core/std"
       ],
-      "tracing": [],
-      "unstable": []
+      "unstable": [],
+      "tracing": []
     },
     "dependencies": {
-      "dogma": {
+      "asimov-core": {
         "workspace": true
       }
     }
@@ -84,11 +78,11 @@
         "tracing"
       ],
       "std": [
+        "asimov-core/std",
         "asimov-credit/std",
         "asimov-id/std",
         "asimov-kb/std",
-        "asimov-nexus/std",
-        "dogma/std"
+        "asimov-nexus/std"
       ],
       "tracing": [],
       "unstable": [],
@@ -126,6 +120,9 @@
       ]
     },
     "dependencies": {
+      "asimov-core": {
+        "workspace": true
+      },
       "asimov-credit": {
         "workspace": true
       },
@@ -143,9 +140,6 @@
         "features": [
           "display"
         ]
-      },
-      "dogma": {
-        "workspace": true
       },
       "thiserror": {
         "workspace": true
@@ -199,17 +193,15 @@
         "all",
         "std"
       ],
-      "all": [
-        "tracing"
-      ],
+      "all": [],
       "std": [
-        "dogma/std"
+        "asimov-core/std"
       ],
-      "tracing": [],
-      "unstable": []
+      "unstable": [],
+      "tracing": []
     },
     "dependencies": {
-      "dogma": {
+      "asimov-core": {
         "workspace": true
       }
     }
@@ -223,17 +215,15 @@
         "all",
         "std"
       ],
-      "all": [
-        "tracing"
-      ],
+      "all": [],
       "std": [
-        "dogma/std"
+        "asimov-core/std"
       ],
-      "tracing": [],
-      "unstable": []
+      "unstable": [],
+      "tracing": []
     },
     "dependencies": {
-      "dogma": {
+      "asimov-core": {
         "workspace": true
       }
     }
@@ -246,7 +236,7 @@
         "data-structures",
         "text-processing"
       ],
-      "publish": false
+      "publish": true
     },
     "features": {
       "default": [
@@ -313,7 +303,7 @@
         "tracing"
       ],
       "std": [
-        "dogma/std",
+        "asimov-core/std",
         "rust_decimal/std"
       ],
       "tracing": [],
@@ -335,6 +325,9 @@
       ]
     },
     "dependencies": {
+      "asimov-core": {
+        "workspace": true
+      },
       "derive_more": {
         "version": "2",
         "features": [
@@ -342,11 +335,8 @@
           "display"
         ]
       },
-      "dogma": {
-        "workspace": true
-      },
       "rust_decimal": {
-        "version": "1.39",
+        "version": "1.40",
         "default-features": false
       },
       "thiserror": {
@@ -389,17 +379,15 @@
         "all",
         "std"
       ],
-      "all": [
-        "tracing"
-      ],
+      "all": [],
       "std": [
-        "dogma/std"
+        "asimov-core/std"
       ],
-      "tracing": [],
-      "unstable": []
+      "unstable": [],
+      "tracing": []
     },
     "dependencies": {
-      "dogma": {
+      "asimov-core": {
         "workspace": true
       }
     }
@@ -413,17 +401,15 @@
         "all",
         "std"
       ],
-      "all": [
-        "tracing"
-      ],
+      "all": [],
       "std": [
-        "dogma/std"
+        "asimov-core/std"
       ],
-      "tracing": [],
-      "unstable": []
+      "unstable": [],
+      "tracing": []
     },
     "dependencies": {
-      "dogma": {
+      "asimov-core": {
         "workspace": true
       }
     }
@@ -441,20 +427,18 @@
         "all",
         "std"
       ],
-      "all": [
-        "tracing"
-      ],
+      "all": [],
       "std": [
-        "dogma/std",
+        "asimov-core/std",
         "getenv/std",
         "dep:cap-directories",
         "dep:cap-std"
       ],
-      "tracing": [],
-      "unstable": []
+      "unstable": [],
+      "tracing": []
     },
     "dependencies": {
-      "dogma": {
+      "asimov-core": {
         "workspace": true
       },
       "getenv": {
@@ -478,7 +462,7 @@
         "network-programming",
         "no-std"
       ],
-      "publish": false
+      "publish": true
     },
     "features": {
       "default": [
@@ -486,11 +470,30 @@
         "std"
       ],
       "all": [],
-      "std": [],
-      "unstable": []
+      "std": [
+        "asimov-core/std",
+        "tokio?/full"
+      ],
+      "unstable": [],
+      "tracing": [],
+      "tokio": [
+        "dep:tokio"
+      ]
     },
     "dependencies": {
       "asimov-core": {
+        "workspace": true
+      },
+      "async-flow": {
+        "workspace": true
+      },
+      "tokio": {
+        "workspace": true,
+        "optional": true
+      }
+    },
+    "dev-dependencies": {
+      "tokio": {
         "workspace": true
       }
     }
@@ -504,17 +507,15 @@
         "all",
         "std"
       ],
-      "all": [
-        "tracing"
-      ],
+      "all": [],
       "std": [
-        "dogma/std"
+        "asimov-core/std"
       ],
-      "tracing": [],
-      "unstable": []
+      "unstable": [],
+      "tracing": []
     },
     "dependencies": {
-      "dogma": {
+      "asimov-core": {
         "workspace": true
       }
     }
@@ -525,12 +526,21 @@
       "categories": []
     },
     "features": {
-      "default": [],
-      "std": [],
-      "tracing": [],
-      "unstable": []
+      "default": [
+        "all",
+        "std"
+      ],
+      "all": [],
+      "std": [
+        "asimov-core/std"
+      ],
+      "unstable": [],
+      "tracing": []
     },
     "dependencies": {
+      "asimov-core": {
+        "workspace": true
+      },
       "hf-hub": {
         "workspace": true
       },
@@ -559,8 +569,8 @@
         "ed25519-dalek"
       ],
       "std": [
+        "asimov-core/std",
         "bs58/std",
-        "dogma/std",
         "ed25519-dalek?/std"
       ],
       "tracing": [],
@@ -594,6 +604,9 @@
       ]
     },
     "dependencies": {
+      "asimov-core": {
+        "workspace": true
+      },
       "bs58": {
         "version": "0.5",
         "default-features": false,
@@ -606,9 +619,6 @@
         "features": [
           "display"
         ]
-      },
-      "dogma": {
-        "workspace": true
       },
       "clap": {
         "version": "4.5",
@@ -680,10 +690,11 @@
         "clientele?/clap"
       ],
       "std": [
+        "asimov-core/std",
         "dep:asimov-env",
+        "asimov-env?/std",
         "dep:getenv",
         "clientele?/std",
-        "dogma/std",
         "getenv?/std",
         "serde/std",
         "serde_json/std",
@@ -700,19 +711,22 @@
       ]
     },
     "dependencies": {
-      "asimov-huggingface": {
+      "asimov-core": {
         "workspace": true
+      },
+      "asimov-huggingface": {
+        "workspace": true,
+        "default-features": true
       },
       "asimov-module": {
-        "workspace": true
+        "workspace": true,
+        "default-features": true
       },
       "asimov-registry": {
-        "workspace": true
+        "workspace": true,
+        "default-features": true
       },
       "bon": {
-        "workspace": true
-      },
-      "dogma": {
         "workspace": true
       },
       "flate2": {
@@ -800,8 +814,8 @@
         "uuid"
       ],
       "std": [
+        "asimov-core/std",
         "bs58/std",
-        "dogma/std",
         "uuid/std"
       ],
       "tracing": [],
@@ -838,6 +852,9 @@
       ]
     },
     "dependencies": {
+      "asimov-core": {
+        "workspace": true
+      },
       "bs58": {
         "version": "0.5",
         "default-features": false,
@@ -850,9 +867,6 @@
         "features": [
           "display"
         ]
-      },
-      "dogma": {
-        "workspace": true
       },
       "blake3": {
         "version": "1.8",
@@ -944,14 +958,12 @@
         "all",
         "std"
       ],
-      "all": [
-        "tracing"
-      ],
+      "all": [],
       "std": [
-        "dogma/std"
+        "asimov-core/std"
       ],
-      "tracing": [],
-      "unstable": []
+      "unstable": [],
+      "tracing": []
     },
     "dependencies": {
       "alloy": {
@@ -961,7 +973,7 @@
           "sol-types"
         ]
       },
-      "dogma": {
+      "asimov-core": {
         "workspace": true
       }
     }
@@ -982,7 +994,8 @@
       "all": [
         "cli",
         "tracing",
-        "serde"
+        "serde",
+        "asimov-env?/all"
       ],
       "cli": [
         "std",
@@ -990,10 +1003,11 @@
         "clientele?/clap"
       ],
       "std": [
+        "asimov-core/std",
         "clientele?/std",
         "dep:asimov-env",
+        "asimov-env?/std",
         "dep:getenv",
-        "dogma/std",
         "getenv?/std",
         "iri-string/std",
         "serde_json?/std",
@@ -1024,6 +1038,9 @@
       ]
     },
     "dependencies": {
+      "asimov-core": {
+        "workspace": true
+      },
       "dogma": {
         "workspace": true
       },
@@ -1102,7 +1119,7 @@
         "tracing"
       ],
       "std": [
-        "dogma/std"
+        "asimov-core/std"
       ],
       "tracing": [],
       "unstable": [],
@@ -1111,6 +1128,9 @@
       ]
     },
     "dependencies": {
+      "asimov-core": {
+        "workspace": true
+      },
       "asimov-kb": {
         "workspace": true
       },
@@ -1119,9 +1139,6 @@
         "features": [
           "display"
         ]
-      },
-      "dogma": {
-        "workspace": true
       },
       "serde": {
         "workspace": true
@@ -1144,17 +1161,15 @@
         "all",
         "std"
       ],
-      "all": [
-        "tracing"
-      ],
+      "all": [],
       "std": [
-        "dogma/std"
+        "asimov-core/std"
       ],
-      "tracing": [],
-      "unstable": []
+      "unstable": [],
+      "tracing": []
     },
     "dependencies": {
-      "dogma": {
+      "asimov-core": {
         "workspace": true
       }
     }
@@ -1174,10 +1189,16 @@
         "std"
       ],
       "all": [],
-      "std": [],
-      "unstable": []
+      "std": [
+        "asimov-core/std"
+      ],
+      "unstable": [],
+      "tracing": []
     },
     "dependencies": {
+      "asimov-core": {
+        "workspace": true
+      },
       "async-trait": {
         "workspace": true
       },
@@ -1198,17 +1219,15 @@
         "all",
         "std"
       ],
-      "all": [
-        "tracing"
-      ],
+      "all": [],
       "std": [
-        "dogma/std"
+        "asimov-core/std"
       ],
-      "tracing": [],
-      "unstable": []
+      "unstable": [],
+      "tracing": []
     },
     "dependencies": {
-      "dogma": {
+      "asimov-core": {
         "workspace": true
       }
     }
@@ -1233,14 +1252,17 @@
         "tracing"
       ],
       "std": [
+        "asimov-core/std",
         "derive_more/std",
-        "dogma/std",
         "openai?/std"
       ],
       "tracing": [],
       "unstable": []
     },
     "dependencies": {
+      "asimov-core": {
+        "workspace": true
+      },
       "bon": {
         "workspace": true
       },
@@ -1251,9 +1273,6 @@
           "from",
           "from_str"
         ]
-      },
-      "dogma": {
-        "workspace": true
       },
       "openai": {
         "workspace": true,
@@ -1275,17 +1294,15 @@
         "all",
         "std"
       ],
-      "all": [
-        "tracing"
-      ],
+      "all": [],
       "std": [
-        "dogma/std"
+        "asimov-core/std"
       ],
-      "tracing": [],
-      "unstable": []
+      "unstable": [],
+      "tracing": []
     },
     "dependencies": {
-      "dogma": {
+      "asimov-core": {
         "workspace": true
       }
     }
@@ -1299,18 +1316,16 @@
         "all",
         "std"
       ],
-      "all": [
-        "tracing"
-      ],
+      "all": [],
       "std": [
-        "dogma/std",
+        "asimov-core/std",
         "gofer/std"
       ],
-      "tracing": [],
-      "unstable": []
+      "unstable": [],
+      "tracing": []
     },
     "dependencies": {
-      "dogma": {
+      "asimov-core": {
         "workspace": true
       },
       "gofer": {
@@ -1335,7 +1350,8 @@
       ],
       "all": [
         "cli",
-        "tracing"
+        "tracing",
+        "asimov-env?/all"
       ],
       "cli": [
         "std",
@@ -1343,10 +1359,12 @@
         "clientele?/clap"
       ],
       "std": [
+        "asimov-core/std",
+        "asimov-module/std",
         "dep:asimov-env",
+        "asimov-env?/std",
         "dep:getenv",
         "clientele?/std",
-        "dogma/std",
         "getenv?/std",
         "serde/std",
         "serde_json/std",
@@ -1362,13 +1380,16 @@
       ]
     },
     "dependencies": {
-      "asimov-module": {
+      "asimov-core": {
         "workspace": true
+      },
+      "asimov-module": {
+        "workspace": true,
+        "features": [
+          "all"
+        ]
       },
       "bon": {
-        "workspace": true
-      },
-      "dogma": {
         "workspace": true
       },
       "reqwest": {
@@ -1440,17 +1461,15 @@
         "all",
         "std"
       ],
-      "all": [
-        "tracing"
-      ],
+      "all": [],
       "std": [
-        "dogma/std"
+        "asimov-core/std"
       ],
-      "tracing": [],
-      "unstable": []
+      "unstable": [],
+      "tracing": []
     },
     "dependencies": {
-      "dogma": {
+      "asimov-core": {
         "workspace": true
       }
     }
@@ -1468,8 +1487,8 @@
         "tracing"
       ],
       "std": [
+        "asimov-core/std",
         "clientele/std",
-        "dogma/std",
         "tracing?/std"
       ],
       "tracing": [
@@ -1478,14 +1497,24 @@
       "unstable": []
     },
     "dependencies": {
-      "asimov-env": {
+      "asimov-core": {
         "workspace": true
+      },
+      "asimov-env": {
+        "workspace": true,
+        "default-features": true
+      },
+      "asimov-module": {
+        "workspace": true,
+        "default-features": true
       },
       "asimov-patterns": {
-        "workspace": true
+        "workspace": true,
+        "default-features": true
       },
       "asimov-prompt": {
-        "workspace": true
+        "workspace": true,
+        "default-features": true
       },
       "async-trait": {
         "workspace": true
@@ -1499,13 +1528,12 @@
           "debug"
         ]
       },
-      "dogma": {
-        "workspace": true
-      },
       "tokio": {
         "workspace": true,
         "features": [
-          "process"
+          "io-util",
+          "process",
+          "rt"
         ]
       },
       "tracing": {
@@ -1531,17 +1559,15 @@
         "all",
         "std"
       ],
-      "all": [
-        "tracing"
-      ],
+      "all": [],
       "std": [
-        "dogma/std"
+        "asimov-core/std"
       ],
-      "tracing": [],
-      "unstable": []
+      "unstable": [],
+      "tracing": []
     },
     "dependencies": {
-      "dogma": {
+      "asimov-core": {
         "workspace": true
       }
     }
@@ -1554,7 +1580,7 @@
         "data-structures",
         "text-processing"
       ],
-      "publish": false
+      "publish": true
     },
     "features": {
       "default": [
@@ -1562,36 +1588,156 @@
         "std"
       ],
       "all": [
-        "derive",
-        "serde",
-        "tokio",
+        "config",
+        "core",
+        "credit",
+        "env",
+        "flow",
+        "id",
+        "installer",
+        "kb",
+        "module",
+        "patterns",
+        "prompt",
+        "registry",
+        "runner",
+        "snapshot",
         "tracing"
       ],
       "std": [
-        "asimov-core/std",
-        "tokio?/full"
+        "asimov-config?/std",
+        "asimov-core?/std",
+        "asimov-credit?/std",
+        "asimov-env?/std",
+        "asimov-flow?/std",
+        "asimov-id?/std",
+        "asimov-installer?/std",
+        "asimov-kb?/std",
+        "asimov-module?/std",
+        "asimov-patterns?/std",
+        "asimov-prompt?/std",
+        "asimov-registry?/std",
+        "asimov-runner?/std",
+        "asimov-snapshot?/std"
       ],
       "unstable": [
-        "asimov-core/unstable"
+        "asimov-core?/unstable"
+      ],
+      "config": [
+        "dep:asimov-config"
+      ],
+      "core": [
+        "dep:asimov-core"
+      ],
+      "credit": [
+        "dep:asimov-credit"
+      ],
+      "env": [
+        "dep:asimov-env"
+      ],
+      "flow": [
+        "dep:asimov-flow"
+      ],
+      "id": [
+        "dep:asimov-id"
+      ],
+      "installer": [
+        "dep:asimov-installer"
+      ],
+      "kb": [
+        "dep:asimov-kb"
+      ],
+      "module": [
+        "dep:asimov-module"
+      ],
+      "patterns": [
+        "dep:asimov-patterns"
+      ],
+      "prompt": [
+        "dep:asimov-prompt"
+      ],
+      "registry": [
+        "dep:asimov-registry"
+      ],
+      "runner": [
+        "dep:asimov-runner"
+      ],
+      "snapshot": [
+        "dep:asimov-snapshot"
       ],
       "derive": [],
       "serde": [
-        "asimov-core/serde"
+        "asimov-core?/serde"
       ],
       "tokio": [
-        "dep:tokio"
+        "asimov-flow?/tokio"
       ],
       "tracing": [
-        "asimov-core/tracing"
+        "asimov-core?/tracing",
+        "asimov-installer?/tracing"
       ]
     },
     "dependencies": {
-      "asimov-core": {
-        "workspace": true
-      },
-      "tokio": {
+      "asimov-config": {
         "workspace": true,
         "optional": true
+      },
+      "asimov-core": {
+        "workspace": true,
+        "optional": true
+      },
+      "asimov-credit": {
+        "workspace": true,
+        "optional": true
+      },
+      "asimov-env": {
+        "workspace": true,
+        "optional": true
+      },
+      "asimov-flow": {
+        "workspace": true,
+        "optional": true
+      },
+      "asimov-id": {
+        "workspace": true,
+        "optional": true
+      },
+      "asimov-installer": {
+        "workspace": true,
+        "optional": true
+      },
+      "asimov-kb": {
+        "workspace": true,
+        "optional": true
+      },
+      "asimov-module": {
+        "workspace": true,
+        "optional": true
+      },
+      "asimov-patterns": {
+        "workspace": true,
+        "optional": true
+      },
+      "asimov-prompt": {
+        "workspace": true,
+        "optional": true
+      },
+      "asimov-registry": {
+        "workspace": true,
+        "optional": true
+      },
+      "asimov-runner": {
+        "workspace": true,
+        "optional": true
+      },
+      "asimov-snapshot": {
+        "workspace": true,
+        "optional": true
+      }
+    },
+    "dev-dependencies": {
+      "tokio": {
+        "workspace": true
       }
     }
   },
@@ -1610,8 +1756,8 @@
         "tracing"
       ],
       "std": [
+        "asimov-core/std",
         "bs58/std",
-        "dogma/std",
         "jiff/std",
         "openai/std",
         "tracing?/std"
@@ -1664,8 +1810,12 @@
       ]
     },
     "dependencies": {
-      "asimov-runner": {
+      "asimov-core": {
         "workspace": true
+      },
+      "asimov-runner": {
+        "workspace": true,
+        "default-features": true
       },
       "asimov-prompt": {
         "workspace": true,
@@ -1680,9 +1830,6 @@
         "workspace": true
       },
       "bs58": {
-        "workspace": true
-      },
-      "dogma": {
         "workspace": true
       },
       "futures": {
@@ -1839,7 +1986,7 @@
         "storage-fs"
       ],
       "std": [
-        "dogma/std",
+        "asimov-core/std",
         "hex/std",
         "jiff/std",
         "tracing/std"
@@ -1855,28 +2002,33 @@
       "unstable": []
     },
     "dependencies": {
-      "asimov-env": {
+      "asimov-core": {
         "workspace": true
+      },
+      "asimov-env": {
+        "workspace": true,
+        "default-features": true
       },
       "asimov-module": {
-        "workspace": true
+        "workspace": true,
+        "default-features": true
       },
       "asimov-patterns": {
-        "workspace": true
+        "workspace": true,
+        "default-features": true
       },
       "asimov-registry": {
-        "workspace": true
+        "workspace": true,
+        "default-features": true
       },
       "asimov-runner": {
-        "workspace": true
+        "workspace": true,
+        "default-features": true
       },
       "async-trait": {
         "workspace": true
       },
       "bon": {
-        "workspace": true
-      },
-      "dogma": {
         "workspace": true
       },
       "jiff": {
@@ -1926,17 +2078,15 @@
         "all",
         "std"
       ],
-      "all": [
-        "tracing"
-      ],
+      "all": [],
       "std": [
-        "dogma/std"
+        "asimov-core/std"
       ],
-      "tracing": [],
-      "unstable": []
+      "unstable": [],
+      "tracing": []
     },
     "dependencies": {
-      "dogma": {
+      "asimov-core": {
         "workspace": true
       }
     }
@@ -1950,17 +2100,15 @@
         "all",
         "std"
       ],
-      "all": [
-        "tracing"
-      ],
+      "all": [],
       "std": [
-        "dogma/std"
+        "asimov-core/std"
       ],
-      "tracing": [],
-      "unstable": []
+      "unstable": [],
+      "tracing": []
     },
     "dependencies": {
-      "dogma": {
+      "asimov-core": {
         "workspace": true
       }
     }
@@ -1978,17 +2126,15 @@
         "all",
         "std"
       ],
-      "all": [
-        "tracing"
-      ],
+      "all": [],
       "std": [
-        "dogma/std"
+        "asimov-core/std"
       ],
-      "tracing": [],
-      "unstable": []
+      "unstable": [],
+      "tracing": []
     },
     "dependencies": {
-      "dogma": {
+      "asimov-core": {
         "workspace": true
       }
     }

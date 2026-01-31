@@ -23,14 +23,14 @@ publish.workspace = true
 [features]
 default = ["all", "std"]
 all = ["tracing"]
-std = ["derive_more/std", "dogma/std", "openai?/std"]
+std = ["asimov-core/std", "derive_more/std", "openai?/std"]
 tracing = []
 unstable = []
 
 [dependencies]
+asimov-core.workspace = true
 bon.workspace = true
 derive_more = { workspace = true, features = ["display", "from", "from_str"] }
-dogma.workspace = true
 
 # Optional dependencies:
 openai = { workspace = true, optional = true }

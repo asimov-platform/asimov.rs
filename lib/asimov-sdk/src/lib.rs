@@ -3,6 +3,11 @@
 #![no_std]
 #![forbid(unsafe_code)]
 
+extern crate alloc;
+
+#[cfg(feature = "std")]
+extern crate std;
+
 #[cfg(feature = "config")]
 pub use asimov_config as config;
 

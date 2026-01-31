@@ -16,13 +16,15 @@ publish.workspace = true
 
 [features]
 default = ["all", "std"]
-all = ["tracing"]
-std = ["dogma/std", "getenv/std", "dep:cap-directories", "dep:cap-std"]
-tracing = []
+all = []
+std = ["asimov-core/std", "getenv/std", "dep:cap-directories", "dep:cap-std"]
 unstable = []
 
+# Features:
+tracing = []
+
 [dependencies]
-dogma.workspace = true
+asimov-core.workspace = true
 getenv.workspace = true
 
 # Optional dependencies:

@@ -1,14 +1,10 @@
 // This is free and unencumbered software released into the public domain.
 
 use crate::{Executor, ExecutorError, GraphOutput, QueryInput};
+use alloc::{boxed::Box, format, vec, vec::Vec};
 use async_trait::async_trait;
 use derive_more::Debug;
-use std::{
-    ffi::OsStr,
-    io::{Cursor, Read},
-    process::Stdio,
-};
-use tokio::io::{AsyncRead, AsyncWrite};
+use std::{ffi::OsStr, io::Cursor, process::Stdio};
 
 pub use asimov_patterns::AdapterOptions;
 
@@ -70,8 +66,8 @@ impl asimov_patterns::Execute<Cursor<Vec<u8>>, ExecutorError> for Adapter {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use asimov_patterns::Execute;
+    //use super::*;
+    //use asimov_patterns::Execute;
 
     #[tokio::test]
     async fn test_execute() {

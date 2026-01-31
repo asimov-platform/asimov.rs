@@ -1,6 +1,10 @@
 // This is free and unencumbered software released into the public domain.
 
 use crate::CreditsError;
+use alloc::{
+    format,
+    string::{String, ToString},
+};
 use core::str::FromStr;
 use derive_more::{AddAssign, Display, SubAssign};
 use rust_decimal::{Decimal, prelude::ToPrimitive};

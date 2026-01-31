@@ -17,8 +17,11 @@ publish = true
 [features]
 default = ["all", "std"]
 all = []
-std = ["tokio?/full"]
+std = ["asimov-core/std", "tokio?/full"]
 unstable = []
+
+# Features:
+tracing = []
 
 # Integrations:
 tokio = ["dep:tokio"]

@@ -1,6 +1,7 @@
 // This is free and unencumbered software released into the public domain.
 
 use crate::SysexitsError;
+use alloc::{string::String, vec::Vec};
 use core::fmt;
 use std::{ffi::OsString, io::Cursor};
 

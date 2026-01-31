@@ -3,6 +3,10 @@
 //! ASIMOV public keys.
 
 use crate::KeyError;
+use alloc::{
+    string::{String, ToString},
+    vec::Vec,
+};
 use core::{ops::RangeInclusive, str::FromStr};
 use derive_more::Display;
 

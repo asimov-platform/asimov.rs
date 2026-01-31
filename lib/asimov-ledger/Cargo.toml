@@ -16,11 +16,13 @@ publish.workspace = true
 
 [features]
 default = ["all", "std"]
-all = ["tracing"]
-std = ["dogma/std"]
-tracing = []
+all = []
+std = ["asimov-core/std"]
 unstable = []
+
+# Features:
+tracing = []
 
 [dependencies]
 alloy = { workspace = true, features = ["contract", "sol-types"] }
-dogma.workspace = true
+asimov-core.workspace = true

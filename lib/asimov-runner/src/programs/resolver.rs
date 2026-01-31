@@ -1,14 +1,16 @@
 // This is free and unencumbered software released into the public domain.
 
-use crate::{Executor, ExecutorError, Input, Output};
+use crate::{Executor, ExecutorError, Output};
+use alloc::{
+    boxed::Box,
+    format,
+    string::{String, ToString},
+    vec,
+    vec::Vec,
+};
 use async_trait::async_trait;
 use derive_more::Debug;
-use std::{
-    ffi::OsStr,
-    io::{Cursor, Read},
-    process::Stdio,
-};
-use tokio::io::{AsyncBufReadExt, AsyncRead, AsyncWrite};
+use std::{ffi::OsStr, process::Stdio};
 
 pub use asimov_patterns::ResolverOptions;
 
@@ -73,8 +75,8 @@ impl asimov_patterns::Execute<Vec<String>, ExecutorError> for Resolver {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use asimov_patterns::Execute;
+    //use super::*;
+    //use asimov_patterns::Execute;
 
     #[tokio::test]
     async fn test_execute() {

@@ -1,10 +1,11 @@
 // This is free and unencumbered software released into the public domain.
 
-use derive_more::{Display, From, FromStr};
-use dogma::{
-    prelude::{Cow, String, ToString},
-    traits::{Labeled, Named},
+use alloc::{
+    borrow::Cow,
+    string::{String, ToString},
 };
+use asimov_core::{Labeled, Named};
+use derive_more::{Display, From, FromStr};
 
 #[derive(Clone, Debug, Display, Eq, From, FromStr, Hash, Ord, PartialEq, PartialOrd)]
 pub enum PromptRole {

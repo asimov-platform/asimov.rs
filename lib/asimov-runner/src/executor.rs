@@ -1,12 +1,13 @@
 // This is free and unencumbered software released into the public domain.
 
 use crate::{Command, ExecutorError, ExecutorResult, Input};
+use alloc::borrow::ToOwned;
 use std::{
     ffi::OsStr,
     io::{Cursor, ErrorKind},
     process::Stdio,
 };
-use tokio::{io::AsyncReadExt, process::Child};
+use tokio::process::Child;
 
 #[derive(Debug)]
 pub struct Executor(Command);

@@ -1,10 +1,8 @@
 // This is free and unencumbered software released into the public domain.
 
-//! ASIMOV Program Patterns
+//! ASIMOV program patterns
 //!
 //! See: https://asimov-specs.github.io/program-patterns/
-
-#![allow(unused_imports)]
 
 mod adapter;
 pub use adapter::*;

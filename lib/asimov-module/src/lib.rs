@@ -8,6 +8,7 @@ extern crate alloc;
 #[cfg(feature = "std")]
 extern crate std;
 
+#[deprecated(since = "25.1.1", note = "Use `extern alloc` instead.")]
 pub use dogma::prelude;
 
 #[cfg(feature = "cli")]

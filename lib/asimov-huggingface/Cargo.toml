@@ -15,12 +15,16 @@ categories = []
 publish.workspace = true
 
 [features]
-default = []
-std = []
-tracing = []
+default = ["all", "std"]
+all = []
+std = ["asimov-core/std"]
 unstable = []
 
+# Features:
+tracing = []
+
 [dependencies]
+asimov-core.workspace = true
 hf-hub.workspace = true
 indicatif.workspace = true
 thiserror.workspace = true

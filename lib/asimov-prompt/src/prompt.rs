@@ -1,11 +1,10 @@
 // This is free and unencumbered software released into the public domain.
 
 use super::{prompt_message::PromptMessage, prompt_role::PromptRole};
+use alloc::{string::String, vec::Vec};
+use asimov_core::Collection;
 use bon::Builder;
-use dogma::{
-    prelude::{FromStr, String, Vec, fmt},
-    traits::Collection,
-};
+use core::{fmt, str::FromStr};
 
 #[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd, Builder)]
 #[builder(derive(Debug), on(String, into))]

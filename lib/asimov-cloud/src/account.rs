@@ -1,6 +1,7 @@
 // This is free and unencumbered software released into the public domain.
 
 use crate::error::AccountBalanceError;
+use alloc::{boxed::Box, format};
 use asimov_credit::Credits;
 use core::{error::Error, str::FromStr};
 use derive_more::Display;

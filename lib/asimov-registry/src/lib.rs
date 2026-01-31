@@ -9,7 +9,6 @@ extern crate alloc;
 extern crate std;
 
 pub use asimov_module::{InstalledModuleManifest, ModuleManifest};
-pub use dogma::prelude;
 
 #[cfg(feature = "std")]
 pub mod registry;

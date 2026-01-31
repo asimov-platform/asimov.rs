@@ -9,6 +9,14 @@
 //! let dir = ensure_snapshot("julien-c/dummy-unknown", None).unwrap();
 //! ```
 
+//#![no_std]
+#![forbid(unsafe_code)]
+
+extern crate alloc;
+
+#[cfg(feature = "std")]
+extern crate std;
+
 mod ensure;
 pub use ensure::*;
 

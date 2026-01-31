@@ -18,7 +18,7 @@ publish.workspace = true
 default = ["all", "std"]
 all = ["ed25519", "tracing"]
 ed25519 = ["ed25519-dalek"]
-std = ["bs58/std", "dogma/std", "ed25519-dalek?/std"]
+std = ["asimov-core/std", "bs58/std", "ed25519-dalek?/std"]
 tracing = []
 unstable = []
 
@@ -34,9 +34,9 @@ serde = ["dep:serde"]
 turso = ["dep:turso"]
 
 [dependencies]
+asimov-core.workspace = true
 bs58 = { version = "0.5", default-features = false, features = ["alloc"] }
 derive_more = { version = "2", features = ["display"] }
-dogma.workspace = true
 
 # Integrations:
 clap = { version = "4.5", default-features = false, features = ["derive", "std"], optional = true }

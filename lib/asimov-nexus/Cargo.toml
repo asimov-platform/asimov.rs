@@ -17,7 +17,7 @@ publish.workspace = true
 [features]
 default = ["all", "std"]
 all = ["tracing"]
-std = ["dogma/std"]
+std = ["asimov-core/std"]
 tracing = []
 unstable = []
 
@@ -25,9 +25,9 @@ unstable = []
 validator = ["dep:validator"]
 
 [dependencies]
+asimov-core.workspace = true
 asimov-kb.workspace = true
 derive_more = { version = "2", features = ["display"] }
-dogma.workspace = true
 serde.workspace = true
 
 # Integrations:

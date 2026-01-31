@@ -1,14 +1,10 @@
 // This is free and unencumbered software released into the public domain.
 
 use crate::{Executor, ExecutorError, GraphInput, NoOutput};
+use alloc::{boxed::Box, format, vec};
 use async_trait::async_trait;
 use derive_more::Debug;
-use std::{
-    ffi::OsStr,
-    io::{Cursor, Read},
-    process::Stdio,
-};
-use tokio::io::{AsyncRead, AsyncWrite};
+use std::{ffi::OsStr, process::Stdio};
 
 pub use asimov_patterns::IndexerOptions;
 
@@ -65,8 +61,8 @@ impl asimov_patterns::Execute<(), ExecutorError> for Indexer {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use asimov_patterns::Execute;
+    //use super::*;
+    //use asimov_patterns::Execute;
 
     #[tokio::test]
     async fn test_execute() {

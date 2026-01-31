@@ -3,6 +3,7 @@
 //! ASIMOV account IDs.
 
 use crate::IdError;
+use alloc::{format, string::String};
 use core::{borrow::Borrow, ops::RangeInclusive, str::FromStr};
 use derive_more::Display;
 

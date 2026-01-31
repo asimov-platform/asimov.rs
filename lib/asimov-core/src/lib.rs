@@ -1,10 +1,9 @@
 // This is free and unencumbered software released into the public domain.
 
 #![no_std]
-#![deny(unsafe_code)]
+#![forbid(unsafe_code)]
 
 extern crate alloc;
-extern crate core;
 
 #[cfg(feature = "std")]
 extern crate std;
@@ -14,8 +13,7 @@ pub mod env;
 pub mod error;
 pub use error::*;
 
-pub use ::dogma::traits::{Labeled, Named};
-pub use ::dogma::traits::{MaybeLabeled, MaybeNamed};
+pub use ::dogma::traits::*;
 
 #[doc(hidden)]
 pub mod crates {

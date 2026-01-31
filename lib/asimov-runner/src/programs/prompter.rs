@@ -1,14 +1,15 @@
 // This is free and unencumbered software released into the public domain.
 
-use crate::{Executor, ExecutorError, Input, TextOutput};
+use crate::{Executor, ExecutorError, TextOutput};
+use alloc::{
+    boxed::Box,
+    format,
+    string::{String, ToString},
+    vec,
+};
 use async_trait::async_trait;
 use derive_more::Debug;
-use std::{
-    ffi::OsStr,
-    io::{Cursor, Read},
-    process::Stdio,
-};
-use tokio::io::{AsyncRead, AsyncWrite};
+use std::{ffi::OsStr, io::Read, process::Stdio};
 
 pub use asimov_patterns::PrompterOptions;
 pub use asimov_prompt::{Prompt, PromptMessage, PromptRole};
@@ -97,7 +98,7 @@ impl asimov_patterns::Execute<String, ExecutorError> for Prompter {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use asimov_patterns::Execute;
+    //use asimov_patterns::Execute;
 
     #[tokio::test]
     async fn test_execute() {

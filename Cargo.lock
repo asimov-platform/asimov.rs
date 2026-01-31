@@ -821,33 +821,33 @@ checksum = "7c02d123df017efcdfbd739ef81735b36c5ba83ec3c59c80a9d7ecc718f92e50"
 name = "asimov-account"
 version = "25.1.0"
 dependencies = [
- "dogma",
+ "asimov-core",
 ]
 
 [[package]]
 name = "asimov-agent"
 version = "25.1.0"
 dependencies = [
- "dogma",
+ "asimov-core",
 ]
 
 [[package]]
 name = "asimov-cache"
 version = "25.1.0"
 dependencies = [
- "dogma",
+ "asimov-core",
 ]
 
 [[package]]
 name = "asimov-cloud"
 version = "25.1.0"
 dependencies = [
+ "asimov-core",
  "asimov-credit",
  "asimov-id",
  "asimov-kb",
  "asimov-nexus",
  "derive_more 2.0.1",
- "dogma",
  "reqwest",
  "thiserror 2.0.17",
  "tokio",
@@ -858,14 +858,14 @@ dependencies = [
 name = "asimov-config"
 version = "25.1.0"
 dependencies = [
- "dogma",
+ "asimov-core",
 ]
 
 [[package]]
 name = "asimov-construct"
 version = "25.1.0"
 dependencies = [
- "dogma",
+ "asimov-core",
 ]
 
 [[package]]
@@ -884,9 +884,9 @@ dependencies = [
 name = "asimov-credit"
 version = "25.1.0"
 dependencies = [
+ "asimov-core",
  "clap",
  "derive_more 2.0.1",
- "dogma",
  "eloquent",
  "libsql",
  "rust_decimal",
@@ -899,23 +899,23 @@ dependencies = [
 name = "asimov-dataset"
 version = "25.1.0"
 dependencies = [
- "dogma",
+ "asimov-core",
 ]
 
 [[package]]
 name = "asimov-directory"
 version = "25.1.0"
 dependencies = [
- "dogma",
+ "asimov-core",
 ]
 
 [[package]]
 name = "asimov-env"
 version = "25.1.0"
 dependencies = [
+ "asimov-core",
  "cap-directories",
  "cap-std",
- "dogma",
  "getenv",
 ]
 
@@ -932,13 +932,14 @@ dependencies = [
 name = "asimov-graph"
 version = "25.1.0"
 dependencies = [
- "dogma",
+ "asimov-core",
 ]
 
 [[package]]
 name = "asimov-huggingface"
 version = "25.1.0"
 dependencies = [
+ "asimov-core",
  "hf-hub",
  "indicatif",
  "thiserror 2.0.17",
@@ -948,10 +949,10 @@ dependencies = [
 name = "asimov-id"
 version = "25.1.0"
 dependencies = [
+ "asimov-core",
  "bs58",
  "clap",
  "derive_more 2.0.1",
- "dogma",
  "ed25519-dalek 2.2.0",
  "eloquent",
  "iroh",
@@ -966,13 +967,13 @@ dependencies = [
 name = "asimov-installer"
 version = "25.1.0"
 dependencies = [
+ "asimov-core",
  "asimov-env",
  "asimov-huggingface",
  "asimov-module",
  "asimov-registry",
  "bon",
  "clientele",
- "dogma",
  "flate2",
  "getenv",
  "reqwest",
@@ -994,11 +995,11 @@ dependencies = [
 name = "asimov-kb"
 version = "25.1.0"
 dependencies = [
+ "asimov-core",
  "blake3",
  "bs58",
  "clap",
  "derive_more 2.0.1",
- "dogma",
  "eloquent",
  "iroh-blobs",
  "libsql",
@@ -1014,13 +1015,14 @@ name = "asimov-ledger"
 version = "25.1.0"
 dependencies = [
  "alloy",
- "dogma",
+ "asimov-core",
 ]
 
 [[package]]
 name = "asimov-module"
 version = "25.1.0"
 dependencies = [
+ "asimov-core",
  "asimov-env",
  "clientele",
  "dogma",
@@ -1042,9 +1044,9 @@ dependencies = [
 name = "asimov-nexus"
 version = "25.1.0"
 dependencies = [
+ "asimov-core",
  "asimov-kb",
  "derive_more 2.0.1",
- "dogma",
  "serde",
  "validator",
 ]
@@ -1053,13 +1055,14 @@ dependencies = [
 name = "asimov-ontology"
 version = "25.1.0"
 dependencies = [
- "dogma",
+ "asimov-core",
 ]
 
 [[package]]
 name = "asimov-patterns"
 version = "25.1.0"
 dependencies = [
+ "asimov-core",
  "async-trait",
  "bon",
  "rdf-model",
@@ -1069,16 +1072,16 @@ dependencies = [
 name = "asimov-platform"
 version = "25.1.0"
 dependencies = [
- "dogma",
+ "asimov-core",
 ]
 
 [[package]]
 name = "asimov-prompt"
 version = "25.1.0"
 dependencies = [
+ "asimov-core",
  "bon",
  "derive_more 2.0.1",
- "dogma",
  "known-types-openai",
 ]
 
@@ -1086,14 +1089,14 @@ dependencies = [
 name = "asimov-protocol"
 version = "25.1.0"
 dependencies = [
- "dogma",
+ "asimov-core",
 ]
 
 [[package]]
 name = "asimov-proxy"
 version = "25.1.0"
 dependencies = [
- "dogma",
+ "asimov-core",
  "gofer",
  "miette",
  "thiserror 2.0.17",
@@ -1103,11 +1106,11 @@ dependencies = [
 name = "asimov-registry"
 version = "25.1.0"
 dependencies = [
+ "asimov-core",
  "asimov-env",
  "asimov-module",
  "bon",
  "clientele",
- "dogma",
  "getenv",
  "reqwest",
  "secrecy",
@@ -1126,13 +1129,14 @@ dependencies = [
 name = "asimov-repository"
 version = "25.1.0"
 dependencies = [
- "dogma",
+ "asimov-core",
 ]
 
 [[package]]
 name = "asimov-runner"
 version = "25.1.0"
 dependencies = [
+ "asimov-core",
  "asimov-env",
  "asimov-module",
  "asimov-patterns",
@@ -1140,7 +1144,6 @@ dependencies = [
  "async-trait",
  "clientele",
  "derive_more 2.0.1",
- "dogma",
  "tokio",
  "tracing",
 ]
@@ -1149,7 +1152,7 @@ dependencies = [
 name = "asimov-runtime"
 version = "25.1.0"
 dependencies = [
- "dogma",
+ "asimov-core",
 ]
 
 [[package]]
@@ -1177,6 +1180,7 @@ dependencies = [
 name = "asimov-server"
 version = "25.1.0"
 dependencies = [
+ "asimov-core",
  "asimov-prompt",
  "asimov-runner",
  "async-stream",
@@ -1186,7 +1190,6 @@ dependencies = [
  "axum-prometheus",
  "axum-test",
  "bs58",
- "dogma",
  "futures",
  "http 1.3.1",
  "jiff",
@@ -1212,6 +1215,7 @@ dependencies = [
 name = "asimov-snapshot"
 version = "25.1.0"
 dependencies = [
+ "asimov-core",
  "asimov-env",
  "asimov-module",
  "asimov-patterns",
@@ -1221,7 +1225,6 @@ dependencies = [
  "bon",
  "cap-std",
  "cap-tempfile",
- "dogma",
  "hex",
  "jiff",
  "sha2 0.10.9",
@@ -1234,21 +1237,21 @@ dependencies = [
 name = "asimov-token"
 version = "25.1.0"
 dependencies = [
- "dogma",
+ "asimov-core",
 ]
 
 [[package]]
 name = "asimov-universe"
 version = "25.1.0"
 dependencies = [
- "dogma",
+ "asimov-core",
 ]
 
 [[package]]
 name = "asimov-vault"
 version = "25.1.0"
 dependencies = [
- "dogma",
+ "asimov-core",
 ]
 
 [[package]]

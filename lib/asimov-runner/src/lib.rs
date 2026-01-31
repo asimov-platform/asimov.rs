@@ -1,10 +1,12 @@
 // This is free and unencumbered software released into the public domain.
 
-//! ```rust
-//! # use asimov_runner::*;
-//! ```
+#![no_std]
+#![forbid(unsafe_code)]
 
-#![allow(unused_imports)]
+extern crate alloc;
+
+#[cfg(feature = "std")]
+extern crate std;
 
 pub use asimov_patterns::Execute;
 pub use clientele::SysexitsError;

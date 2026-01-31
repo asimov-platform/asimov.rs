@@ -1,14 +1,16 @@
 // This is free and unencumbered software released into the public domain.
 
-use crate::{Executor, ExecutorError, GraphOutput, Input};
+use crate::{Executor, ExecutorError, GraphOutput};
+use alloc::{
+    boxed::Box,
+    format,
+    string::{String, ToString},
+    vec,
+    vec::Vec,
+};
 use async_trait::async_trait;
 use derive_more::Debug;
-use std::{
-    ffi::OsStr,
-    io::{Cursor, Read},
-    process::Stdio,
-};
-use tokio::io::{AsyncRead, AsyncWrite};
+use std::{ffi::OsStr, io::Cursor, process::Stdio};
 
 pub use asimov_patterns::CatalogerOptions;
 
@@ -77,8 +79,8 @@ impl asimov_patterns::Execute<Cursor<Vec<u8>>, ExecutorError> for Cataloger {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use asimov_patterns::Execute;
+    //use super::*;
+    //use asimov_patterns::Execute;
 
     #[tokio::test]
     async fn test_execute() {

@@ -18,7 +18,7 @@ publish.workspace = true
 default = ["all", "std"]
 all = ["new", "tracing"]
 new = ["blake3", "uuid"]
-std = ["bs58/std", "dogma/std", "uuid/std"]
+std = ["asimov-core/std", "bs58/std", "uuid/std"]
 tracing = []
 unstable = []
 
@@ -35,9 +35,9 @@ turso = ["dep:turso"]
 uuid = ["dep:uuid"]
 
 [dependencies]
+asimov-core.workspace = true
 bs58 = { version = "0.5", default-features = false, features = ["alloc"] }
 derive_more = { version = "2", features = ["display"] }
-dogma.workspace = true
 
 # Integrations:
 blake3 = { version = "1.8", default-features = false, optional = true }

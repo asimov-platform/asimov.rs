@@ -17,10 +17,14 @@ publish.workspace = true
 [features]
 default = ["all", "std"]
 all = []
-std = []
+std = ["asimov-core/std"]
 unstable = []
 
+# Features:
+tracing = []
+
 [dependencies]
+asimov-core.workspace = true
 async-trait.workspace = true
 bon.workspace = true
 rdf-model.workspace = true

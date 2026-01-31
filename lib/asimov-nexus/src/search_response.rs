@@ -1,6 +1,7 @@
 // This is free and unencumbered software released into the public domain.
 
 use super::SearchResult;
+use alloc::{string::String, vec::Vec};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, PartialEq, PartialOrd, Deserialize, Serialize)]

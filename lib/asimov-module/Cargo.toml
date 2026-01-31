@@ -19,11 +19,11 @@ default = ["all", "std"]
 all = ["cli", "tracing", "serde", "asimov-env?/all"]
 cli = ["std", "dep:clientele", "clientele?/clap"]
 std = [
+  "asimov-core/std",
   "clientele?/std",
   "dep:asimov-env",
   "asimov-env?/std",
   "dep:getenv",
-  "dogma/std",
   "getenv?/std",
   "iri-string/std",
   "serde_json?/std",
@@ -44,6 +44,7 @@ tracing = ["dep:tracing", "dep:tracing-subscriber", "clientele?/tracing"]
 yaml = ["dep:serde_yaml_ng"]
 
 [dependencies]
+asimov-core.workspace = true
 dogma.workspace = true
 secrecy.workspace = true
 slab.workspace = true

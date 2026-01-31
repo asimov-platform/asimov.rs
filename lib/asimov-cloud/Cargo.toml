@@ -20,11 +20,11 @@ publish.workspace = true
 default = ["all", "std"]
 all = ["tracing"]
 std = [
+    "asimov-core/std",
     "asimov-credit/std",
     "asimov-id/std",
     "asimov-kb/std",
     "asimov-nexus/std",
-    "dogma/std",
 ]
 tracing = []
 unstable = []
@@ -39,12 +39,12 @@ turso = ["asimov-credit/turso", "asimov-id/turso", "asimov-kb/turso"]
 validator = ["asimov-nexus/validator"]
 
 [dependencies]
+asimov-core.workspace = true
 asimov-credit.workspace = true
 asimov-id.workspace = true
 asimov-kb.workspace = true
 asimov-nexus.workspace = true
 derive_more = { version = "2", features = ["display"] }
-dogma.workspace = true
 thiserror.workspace = true
 
 [target.'cfg(not(target_family = "wasm"))'.dependencies]

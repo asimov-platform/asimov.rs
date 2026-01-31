@@ -1,8 +1,9 @@
 // This is free and unencumbered software released into the public domain.
 
 use super::prompt_role::PromptRole;
+use alloc::string::String;
+use core::str::FromStr;
 use derive_more::Display;
-use dogma::prelude::{FromStr, String};
 
 #[derive(Clone, Debug, Display, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[display("{_0}: {_1}")]

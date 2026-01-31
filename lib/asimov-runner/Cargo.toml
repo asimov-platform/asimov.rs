@@ -17,11 +17,12 @@ publish.workspace = true
 [features]
 default = ["all", "std"]
 all = ["tracing"]
-std = ["clientele/std", "dogma/std", "tracing?/std"]
+std = ["asimov-core/std", "clientele/std", "tracing?/std"]
 tracing = ["dep:tracing"]
 unstable = []
 
 [dependencies]
+asimov-core.workspace = true
 asimov-env = { workspace = true, default-features = true }
 asimov-module = { workspace = true, default-features = true }
 asimov-patterns = { workspace = true, default-features = true }
@@ -29,7 +30,6 @@ asimov-prompt = { workspace = true, default-features = true }
 async-trait.workspace = true
 clientele.workspace = true
 derive_more = { workspace = true, features = ["debug"] }
-dogma.workspace = true
 tokio = { workspace = true, features = ["io-util", "process", "rt"] }
 
 # Optional dependencies:

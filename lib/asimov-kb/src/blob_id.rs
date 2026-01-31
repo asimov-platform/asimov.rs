@@ -1,6 +1,7 @@
 // This is free and unencumbered software released into the public domain.
 
 use crate::{Id, IdClass, IdError};
+use alloc::vec::Vec;
 use core::{ops::RangeInclusive, str::FromStr};
 use derive_more::Display;
 

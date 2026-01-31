@@ -19,11 +19,11 @@ default = ["all", "std"]
 all = ["cli", "tracing"]
 cli = ["std", "dep:clientele", "clientele?/clap"]
 std = [
+  "asimov-core/std",
   "dep:asimov-env",
   "asimov-env?/std",
   "dep:getenv",
   "clientele?/std",
-  "dogma/std",
   "getenv?/std",
   "serde/std",
   "serde_json/std",
@@ -38,11 +38,11 @@ unstable = []
 tracing = ["dep:tracing", "dep:tracing-subscriber", "clientele?/tracing"]
 
 [dependencies]
+asimov-core.workspace = true
 asimov-huggingface = { workspace = true, default-features = true }
 asimov-module = { workspace = true, default-features = true }
 asimov-registry = { workspace = true, default-features = true }
 bon.workspace = true
-dogma.workspace = true
 flate2.workspace = true
 reqwest.workspace = true
 secrecy.workspace = true

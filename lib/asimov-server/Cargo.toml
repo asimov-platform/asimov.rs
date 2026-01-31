@@ -17,7 +17,7 @@ publish.workspace = true
 [features]
 default = ["all", "std"]
 all = ["app", "http", "tracing"]
-std = ["bs58/std", "dogma/std", "jiff/std", "openai/std", "tracing?/std"]
+std = ["asimov-core/std", "bs58/std", "jiff/std", "openai/std", "tracing?/std"]
 tracing = ["dep:tracing", "tower-http/trace"]
 unstable = ["https", "mdns", "ssdp"]
 
@@ -44,12 +44,12 @@ mcp = ["http"]
 persistence = ["dep:serde", "dep:serde_json"]
 
 [dependencies]
+asimov-core.workspace = true
 asimov-runner = { workspace = true, default-features = true }
 asimov-prompt = { workspace = true, features = ["openai"] }
 async-trait.workspace = true
 async-stream.workspace = true
 bs58.workspace = true
-dogma.workspace = true
 futures.workspace = true
 jiff.workspace = true
 openai = { workspace = true, features = ["serde"] }
