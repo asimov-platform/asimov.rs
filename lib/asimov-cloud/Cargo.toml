@@ -16,6 +16,9 @@ keywords.workspace = true
 categories.workspace = true
 publish.workspace = true
 
+[package.metadata.readme]
+title = "ASIMOV.rs: Cloud"
+
 [features]
 default = ["all", "std"]
 all = ["tracing"]

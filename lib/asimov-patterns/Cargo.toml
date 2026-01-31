@@ -14,6 +14,9 @@ keywords.workspace = true
 categories = ["text-processing", "parsing", "rust-patterns"]
 publish.workspace = true
 
+[package.metadata.readme]
+title = "ASIMOV.rs: Patterns"
+
 [features]
 default = ["all", "std"]
 all = []

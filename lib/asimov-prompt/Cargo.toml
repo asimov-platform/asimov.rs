@@ -20,6 +20,9 @@ categories = [
 ]
 publish.workspace = true
 
+[package.metadata.readme]
+title = "ASIMOV.rs: Prompt"
+
 [features]
 default = ["all", "std"]
 all = ["tracing"]

@@ -14,6 +14,9 @@ keywords.workspace = true
 categories = ["api-bindings", "cryptography::cryptocurrencies"]
 publish.workspace = true
 
+[package.metadata.readme]
+title = "ASIMOV.rs: Ledger"
+
 [features]
 default = ["all", "std"]
 all = []

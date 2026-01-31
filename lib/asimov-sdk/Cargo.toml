@@ -14,6 +14,9 @@ keywords.workspace = true
 categories = ["api-bindings", "data-structures", "text-processing"]
 publish = true
 
+[package.metadata.readme]
+title = "ASIMOV.rs"
+
 [features]
 default = ["all", "std"]
 all = [
