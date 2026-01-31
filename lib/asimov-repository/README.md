@@ -1,7 +1,7 @@
 # ASIMOV.rs: Repository Access
 
 [![License](https://img.shields.io/badge/license-Public%20Domain-blue.svg)](https://unlicense.org)
-[![Compatibility](https://img.shields.io/badge/rust-1.85%2B-blue)](https://blog.rust-lang.org/2025/02/20/Rust-1.85.0/)
+[![Compatibility](https://img.shields.io/badge/rust-1.93%2B-blue)](https://blog.rust-lang.org/2026/01/22/Rust-1.93.0/)
 [![Package](https://img.shields.io/crates/v/asimov-repository)](https://crates.io/crates/asimov-repository)
 [![Documentation](https://img.shields.io/docsrs/asimov-repository?label=docs.rs)](https://docs.rs/asimov-repository)
 
@@ -34,7 +34,7 @@ for [trustworthy neurosymbolic machine intelligence].
 
 ## 🛠️ Prerequisites
 
-- [Rust](https://rust-lang.org) 1.85+ (2024 edition)
+- [Rust](https://rust-lang.org) 1.93+ (2024 edition)
 
 ## ⬇️ Installation
 

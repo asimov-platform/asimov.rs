@@ -1,7 +1,7 @@
 # ASIMOV.rs: Platform Support
 
 [![License](https://img.shields.io/badge/license-Public%20Domain-blue.svg)](https://unlicense.org)
-[![Compatibility](https://img.shields.io/badge/rust-1.85%2B-blue)](https://blog.rust-lang.org/2025/02/20/Rust-1.85.0/)
+[![Compatibility](https://img.shields.io/badge/rust-1.93%2B-blue)](https://blog.rust-lang.org/2026/01/22/Rust-1.93.0/)
 [![Package](https://img.shields.io/crates/v/asimov-platform)](https://crates.io/crates/asimov-platform)
 [![Documentation](https://img.shields.io/docsrs/asimov-platform?label=docs.rs)](https://docs.rs/asimov-platform)
 
@@ -34,7 +34,7 @@ for [trustworthy neurosymbolic machine intelligence].
 
 ## 🛠️ Prerequisites
 
-- [Rust](https://rust-lang.org) 1.85+ (2024 edition)
+- [Rust](https://rust-lang.org) 1.93+ (2024 edition)
 
 ## ⬇️ Installation
 
