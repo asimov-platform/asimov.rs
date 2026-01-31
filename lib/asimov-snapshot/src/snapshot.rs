@@ -1,22 +1,22 @@
 // This is free and unencumbered software released into the public domain.
 
+use alloc::{
+    format,
+    string::{String, ToString},
+    vec::Vec,
+};
 use asimov_module::resolve::Resolver;
 use asimov_registry::Registry;
 use asimov_runner::GraphOutput;
 use jiff::{Span, Timestamp, ToSpan};
-use std::{
-    format,
-    io::{self, Result},
-    string::{String, ToString},
-    vec::Vec,
-};
+use std::io::{self, Result};
 
 #[derive(Clone, Debug, PartialEq, Eq, bon::Builder)]
 pub struct Snapshot {
     #[builder(into)]
-    pub url: std::string::String,
+    pub url: String,
     #[builder(into)]
-    pub data: std::vec::Vec<u8>,
+    pub data: Vec<u8>,
     pub start_timestamp: jiff::Timestamp,
     pub end_timestamp: Option<jiff::Timestamp>,
 }

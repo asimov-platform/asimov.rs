@@ -137,7 +137,7 @@ impl ModuleManifest {
     pub fn read_variables(
         &self,
         profile: Option<&str>,
-    ) -> Result<std::collections::BTreeMap<String, String>, ReadVarError> {
+    ) -> Result<alloc::collections::BTreeMap<String, String>, ReadVarError> {
         self.config
             .as_ref()
             .map(|c| c.variables.as_slice())
@@ -457,11 +457,11 @@ where
 #[cfg(feature = "serde")]
 mod ordered {
     use super::*;
+    use alloc::fmt;
     use serde::{
         Deserializer,
         de::{MapAccess, Visitor},
     };
-    use std::fmt;
 
     pub fn deserialize_ordered<'de, D>(deserializer: D) -> Result<Vec<(String, String)>, D::Error>
     where
@@ -495,7 +495,7 @@ mod ordered {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::vec;
+    use alloc::vec;
 
     #[test]
     fn test_deser() {

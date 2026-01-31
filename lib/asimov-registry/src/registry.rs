@@ -416,14 +416,14 @@ impl Registry {
         &self,
         module_name: impl AsRef<str>,
     ) -> Result<Option<PathBuf>, FindManifestError> {
+        use alloc::format;
+
         let install_dir = &self.install_dir;
-
         let module_name = module_name.as_ref();
-
         let files = [
-            std::format!("{module_name}.json"),
-            std::format!("{module_name}.yaml"),
-            std::format!("{module_name}.yml"),
+            format!("{module_name}.json"),
+            format!("{module_name}.yaml"),
+            format!("{module_name}.yml"),
         ];
 
         for file in &files {

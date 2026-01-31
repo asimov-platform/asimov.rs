@@ -5,7 +5,7 @@ pub mod llms;
 pub mod sitemap;
 pub mod void;
 
-use std::borrow::Cow;
+use alloc::borrow::Cow;
 
 use axum::{
     Router,

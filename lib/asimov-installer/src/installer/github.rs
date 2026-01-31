@@ -5,10 +5,11 @@ use alloc::{
     borrow::ToOwned as _,
     format,
     string::{String, ToString as _},
+    vec,
 };
 use asimov_module::ModuleManifest;
 use serde::Deserialize;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use tokio::io::{AsyncReadExt as _, AsyncWriteExt as _};
 
 #[derive(Debug, Deserialize)]
@@ -152,7 +153,7 @@ pub async fn verify_checksum(
     let mut file = tokio::fs::File::open(binary_path).await?;
 
     const READ_BUFFER_SIZE: usize = 10 * 1024;
-    let mut buf = std::vec![0u8; READ_BUFFER_SIZE];
+    let mut buf = vec![0u8; READ_BUFFER_SIZE];
 
     loop {
         let n = file.read(&mut buf).await?;
@@ -187,9 +188,9 @@ pub async fn download_matching_asset(
     version: &str,
     platform: &super::platform::PlatformInfo,
     dst_dir: &Path,
-) -> Result<(String, std::path::PathBuf), DownloadError> {
+) -> Result<(String, PathBuf), DownloadError> {
     let filenames = if let Some(libc) = &platform.libc {
-        std::vec![
+        vec![
             format!(
                 "asimov-{}-module-{}-{}-{}.tar.gz",
                 module_name, platform.os, platform.arch, libc
@@ -208,7 +209,7 @@ pub async fn download_matching_asset(
             ),
         ]
     } else {
-        std::vec![
+        vec![
             format!(
                 "asimov-{}-module-{}-{}.tar.gz",
                 module_name, platform.os, platform.arch

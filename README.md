@@ -7,6 +7,8 @@
 
 **[ASIMOV] is a polyglot development platform for [trustworthy, neurosymbolic AI].**
 
+<br/>
+
 <sub>
 
 [[Features](#-features)] |

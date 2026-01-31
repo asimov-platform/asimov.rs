@@ -1,12 +1,14 @@
 // This is free and unencumbered software released into the public domain.
 
-use jiff::Timestamp;
-use std::{
+use alloc::{
     format,
-    io::{Result, Write},
-    path::Path,
     string::{String, ToString},
     vec::Vec,
+};
+use jiff::Timestamp;
+use std::{
+    io::{Result, Write},
+    path::Path,
 };
 
 use crate::Snapshot;
@@ -370,7 +372,8 @@ mod tests {
 
     use super::*;
     use crate::storage::Storage;
-    use std::{eprintln, string::ToString};
+    use alloc::string::ToString;
+    use std::eprintln;
 
     #[test]
     fn storage() {
