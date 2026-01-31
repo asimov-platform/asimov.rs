@@ -5,7 +5,7 @@
 [![Package](https://img.shields.io/crates/v/asimov-sdk)](https://crates.io/crates/asimov-sdk)
 [![Documentation](https://img.shields.io/docsrs/asimov-sdk?label=docs.rs)](https://docs.rs/asimov-sdk)
 
-**[ASIMOV] is a polyglot development platform for trustworthy, neurosymbolic AI.**
+**[ASIMOV] is a polyglot development platform for [trustworthy, neurosymbolic AI].**
 
 <br/>
 
@@ -22,6 +22,11 @@
 
 ## ✨ Features
 
+- Defines [flow-based] [program patterns] for refining data into knowledge.
+- Implements a [module system] supporting an ecosystem of [ASIMOV modules].
+- Enables dataflow systems through reusable components called blocks.
+- Built on the dataflow primitives provided by the [Async-Flow] crate.
+- Compatible with the inventory of dataflow blocks provided by [Flows.rs].
 - Supports opting out of any feature using comprehensive feature flags.
 - Adheres to the Rust API Guidelines in its [naming conventions].
 - Cuts red tape: 100% free and unencumbered public domain software.
@@ -35,7 +40,7 @@
 ### Installation via Cargo
 
 ```bash
-cargo add asimov-sdk
+cargo add asimov-sdk --rename asimov
 ```
 
 ### Installation in `Cargo.toml` (with all features enabled)
@@ -57,7 +62,7 @@ asimov = { package = "asimov-sdk", "version" = "25", default-features = false, f
 ### Importing the SDK
 
 ```rust
-use asimov::*;
+use asimov::{config, env, flow, id, kb, patterns, registry, runner, snapshot};
 ```
 
 ## 📚 Reference
@@ -111,6 +116,22 @@ use asimov::*;
 git clone https://github.com/asimov-platform/asimov.rs.git
 ```
 
+### Glossary
+
+- **System**: A collection of blocks that are connected together.
+  Systems are the top-level entities in dataflow programs.
+
+- **Block**: An encapsulated system component that processes messages.
+  Blocks are the autonomous units of computation in a system.
+
+- **Port**: A named connection point on a block that sends or receives
+  messages. Ports are the only interfaces through which blocks communicate
+  with each other.
+
+- **Message**: A unit of data that flows between blocks in a system, from port
+  to port. Any Rust type that implements the `Send + Sync + 'static` traits can
+  be used as a message.
+
 ---
 
 [![Share on X](https://img.shields.io/badge/share%20on-x-03A9F4?logo=x)](https://x.com/intent/post?url=https://github.com/asimov-platform/asimov.rs&text=ASIMOV%20Software%20Development%20Kit%20%28SDK%29%20for%20Rust)
@@ -120,3 +141,11 @@ git clone https://github.com/asimov-platform/asimov.rs.git
 [![Share on LinkedIn](https://img.shields.io/badge/share%20on-linkedin-3949AB?logo=linkedin)](https://www.linkedin.com/sharing/share-offsite/?url=https://github.com/asimov-platform/asimov.rs)
 
 [ASIMOV]: https://asimov.sh
+[ASIMOV modules]: https://github.com/asimov-modules
+[Async-Flow]: https://github.com/artob/async-flow
+[Flows.rs]: https://github.com/artob/flows.rs
+[flow-based]: https://github.com/artob/awesome-fbp
+[naming conventions]: https://rust-lang.github.io/api-guidelines/naming.html
+[module system]: https://asimov-specs.github.io/
+[program patterns]: https://asimov-specs.github.io/program-patterns/
+[trustworthy, neurosymbolic AI]: https://asimov.blog/introducing-asimov/
