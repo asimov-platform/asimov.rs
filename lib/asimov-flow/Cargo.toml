@@ -25,6 +25,11 @@ tokio = ["dep:tokio"]
 
 [dependencies]
 asimov-core.workspace = true
+async-flow.workspace = true
+#flows.workspace = true
 
 # Integrations:
 tokio = { workspace = true, optional = true }
+
+[dev-dependencies]
+tokio.workspace = true

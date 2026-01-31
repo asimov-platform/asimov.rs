@@ -924,6 +924,7 @@ name = "asimov-flow"
 version = "25.0.3"
 dependencies = [
  "asimov-core",
+ "async-flow",
  "tokio",
 ]
 
@@ -1270,6 +1271,18 @@ dependencies = [
  "once_cell",
  "pin-project-lite",
  "tokio",
+]
+
+[[package]]
+name = "async-flow"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d9301d32b149afa29350111fdb6941b7fbb8d525aa934b24b77571050999e413"
+dependencies = [
+ "async-trait",
+ "dogma",
+ "replace_with",
+ "thiserror 2.0.17",
 ]
 
 [[package]]
@@ -6509,6 +6522,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "replace_with"
+version = "0.1.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "51743d3e274e2b18df81c4dc6caf8a5b8e15dbe799e0dca05c7617380094e884"
+
+[[package]]
 name = "reqwest"
 version = "0.12.24"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -8021,9 +8040,9 @@ dependencies = [
 
 [[package]]
 name = "tokio"
-version = "1.48.0"
+version = "1.49.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ff360e02eab121e0bc37a2d3b4d4dc622e6eda3a8e5253d5435ecf5bd4c68408"
+checksum = "72a2903cd7736441aac9df9d7688bd0ce48edccaadf181c3b90be801e81d3d86"
 dependencies = [
  "bytes",
  "libc",

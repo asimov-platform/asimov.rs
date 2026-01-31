@@ -59,6 +59,7 @@ asimov-universe = { version = "25.0.3", default-features = false }
 asimov-vault = { version = "25.0.3", default-features = false }
 
 alloy = { version = "0.5", default-features = false }
+async-flow = { version = "0.1.5", default-features = false }
 async-stream = { version = "0.3", default-features = false }
 async-trait = { version = "0.1", default-features = false }
 axum = { version = "0.8", default-features = false, features = ["macros"] }
@@ -82,6 +83,7 @@ derive_more = { version = "2", default-features = false }
 dogma = { version = "0.1.10", default-features = false, features = ["traits"] }
 eloquent = { version = "2.1", default-features = false }
 flate2 = { version = "1", default-features = false }
+flows = { version = "0.0.6", default-features = false }
 futures = { version = "0.3", default-features = false }
 getenv = { version = "0.1.2", default-features = false, features = [
     "cargo",
