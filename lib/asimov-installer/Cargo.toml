@@ -20,6 +20,7 @@ all = ["cli", "tracing"]
 cli = ["std", "dep:clientele", "clientele?/clap"]
 std = [
   "dep:asimov-env",
+  "asimov-env?/std",
   "dep:getenv",
   "clientele?/std",
   "dogma/std",
@@ -37,9 +38,9 @@ unstable = []
 tracing = ["dep:tracing", "dep:tracing-subscriber", "clientele?/tracing"]
 
 [dependencies]
-asimov-huggingface.workspace = true
-asimov-module.workspace = true
-asimov-registry.workspace = true
+asimov-huggingface = { workspace = true, default-features = true }
+asimov-module = { workspace = true, default-features = true }
+asimov-registry = { workspace = true, default-features = true }
 bon.workspace = true
 dogma.workspace = true
 flate2.workspace = true

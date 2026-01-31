@@ -44,7 +44,7 @@ mcp = ["http"]
 persistence = ["dep:serde", "dep:serde_json"]
 
 [dependencies]
-asimov-runner.workspace = true
+asimov-runner = { workspace = true, default-features = true }
 asimov-prompt = { workspace = true, features = ["openai"] }
 async-trait.workspace = true
 async-stream.workspace = true

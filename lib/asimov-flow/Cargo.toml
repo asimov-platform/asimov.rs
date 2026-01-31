@@ -12,7 +12,7 @@ repository.workspace = true
 license.workspace = true
 keywords.workspace = true
 categories = ["concurrency", "network-programming", "no-std"]
-publish = false
+publish = true
 
 [features]
 default = ["all", "std"]

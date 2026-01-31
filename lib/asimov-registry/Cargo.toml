@@ -16,10 +16,12 @@ publish.workspace = true
 
 [features]
 default = ["all", "std"]
-all = ["cli", "tracing"]
+all = ["cli", "tracing", "asimov-env?/all"]
 cli = ["std", "dep:clientele", "clientele?/clap"]
 std = [
+    "asimov-module/std",
 	"dep:asimov-env",
+	"asimov-env?/std",
 	"dep:getenv",
 	"clientele?/std",
 	"dogma/std",
@@ -36,7 +38,7 @@ unstable = []
 tracing = ["dep:tracing", "dep:tracing-subscriber", "clientele?/tracing"]
 
 [dependencies]
-asimov-module.workspace = true
+asimov-module = { workspace = true, features = ["all"] }
 bon.workspace = true
 dogma.workspace = true
 reqwest.workspace = true

@@ -1,7 +1,7 @@
 // This is free and unencumbered software released into the public domain.
 
 use alloc::{string::String, vec::Vec};
-use asimov_module::{InstalledModuleManifest, tracing};
+use asimov_module::InstalledModuleManifest;
 use std::path::{Path, PathBuf};
 use tokio::io;
 

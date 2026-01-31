@@ -16,11 +16,12 @@ publish.workspace = true
 
 [features]
 default = ["all", "std"]
-all = ["cli", "tracing", "serde"]
+all = ["cli", "tracing", "serde", "asimov-env?/all"]
 cli = ["std", "dep:clientele", "clientele?/clap"]
 std = [
   "clientele?/std",
   "dep:asimov-env",
+  "asimov-env?/std",
   "dep:getenv",
   "dogma/std",
   "getenv?/std",

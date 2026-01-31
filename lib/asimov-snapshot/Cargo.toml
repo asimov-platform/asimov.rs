@@ -23,11 +23,11 @@ tracing = []
 unstable = []
 
 [dependencies]
-asimov-env.workspace = true
-asimov-module.workspace = true
-asimov-patterns.workspace = true
-asimov-registry.workspace = true
-asimov-runner.workspace = true
+asimov-env = { workspace = true, default-features = true }
+asimov-module = { workspace = true, default-features = true }
+asimov-patterns = { workspace = true, default-features = true }
+asimov-registry = { workspace = true, default-features = true }
+asimov-runner = { workspace = true, default-features = true }
 async-trait.workspace = true
 bon.workspace = true
 dogma.workspace = true
