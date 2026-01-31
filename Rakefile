@@ -5,11 +5,47 @@ require 'stringio'
 require 'tomlrb' # https://rubygems.org/gems/tomlrb
 require 'yaml'
 
-task default: %w(.cargo/packages.json .cargo/packages.md)
+task default: %w(.cargo/packages.json .cargo/packages.md readmes)
 
 PACKAGES = Dir['lib/**/Cargo.toml'].sort_by do |path|
   path.delete_prefix('lib/').delete_suffix('/Cargo.toml')
 end.map { Pathname(it) }.freeze
+
+task readmes: PACKAGES.map { it.parent.join('README.md').to_s }.to_a
+
+PACKAGES.each do |package_toml|
+  package_path = package_toml.parent
+  package_meta = Tomlrb.load_file(package_toml, symbolize_keys: true)
+  package_name = package_meta[:package][:name]
+  #next if package_name == 'flows'
+  package_title = (package_meta[:package][:metadata][:readme][:title] rescue nil)
+  package_description = package_meta[:package][:description]
+
+  file package_path.join('README.md') => %[.readme/README.md.j2] do |t|
+    template_path = Pathname(t.prerequisites.first).realpath
+    File.open(t.name, 'w') do |out|
+      Dir.chdir(package_path) do
+        FileUtils.ln_sf(template_path, 'README.md.j2')
+        begin
+          command = %W[minijinja-cli --strict README.md.j2 /dev/stdin -fjson]
+          IO.popen(command, "r+") do |pipe|
+            pipe.puts JSON.pretty_unparse({
+              package: {
+                title: package_title,
+                name: package_name,
+                description: package_description,
+              }
+            })
+            pipe.close_write
+            out.puts pipe.read
+          end
+        ensure
+          FileUtils.rm('README.md.j2')
+        end
+      end
+    end
+  end
+end
 
 file '.cargo/packages.json': PACKAGES do |t|
   File.open(t.name, 'w') do |out|

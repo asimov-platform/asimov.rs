@@ -1,7 +1,13 @@
 [
   {
     "package": {
-      "name": "asimov-account"
+      "name": "asimov-account",
+      "readme": true,
+      "metadata": {
+        "readme": {
+          "title": "ASIMOV.rs: Account Management"
+        }
+      }
     },
     "features": {
       "default": [
@@ -23,7 +29,13 @@
   },
   {
     "package": {
-      "name": "asimov-agent"
+      "name": "asimov-agent",
+      "readme": true,
+      "metadata": {
+        "readme": {
+          "title": "ASIMOV.rs: Agent Support"
+        }
+      }
     },
     "features": {
       "default": [
@@ -45,7 +57,13 @@
   },
   {
     "package": {
-      "name": "asimov-cache"
+      "name": "asimov-cache",
+      "readme": true,
+      "metadata": {
+        "readme": {
+          "title": "ASIMOV.rs: Cache Management"
+        }
+      }
     },
     "features": {
       "default": [
@@ -67,7 +85,13 @@
   },
   {
     "package": {
-      "name": "asimov-cloud"
+      "name": "asimov-cloud",
+      "readme": true,
+      "metadata": {
+        "readme": {
+          "title": "ASIMOV.rs: Cloud Client"
+        }
+      }
     },
     "features": {
       "default": [
@@ -186,7 +210,13 @@
   },
   {
     "package": {
-      "name": "asimov-config"
+      "name": "asimov-config",
+      "readme": true,
+      "metadata": {
+        "readme": {
+          "title": "ASIMOV.rs: Configuration Management"
+        }
+      }
     },
     "features": {
       "default": [
@@ -208,7 +238,13 @@
   },
   {
     "package": {
-      "name": "asimov-construct"
+      "name": "asimov-construct",
+      "readme": true,
+      "metadata": {
+        "readme": {
+          "title": "ASIMOV.rs: Construct Support"
+        }
+      }
     },
     "features": {
       "default": [
@@ -231,12 +267,18 @@
   {
     "package": {
       "name": "asimov-core",
+      "readme": true,
       "categories": [
         "api-bindings",
         "data-structures",
         "text-processing"
       ],
-      "publish": true
+      "publish": true,
+      "metadata": {
+        "readme": {
+          "title": "ASIMOV.rs: Core Library"
+        }
+      }
     },
     "features": {
       "default": [
@@ -292,7 +334,13 @@
   },
   {
     "package": {
-      "name": "asimov-credit"
+      "name": "asimov-credit",
+      "readme": true,
+      "metadata": {
+        "readme": {
+          "title": "ASIMOV.rs: Credit Types"
+        }
+      }
     },
     "features": {
       "default": [
@@ -372,7 +420,13 @@
   },
   {
     "package": {
-      "name": "asimov-dataset"
+      "name": "asimov-dataset",
+      "readme": true,
+      "metadata": {
+        "readme": {
+          "title": "ASIMOV.rs: Dataset Management"
+        }
+      }
     },
     "features": {
       "default": [
@@ -394,7 +448,13 @@
   },
   {
     "package": {
-      "name": "asimov-directory"
+      "name": "asimov-directory",
+      "readme": true,
+      "metadata": {
+        "readme": {
+          "title": "ASIMOV.rs: Directory Client"
+        }
+      }
     },
     "features": {
       "default": [
@@ -417,10 +477,16 @@
   {
     "package": {
       "name": "asimov-env",
+      "readme": true,
       "categories": [
         "api-bindings",
         "development-tools"
-      ]
+      ],
+      "metadata": {
+        "readme": {
+          "title": "ASIMOV.rs: Environment Support"
+        }
+      }
     },
     "features": {
       "default": [
@@ -457,12 +523,18 @@
   {
     "package": {
       "name": "asimov-flow",
+      "readme": true,
       "categories": [
         "concurrency",
         "network-programming",
         "no-std"
       ],
-      "publish": true
+      "publish": true,
+      "metadata": {
+        "readme": {
+          "title": "ASIMOV.rs: Flow Types"
+        }
+      }
     },
     "features": {
       "default": [
@@ -500,7 +572,13 @@
   },
   {
     "package": {
-      "name": "asimov-graph"
+      "name": "asimov-graph",
+      "readme": true,
+      "metadata": {
+        "readme": {
+          "title": "ASIMOV.rs: Graph Types"
+        }
+      }
     },
     "features": {
       "default": [
@@ -523,7 +601,13 @@
   {
     "package": {
       "name": "asimov-huggingface",
-      "categories": []
+      "readme": true,
+      "categories": [],
+      "metadata": {
+        "readme": {
+          "title": "ASIMOV.rs: Hugging Face Client"
+        }
+      }
     },
     "features": {
       "default": [
@@ -554,7 +638,13 @@
   },
   {
     "package": {
-      "name": "asimov-id"
+      "name": "asimov-id",
+      "readme": true,
+      "metadata": {
+        "readme": {
+          "title": "ASIMOV.rs: Identifier Types"
+        }
+      }
     },
     "features": {
       "default": [
@@ -673,7 +763,13 @@
   },
   {
     "package": {
-      "name": "asimov-installer"
+      "name": "asimov-installer",
+      "readme": true,
+      "metadata": {
+        "readme": {
+          "title": "ASIMOV.rs: Installer Implementation"
+        }
+      }
     },
     "features": {
       "default": [
@@ -798,7 +894,13 @@
   },
   {
     "package": {
-      "name": "asimov-kb"
+      "name": "asimov-kb",
+      "readme": true,
+      "metadata": {
+        "readme": {
+          "title": "ASIMOV.rs: Knowledge Base"
+        }
+      }
     },
     "features": {
       "default": [
@@ -948,10 +1050,16 @@
   {
     "package": {
       "name": "asimov-ledger",
+      "readme": true,
       "categories": [
         "api-bindings",
         "cryptography::cryptocurrencies"
-      ]
+      ],
+      "metadata": {
+        "readme": {
+          "title": "ASIMOV.rs: Ledger Types"
+        }
+      }
     },
     "features": {
       "default": [
@@ -981,10 +1089,16 @@
   {
     "package": {
       "name": "asimov-module",
+      "readme": true,
       "categories": [
         "api-bindings",
         "development-tools"
-      ]
+      ],
+      "metadata": {
+        "readme": {
+          "title": "ASIMOV.rs: Module Support"
+        }
+      }
     },
     "features": {
       "default": [
@@ -1108,7 +1222,13 @@
   },
   {
     "package": {
-      "name": "asimov-nexus"
+      "name": "asimov-nexus",
+      "readme": true,
+      "metadata": {
+        "readme": {
+          "title": "ASIMOV.rs: Nexus Client"
+        }
+      }
     },
     "features": {
       "default": [
@@ -1154,7 +1274,13 @@
   },
   {
     "package": {
-      "name": "asimov-ontology"
+      "name": "asimov-ontology",
+      "readme": true,
+      "metadata": {
+        "readme": {
+          "title": "ASIMOV.rs: Ontology Types"
+        }
+      }
     },
     "features": {
       "default": [
@@ -1177,11 +1303,17 @@
   {
     "package": {
       "name": "asimov-patterns",
+      "readme": true,
       "categories": [
         "text-processing",
         "parsing",
         "rust-patterns"
-      ]
+      ],
+      "metadata": {
+        "readme": {
+          "title": "ASIMOV.rs: Program Patterns"
+        }
+      }
     },
     "features": {
       "default": [
@@ -1212,7 +1344,13 @@
   },
   {
     "package": {
-      "name": "asimov-platform"
+      "name": "asimov-platform",
+      "readme": true,
+      "metadata": {
+        "readme": {
+          "title": "ASIMOV.rs: Platform Support"
+        }
+      }
     },
     "features": {
       "default": [
@@ -1235,13 +1373,19 @@
   {
     "package": {
       "name": "asimov-prompt",
+      "readme": true,
       "categories": [
         "text-processing",
         "data-structures",
         "value-formatting",
         "encoding",
         "parsing"
-      ]
+      ],
+      "metadata": {
+        "readme": {
+          "title": "ASIMOV.rs: Prompt Types"
+        }
+      }
     },
     "features": {
       "default": [
@@ -1283,11 +1427,17 @@
   {
     "package": {
       "name": "asimov-protocol",
+      "readme": true,
       "categories": [
         "api-bindings",
         "data-structures",
         "network-programming"
-      ]
+      ],
+      "metadata": {
+        "readme": {
+          "title": "ASIMOV.rs: Protocol Client"
+        }
+      }
     },
     "features": {
       "default": [
@@ -1309,7 +1459,13 @@
   },
   {
     "package": {
-      "name": "asimov-proxy"
+      "name": "asimov-proxy",
+      "readme": true,
+      "metadata": {
+        "readme": {
+          "title": "ASIMOV.rs: Proxy Support"
+        }
+      }
     },
     "features": {
       "default": [
@@ -1341,7 +1497,13 @@
   },
   {
     "package": {
-      "name": "asimov-registry"
+      "name": "asimov-registry",
+      "readme": true,
+      "metadata": {
+        "readme": {
+          "title": "ASIMOV.rs: Registry Client"
+        }
+      }
     },
     "features": {
       "default": [
@@ -1454,7 +1616,13 @@
   },
   {
     "package": {
-      "name": "asimov-repository"
+      "name": "asimov-repository",
+      "readme": true,
+      "metadata": {
+        "readme": {
+          "title": "ASIMOV.rs: Repository Access"
+        }
+      }
     },
     "features": {
       "default": [
@@ -1476,7 +1644,13 @@
   },
   {
     "package": {
-      "name": "asimov-runner"
+      "name": "asimov-runner",
+      "readme": true,
+      "metadata": {
+        "readme": {
+          "title": "ASIMOV.rs: Runner Implementation"
+        }
+      }
     },
     "features": {
       "default": [
@@ -1552,7 +1726,13 @@
   },
   {
     "package": {
-      "name": "asimov-runtime"
+      "name": "asimov-runtime",
+      "readme": true,
+      "metadata": {
+        "readme": {
+          "title": "ASIMOV.rs: Runtime Support"
+        }
+      }
     },
     "features": {
       "default": [
@@ -1575,12 +1755,18 @@
   {
     "package": {
       "name": "asimov-sdk",
+      "readme": true,
       "categories": [
         "api-bindings",
         "data-structures",
         "text-processing"
       ],
-      "publish": true
+      "publish": true,
+      "metadata": {
+        "readme": {
+          "title": "ASIMOV.rs"
+        }
+      }
     },
     "features": {
       "default": [
@@ -1743,7 +1929,13 @@
   },
   {
     "package": {
-      "name": "asimov-server"
+      "name": "asimov-server",
+      "readme": true,
+      "metadata": {
+        "readme": {
+          "title": "ASIMOV.rs: Server Implementation"
+        }
+      }
     },
     "features": {
       "default": [
@@ -1974,7 +2166,13 @@
   },
   {
     "package": {
-      "name": "asimov-snapshot"
+      "name": "asimov-snapshot",
+      "readme": true,
+      "metadata": {
+        "readme": {
+          "title": "ASIMOV.rs: Snapshot Management"
+        }
+      }
     },
     "features": {
       "default": [
@@ -2071,7 +2269,13 @@
   },
   {
     "package": {
-      "name": "asimov-token"
+      "name": "asimov-token",
+      "readme": true,
+      "metadata": {
+        "readme": {
+          "title": "ASIMOV.rs: Token Types"
+        }
+      }
     },
     "features": {
       "default": [
@@ -2093,7 +2297,13 @@
   },
   {
     "package": {
-      "name": "asimov-universe"
+      "name": "asimov-universe",
+      "readme": true,
+      "metadata": {
+        "readme": {
+          "title": "ASIMOV.rs: Universe Registry"
+        }
+      }
     },
     "features": {
       "default": [
@@ -2116,10 +2326,16 @@
   {
     "package": {
       "name": "asimov-vault",
+      "readme": true,
       "categories": [
         "api-bindings",
         "database"
-      ]
+      ],
+      "metadata": {
+        "readme": {
+          "title": "ASIMOV.rs: Vault Access"
+        }
+      }
     },
     "features": {
       "default": [

@@ -8,7 +8,7 @@ edition.workspace = true
 #rust-version.workspace = true
 description.workspace = true
 #documentation.workspace = true
-readme.workspace = true
+readme = true
 homepage.workspace = true
 repository.workspace = true
 license.workspace = true
@@ -17,7 +17,7 @@ categories.workspace = true
 publish.workspace = true
 
 [package.metadata.readme]
-title = "ASIMOV.rs: Cloud"
+title = "ASIMOV.rs: Cloud Client"
 
 [features]
 default = ["all", "std"]

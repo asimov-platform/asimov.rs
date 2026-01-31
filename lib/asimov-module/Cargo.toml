@@ -1,3 +1,5 @@
+# See: https://doc.rust-lang.org/cargo/reference/manifest.html
+
 [package]
 name = "asimov-module"
 version.workspace = true
@@ -6,7 +8,7 @@ edition.workspace = true
 #rust-version.workspace = true
 description.workspace = true
 #documentation.workspace = true
-readme.workspace = true
+readme = true
 homepage.workspace = true
 repository.workspace = true
 license.workspace = true
@@ -15,7 +17,7 @@ categories = ["api-bindings", "development-tools"]
 publish.workspace = true
 
 [package.metadata.readme]
-title = "ASIMOV.rs: Module"
+title = "ASIMOV.rs: Module Support"
 
 [features]
 default = ["all", "std"]

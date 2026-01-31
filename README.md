@@ -5,7 +5,8 @@
 [![Package](https://img.shields.io/crates/v/asimov-sdk)](https://crates.io/crates/asimov-sdk)
 [![Documentation](https://img.shields.io/docsrs/asimov-sdk?label=docs.rs)](https://docs.rs/asimov-sdk)
 
-**[ASIMOV] is a polyglot development platform for [trustworthy, neurosymbolic AI].**
+**[ASIMOV] is a polyglot development platform for
+[trustworthy neurosymbolic machine intelligence].**
 
 <br/>
 
@@ -43,18 +44,18 @@
 cargo add asimov-sdk --rename asimov
 ```
 
-### Installation in `Cargo.toml` (with all features enabled)
+### Installation in `Cargo.toml`
 
 ```toml
 [dependencies]
-asimov = { package = "asimov-sdk", "version" = "25" }
+asimov = { package = "asimov-sdk", version = "25" }
 ```
 
-### Installation in `Cargo.toml` (with only specific features enabled)
+Alternatively, enable only specific features:
 
 ```toml
 [dependencies]
-asimov = { package = "asimov-sdk", "version" = "25", default-features = false, features = ["tracing"] }
+asimov = { package = "asimov-sdk", version = "25", default-features = false, features = ["tracing"] }
 ```
 
 ## 👉 Examples
@@ -110,12 +111,6 @@ use asimov::{config, env, flow, id, kb, patterns, registry, runner, snapshot};
 | [asimov-universe](https://github.com/asimov-platform/asimov.rs/tree/master/lib/asimov-universe) | [![Package](https://img.shields.io/crates/v/asimov-universe)](https://crates.io/crates/asimov-universe) | [![Documentation](https://img.shields.io/docsrs/asimov-universe?label=docs.rs)](https://docs.rs/asimov-universe) |
 | [asimov-vault](https://github.com/asimov-platform/asimov.rs/tree/master/lib/asimov-vault) | [![Package](https://img.shields.io/crates/v/asimov-vault)](https://crates.io/crates/asimov-vault) | [![Documentation](https://img.shields.io/docsrs/asimov-vault?label=docs.rs)](https://docs.rs/asimov-vault) |
 
-## 👨‍💻 Development
-
-```bash
-git clone https://github.com/asimov-platform/asimov.rs.git
-```
-
 ### Glossary
 
 - **System**: A collection of blocks that are connected together.
@@ -132,6 +127,12 @@ git clone https://github.com/asimov-platform/asimov.rs.git
   to port. Any Rust type that implements the `Send + Sync + 'static` traits can
   be used as a message.
 
+## 👨‍💻 Development
+
+```bash
+git clone https://github.com/asimov-platform/asimov.rs.git
+```
+
 ---
 
 [![Share on X](https://img.shields.io/badge/share%20on-x-03A9F4?logo=x)](https://x.com/intent/post?url=https://github.com/asimov-platform/asimov.rs&text=ASIMOV%20Software%20Development%20Kit%20%28SDK%29%20for%20Rust)
@@ -141,6 +142,7 @@ git clone https://github.com/asimov-platform/asimov.rs.git
 [![Share on LinkedIn](https://img.shields.io/badge/share%20on-linkedin-3949AB?logo=linkedin)](https://www.linkedin.com/sharing/share-offsite/?url=https://github.com/asimov-platform/asimov.rs)
 
 [ASIMOV]: https://asimov.sh
+[ASIMOV.rs]: https://github.com/asimov-platform/asimov.rs
 [Async-Flow]: https://github.com/artob/async-flow
 [Flows.rs]: https://github.com/artob/flows.rs
 [flow-based]: https://github.com/artob/awesome-fbp
@@ -148,4 +150,4 @@ git clone https://github.com/asimov-platform/asimov.rs.git
 [modules]: https://github.com/asimov-modules
 [module system]: https://asimov-specs.github.io/
 [program patterns]: https://asimov-specs.github.io/program-patterns/
-[trustworthy, neurosymbolic AI]: https://asimov.blog/introducing-asimov/
+[trustworthy neurosymbolic machine intelligence]: https://asimov.blog/introducing-asimov/
