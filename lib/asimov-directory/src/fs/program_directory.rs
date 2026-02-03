@@ -8,15 +8,15 @@ use std::{
     path::Path,
 };
 
-/// A module directory stored on a file system (e.g., `$HOME/.asimov/modules/`).
+/// A program directory stored on a file system (e.g., `$HOME/.asimov/libexec/`).
 #[derive(Debug, Display)]
-#[display("ModuleDirectory({:?})", path)]
-pub struct ModuleDirectory {
+#[display("ProgramDirectory({:?})", path)]
+pub struct ProgramDirectory {
     path: Utf8PathBuf,
 }
 
-impl ModuleDirectory {
-    /// Opens a module directory from a file system path.
+impl ProgramDirectory {
+    /// Opens a program directory from a file system path.
     pub fn open(path: impl AsRef<Path>) -> Result<Self> {
         let path = path.as_ref();
         if !path.exists() {
@@ -28,7 +28,7 @@ impl ModuleDirectory {
                 format!("failed to open non-UTF-8 path: {}", e.display()),
             )
         })?;
-        Ok(ModuleDirectory { path })
+        Ok(ProgramDirectory { path })
     }
 
     pub fn as_str(&self) -> &str {
@@ -36,31 +36,23 @@ impl ModuleDirectory {
     }
 }
 
-impl AsRef<str> for ModuleDirectory {
+impl AsRef<str> for ProgramDirectory {
     fn as_ref(&self) -> &str {
         self.path.as_str()
     }
 }
 
-impl AsRef<Path> for ModuleDirectory {
+impl AsRef<Path> for ProgramDirectory {
     fn as_ref(&self) -> &Path {
         self.path.as_std_path()
     }
 }
 
 #[cfg(feature = "camino")]
-impl AsRef<Utf8Path> for ModuleDirectory {
+impl AsRef<Utf8Path> for ProgramDirectory {
     fn as_ref(&self) -> &Utf8Path {
         self.path.as_path()
     }
 }
 
-impl crate::ModuleDirectory for ModuleDirectory {
-    fn is_installed(&self, _module_name: impl AsRef<str>) -> bool {
-        false // TODO
-    }
-
-    fn is_enabled(&self, _module_name: impl AsRef<str>) -> bool {
-        false // TODO
-    }
-}
+impl crate::ProgramDirectory for ProgramDirectory {}

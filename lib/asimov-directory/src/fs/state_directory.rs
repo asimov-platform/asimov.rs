@@ -1,6 +1,6 @@
 // This is free and unencumbered software released into the public domain.
 
-use super::ModuleDirectory;
+use super::{ConfigDirectory, ModuleDirectory, ProgramDirectory};
 use alloc::format;
 use camino::Utf8PathBuf;
 use derive_more::Display;
@@ -9,7 +9,7 @@ use std::{
     path::Path,
 };
 
-/// A state directory stored on a file system (e.g. `$HOME/.asimov/`).
+/// A state directory stored on a file system (e.g., `$HOME/.asimov/`).
 #[derive(Debug, Display)]
 #[display("StateDirectory({:?})", path)]
 pub struct StateDirectory {
@@ -32,9 +32,19 @@ impl StateDirectory {
         Ok(StateDirectory { path })
     }
 
+    /// Opens the configuration directory under this state directory.
+    pub fn configs(&self) -> Result<ConfigDirectory> {
+        ConfigDirectory::open(self.path.join("configs"))
+    }
+
     /// Opens the module directory under this state directory.
     pub fn modules(&self) -> Result<ModuleDirectory> {
         ModuleDirectory::open(self.path.join("modules"))
+    }
+
+    /// Opens the program directory under this state directory.
+    pub fn programs(&self) -> Result<ProgramDirectory> {
+        ProgramDirectory::open(self.path.join("libexec"))
     }
 
     pub fn as_str(&self) -> &str {
@@ -62,7 +72,15 @@ impl AsRef<Utf8Path> for StateDirectory {
 }
 
 impl crate::StateDirectory for StateDirectory {
+    fn has_configs(&self) -> bool {
+        self.path.join("configs").exists()
+    }
+
     fn has_modules(&self) -> bool {
         self.path.join("modules").exists()
+    }
+
+    fn has_programs(&self) -> bool {
+        self.path.join("libexec").exists()
     }
 }
