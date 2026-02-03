@@ -17,16 +17,23 @@ categories.workspace = true
 publish.workspace = true
 
 [package.metadata.readme]
-title = "ASIMOV.rs: Directory Client"
+title = "ASIMOV.rs: State Management"
 
 [features]
 default = ["all", "std"]
 all = []
-std = ["asimov-core/std"]
+std = ["asimov-core/std", "dep:camino"]
 unstable = []
 
 # Features:
 tracing = []
 
+# Integrations:
+camino = ["dep:camino"]
+
 [dependencies]
 asimov-core.workspace = true
+derive_more = { workspace = true, features = ["display"] }
+
+# Integrations:
+camino = { workspace = true, optional = true }

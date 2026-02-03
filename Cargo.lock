@@ -907,6 +907,8 @@ name = "asimov-directory"
 version = "25.1.0"
 dependencies = [
  "asimov-core",
+ "camino",
+ "derive_more 2.1.1",
 ]
 
 [[package]]
@@ -1162,6 +1164,7 @@ dependencies = [
  "asimov-config",
  "asimov-core",
  "asimov-credit",
+ "asimov-directory",
  "asimov-env",
  "asimov-flow",
  "asimov-id",

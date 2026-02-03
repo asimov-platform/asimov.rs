@@ -26,6 +26,7 @@ all = [
     "config",
     "core",
     "credit",
+    "directory",
     "env",
     "flow",
     "id",
@@ -44,6 +45,7 @@ std = [
     "asimov-config?/std",
     "asimov-core?/std",
     "asimov-credit?/std",
+    "asimov-directory?/std",
     "asimov-env?/std",
     "asimov-flow?/std",
     "asimov-id?/std",
@@ -62,6 +64,7 @@ unstable = ["asimov-core?/unstable"]
 config = ["dep:asimov-config"]
 core = ["dep:asimov-core"]
 credit = ["dep:asimov-credit"]
+directory = ["dep:asimov-directory"]
 env = ["dep:asimov-env"]
 flow = ["dep:asimov-flow"]
 id = ["dep:asimov-id"]
@@ -86,6 +89,7 @@ tracing = ["asimov-core?/tracing", "asimov-installer?/tracing"]
 asimov-config = { workspace = true, optional = true }
 asimov-core = { workspace = true, optional = true }
 asimov-credit = { workspace = true, optional = true }
+asimov-directory = { workspace = true, optional = true }
 asimov-env = { workspace = true, optional = true }
 asimov-flow = { workspace = true, optional = true }
 asimov-id = { workspace = true, optional = true }

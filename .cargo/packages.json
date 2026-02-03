@@ -452,7 +452,7 @@
       "readme": true,
       "metadata": {
         "readme": {
-          "title": "ASIMOV.rs: Directory Client"
+          "title": "ASIMOV.rs: State Management"
         }
       }
     },
@@ -463,14 +463,28 @@
       ],
       "all": [],
       "std": [
-        "asimov-core/std"
+        "asimov-core/std",
+        "dep:camino"
       ],
       "unstable": [],
-      "tracing": []
+      "tracing": [],
+      "camino": [
+        "dep:camino"
+      ]
     },
     "dependencies": {
       "asimov-core": {
         "workspace": true
+      },
+      "derive_more": {
+        "workspace": true,
+        "features": [
+          "display"
+        ]
+      },
+      "camino": {
+        "workspace": true,
+        "optional": true
       }
     }
   },
@@ -1777,6 +1791,7 @@
         "config",
         "core",
         "credit",
+        "directory",
         "env",
         "flow",
         "id",
@@ -1794,6 +1809,7 @@
         "asimov-config?/std",
         "asimov-core?/std",
         "asimov-credit?/std",
+        "asimov-directory?/std",
         "asimov-env?/std",
         "asimov-flow?/std",
         "asimov-id?/std",
@@ -1817,6 +1833,9 @@
       ],
       "credit": [
         "dep:asimov-credit"
+      ],
+      "directory": [
+        "dep:asimov-directory"
       ],
       "env": [
         "dep:asimov-env"
@@ -1873,6 +1892,10 @@
         "optional": true
       },
       "asimov-credit": {
+        "workspace": true,
+        "optional": true
+      },
+      "asimov-directory": {
         "workspace": true,
         "optional": true
       },

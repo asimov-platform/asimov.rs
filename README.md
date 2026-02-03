@@ -148,6 +148,6 @@ git clone https://github.com/asimov-platform/asimov.rs.git
 [flow-based]: https://github.com/artob/awesome-fbp
 [naming conventions]: https://rust-lang.github.io/api-guidelines/naming.html
 [modules]: https://github.com/asimov-modules
-[module system]: https://asimov-specs.github.io/
+[module system]: https://asimov-specs.github.io
 [program patterns]: https://asimov-specs.github.io/program-patterns/
 [trustworthy neurosymbolic machine intelligence]: https://asimov.blog/introducing-asimov/
