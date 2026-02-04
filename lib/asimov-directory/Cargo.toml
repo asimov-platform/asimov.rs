@@ -40,3 +40,6 @@ derive_more = { workspace = true, features = ["display"] }
 # Integrations:
 camino = { workspace = true, optional = true }
 tokio = { workspace = true, features = ["fs"], optional = true }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }

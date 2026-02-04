@@ -25,7 +25,7 @@ impl crate::ModuleNameIterator for ModuleNameIterator {
                 && let Some(entry_name) = entry.file_name().to_str()
                 && !entry_name.starts_with(".")
                 && let Ok(entry_type) = entry.file_type().await
-                && entry_type.is_symlink()
+                && (entry_type.is_file() || entry_type.is_symlink())
             {
                 let entry_stem = [".json", ".yaml"]
                     .iter()

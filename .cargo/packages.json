@@ -461,15 +461,24 @@
         "all",
         "std"
       ],
-      "all": [],
+      "all": [
+        "fs"
+      ],
       "std": [
-        "asimov-core/std",
-        "dep:camino"
+        "asimov-core/std"
       ],
       "unstable": [],
+      "fs": [
+        "std",
+        "dep:camino",
+        "dep:tokio"
+      ],
       "tracing": [],
       "camino": [
         "dep:camino"
+      ],
+      "tokio": [
+        "dep:tokio"
       ]
     },
     "dependencies": {
@@ -484,6 +493,14 @@
       },
       "camino": {
         "workspace": true,
+        "optional": true
+      },
+      "tokio": {
+        "workspace": true,
+        "features": [
+          "fs",
+          "full"
+        ],
         "optional": true
       }
     }
