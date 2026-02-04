@@ -66,14 +66,32 @@ asimov-directory = { version = "25", default-features = false, features = ["trac
 use asimov_directory::*;
 ```
 
+### Printing Local Paths
+
+```rust
+// cargo run --package asimov-directory --example print_paths
+
+use asimov_directory::fs::StateDirectory;
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let asimov_dir = StateDirectory::home()?;
+    println!("{}", asimov_dir); // "$HOME/.asimov" on Unix
+    println!("{}", asimov_dir.configs()?); // "$HOME/.asimov/configs"
+    println!("{}", asimov_dir.modules()?); // "$HOME/.asimov/modules"
+    println!("{}", asimov_dir.programs()?); // "$HOME/.asimov/libexec"
+    Ok(())
+}
+```
+
 ### Listing Installed Modules
 
 ```rust
-use asimov_directory::{ModuleNameIterator as _, fs::StateDirectory};
-use core::error::Error;
+// cargo run --package asimov-directory --example list_modules
+
+use asimov_directory::{ModuleNameIterator, fs::StateDirectory};
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn Error>> {
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let modules_dir = StateDirectory::home()?.modules()?;
     let mut module_names = modules_dir.iter_installed().await?;
     while let Some(module_name) = module_names.next().await {

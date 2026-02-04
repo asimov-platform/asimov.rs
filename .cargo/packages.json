@@ -498,10 +498,18 @@
       "tokio": {
         "workspace": true,
         "features": [
-          "fs",
-          "full"
+          "fs"
         ],
         "optional": true
+      }
+    },
+    "dev-dependencies": {
+      "tokio": {
+        "version": "1",
+        "features": [
+          "macros",
+          "rt-multi-thread"
+        ]
       }
     }
   },
