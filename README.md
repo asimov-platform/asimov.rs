@@ -63,7 +63,25 @@ asimov = { package = "asimov-sdk", version = "25", default-features = false, fea
 ### Importing the SDK
 
 ```rust
-use asimov::{config, env, flow, id, kb, patterns, registry, runner, snapshot};
+use asimov::{config, directory, env, flow, id, kb, patterns, registry, runner, snapshot};
+```
+
+### Listing Installed Modules
+
+```rust
+// cargo run --package asimov-directory --example list_modules
+
+use asimov::directory::{ModuleNameIterator, fs::StateDirectory};
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let modules = StateDirectory::home()?.modules()?;
+    let mut module_names = modules.iter_installed().await?;
+    while let Some(module_name) = module_names.next().await {
+        println!("{}", module_name);
+    }
+    Ok(())
+}
 ```
 
 ## 📚 Reference
@@ -112,6 +130,8 @@ use asimov::{config, env, flow, id, kb, patterns, registry, runner, snapshot};
 | [asimov-vault](https://github.com/asimov-platform/asimov.rs/tree/master/lib/asimov-vault) | [![Package](https://img.shields.io/crates/v/asimov-vault)](https://crates.io/crates/asimov-vault) | [![Documentation](https://img.shields.io/docsrs/asimov-vault?label=docs.rs)](https://docs.rs/asimov-vault) |
 
 ### Glossary
+
+- **Module**: A collection of systems and blocks, packaged as a reusable unit.
 
 - **System**: A collection of blocks that are connected together.
   Systems are the top-level entities in dataflow programs.
