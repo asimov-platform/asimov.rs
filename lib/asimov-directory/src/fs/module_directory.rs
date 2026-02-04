@@ -1,6 +1,6 @@
 // This is free and unencumbered software released into the public domain.
 
-use super::StateDirectory;
+use super::{ModuleNameIterator, StateDirectory};
 use alloc::format;
 use camino::Utf8PathBuf;
 use derive_more::Display;
@@ -13,7 +13,7 @@ use std::{
 #[derive(Debug, Display)]
 #[display("ModuleDirectory({:?})", path)]
 pub struct ModuleDirectory {
-    path: Utf8PathBuf,
+    pub(crate) path: Utf8PathBuf,
 }
 
 impl ModuleDirectory {
@@ -37,6 +37,14 @@ impl ModuleDirectory {
             )
         })?;
         Ok(ModuleDirectory { path })
+    }
+
+    pub async fn iter_enabled(&self) -> Result<impl crate::ModuleNameIterator> {
+        ModuleNameIterator::new(self.path.join("enabled")).await
+    }
+
+    pub async fn iter_installed(&self) -> Result<impl crate::ModuleNameIterator> {
+        ModuleNameIterator::new(self.path.join("installed")).await
     }
 
     pub fn as_str(&self) -> &str {

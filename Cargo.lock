@@ -909,6 +909,7 @@ dependencies = [
  "asimov-core",
  "camino",
  "derive_more 2.1.1",
+ "tokio",
 ]
 
 [[package]]

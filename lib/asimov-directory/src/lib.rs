@@ -8,7 +8,7 @@ extern crate alloc;
 #[cfg(feature = "std")]
 extern crate std;
 
-#[cfg(feature = "std")]
+#[cfg(feature = "fs")]
 pub mod fs;
 
 mod config_directory;
@@ -16,6 +16,9 @@ pub use config_directory::*;
 
 mod module_directory;
 pub use module_directory::*;
+
+mod module_iterators;
+pub use module_iterators::*;
 
 mod program_directory;
 pub use program_directory::*;

@@ -21,15 +21,17 @@ title = "ASIMOV.rs: State Management"
 
 [features]
 default = ["all", "std"]
-all = []
-std = ["asimov-core/std", "dep:camino"]
+all = ["fs"]
+std = ["asimov-core/std"]
 unstable = []
 
 # Features:
+fs = ["std", "dep:camino", "dep:tokio"]
 tracing = []
 
 # Integrations:
 camino = ["dep:camino"]
+tokio = ["dep:tokio"]
 
 [dependencies]
 asimov-core.workspace = true
@@ -37,3 +39,4 @@ derive_more = { workspace = true, features = ["display"] }
 
 # Integrations:
 camino = { workspace = true, optional = true }
+tokio = { workspace = true, features = ["fs"], optional = true }
