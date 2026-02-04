@@ -17,6 +17,14 @@ pub struct StateDirectory {
 }
 
 impl StateDirectory {
+    /// Opens the default state directory in the user's home directory.
+    ///
+    /// On Unix platforms, including macOS and Linux, this is `$HOME/.asimov/`.
+    pub fn home() -> Result<Self> {
+        let home_dir = std::env::home_dir().expect("home directory not found"); // FIXME
+        Self::open(home_dir.join(".asimov"))
+    }
+
     /// Opens a state directory from a file system path.
     pub fn open(path: impl AsRef<Path>) -> Result<Self> {
         let path = path.as_ref();

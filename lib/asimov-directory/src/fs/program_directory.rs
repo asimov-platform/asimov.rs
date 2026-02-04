@@ -1,5 +1,6 @@
 // This is free and unencumbered software released into the public domain.
 
+use super::StateDirectory;
 use alloc::format;
 use camino::Utf8PathBuf;
 use derive_more::Display;
@@ -16,6 +17,13 @@ pub struct ProgramDirectory {
 }
 
 impl ProgramDirectory {
+    /// Opens the default program directory in the user's home directory.
+    ///
+    /// On Unix platforms, including macOS and Linux, this is `$HOME/.asimov/libexec/`.
+    pub fn home() -> Result<Self> {
+        StateDirectory::home().map(|base_dir| base_dir.programs())?
+    }
+
     /// Opens a program directory from a file system path.
     pub fn open(path: impl AsRef<Path>) -> Result<Self> {
         let path = path.as_ref();
