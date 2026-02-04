@@ -34,6 +34,7 @@ camino = ["dep:camino"]
 tokio = ["dep:tokio"]
 
 [dependencies]
+asimov-config.workspace = true
 asimov-core.workspace = true
 derive_more = { workspace = true, features = ["display"] }
 

@@ -11,11 +11,7 @@ extern crate std;
 #[cfg(feature = "fs")]
 pub mod fs;
 
-mod config_directory;
-pub use config_directory::*;
-
-mod config_profile;
-pub use config_profile::*;
+pub use asimov_config::{ConfigDirectory, ConfigProfile};
 
 mod module_directory;
 pub use module_directory::*;
