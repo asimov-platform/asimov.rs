@@ -14,6 +14,9 @@ pub mod fs;
 mod config_directory;
 pub use config_directory::*;
 
+mod config_profile;
+pub use config_profile::*;
+
 mod module_directory;
 pub use module_directory::*;
 

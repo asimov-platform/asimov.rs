@@ -1,6 +1,6 @@
 // This is free and unencumbered software released into the public domain.
 
-use super::StateDirectory;
+use super::{ConfigProfile, StateDirectory};
 use alloc::format;
 use camino::Utf8PathBuf;
 use derive_more::Display;
@@ -37,6 +37,12 @@ impl ConfigDirectory {
             )
         })?;
         Ok(ConfigDirectory { path })
+    }
+
+    /// Returns the default configuration profile (e.g., at
+    /// `$HOME/.asimov/configs/default/`).
+    pub fn default_profile(&self) -> Result<ConfigProfile> {
+        ConfigProfile::open(self.path.join("default"))
     }
 
     pub fn as_str(&self) -> &str {
