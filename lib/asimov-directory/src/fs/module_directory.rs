@@ -39,11 +39,11 @@ impl ModuleDirectory {
         Ok(ModuleDirectory { path })
     }
 
-    pub async fn iter_enabled(&self) -> Result<impl crate::ModuleNameIterator> {
+    pub async fn iter_enabled(&self) -> Result<ModuleNameIterator> {
         ModuleNameIterator::new(self.path.join("enabled")).await
     }
 
-    pub async fn iter_installed(&self) -> Result<impl crate::ModuleNameIterator> {
+    pub async fn iter_installed(&self) -> Result<ModuleNameIterator> {
         ModuleNameIterator::new(self.path.join("installed")).await
     }
 

@@ -10,7 +10,7 @@ mod module_directory;
 pub use module_directory::*;
 
 mod module_iterators;
-pub(crate) use module_iterators::*;
+pub use module_iterators::*;
 
 mod program_directory;
 pub use program_directory::*;

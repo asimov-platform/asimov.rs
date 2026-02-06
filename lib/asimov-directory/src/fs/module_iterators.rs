@@ -5,6 +5,7 @@ use camino::Utf8PathBuf;
 use std::io::Result;
 use tokio::fs::ReadDir;
 
+/// An iterator over module names in a module directory.
 #[derive(Debug)]
 pub struct ModuleNameIterator {
     dir: ReadDir,
