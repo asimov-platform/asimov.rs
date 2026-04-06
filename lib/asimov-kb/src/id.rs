@@ -6,6 +6,10 @@ use core::str::FromStr;
 use derive_more::Display;
 
 #[derive(Clone, Debug, Display, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[cfg_attr(
+    feature = "serde",
+    derive(serde_with::SerializeDisplay, serde_with::DeserializeFromStr)
+)]
 #[display("{class}{}", bs58::encode(bytes).into_string())]
 pub struct Id<const N: usize = 16> {
     pub(crate) class: IdClass,

@@ -5,6 +5,10 @@ use core::str::FromStr;
 use derive_more::Display;
 
 #[derive(Clone, Copy, Debug, Display, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[cfg_attr(
+    feature = "serde",
+    derive(serde_with::SerializeDisplay, serde_with::DeserializeFromStr)
+)]
 #[cfg_attr(feature = "clap", derive(clap::ValueEnum))]
 pub enum IdClass {
     #[display("B")]
@@ -16,6 +20,22 @@ pub enum IdClass {
 }
 
 impl IdClass {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Blob => "B",
+            Self::Event => "E",
+            Self::Person => "P",
+        }
+    }
+
+    pub fn as_char(&self) -> char {
+        match self {
+            Self::Blob => 'B',
+            Self::Event => 'E',
+            Self::Person => 'P',
+        }
+    }
+
     #[cfg(feature = "std")]
     pub fn yaml_path(&self) -> std::path::PathBuf {
         match self {

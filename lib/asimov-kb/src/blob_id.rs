@@ -6,6 +6,7 @@ use core::{ops::RangeInclusive, str::FromStr};
 use derive_more::Display;
 
 #[derive(Clone, Debug, Display, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub struct BlobId(pub(crate) Id<32>);
 
 impl BlobId {
