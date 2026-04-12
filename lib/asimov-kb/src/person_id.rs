@@ -52,6 +52,49 @@ impl From<&Vec<u8>> for PersonId {
     }
 }
 
+#[cfg(feature = "async-graphql")]
+impl async_graphql::ScalarType for PersonId {
+    fn parse(value: async_graphql::Value) -> async_graphql::InputValueResult<Self> {
+        match value {
+            async_graphql::Value::String(s) => Ok(Self::from_str(&s)?),
+            _ => Err(async_graphql::InputValueError::expected_type(value)),
+        }
+    }
+
+    fn is_valid(value: &async_graphql::Value) -> bool {
+        matches!(value, async_graphql::Value::String(_))
+    }
+
+    fn to_value(&self) -> async_graphql::Value {
+        async_graphql::Value::String(alloc::string::ToString::to_string(self))
+    }
+}
+
+#[cfg(feature = "async-graphql")]
+impl async_graphql::InputType for PersonId {
+    type RawValueType = Self;
+
+    fn type_name() -> alloc::borrow::Cow<'static, str> {
+        "PERSON ID".into()
+    }
+
+    fn create_type_info(registry: &mut async_graphql::registry::Registry) -> alloc::string::String {
+        <alloc::string::String as async_graphql::InputType>::create_type_info(registry)
+    }
+
+    fn parse(value: Option<async_graphql::Value>) -> async_graphql::InputValueResult<Self> {
+        <Self as async_graphql::ScalarType>::parse(value.unwrap_or_default())
+    }
+
+    fn to_value(&self) -> async_graphql::Value {
+        <Self as async_graphql::ScalarType>::to_value(self)
+    }
+
+    fn as_raw_value(&self) -> Option<&Self::RawValueType> {
+        Some(self)
+    }
+}
+
 #[cfg(feature = "eloquent")]
 impl eloquent::ToSql for PersonId {
     fn to_sql(&self) -> Result<String, eloquent::error::EloquentError> {
