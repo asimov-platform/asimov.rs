@@ -15,6 +15,8 @@ pub enum IdClass {
     Blob,
     #[display("E")]
     Event,
+    #[display("O")]
+    Organization,
     #[display("P")]
     Person,
 }
@@ -24,6 +26,7 @@ impl IdClass {
         match self {
             Self::Blob => "B",
             Self::Event => "E",
+            Self::Organization => "O",
             Self::Person => "P",
         }
     }
@@ -32,6 +35,7 @@ impl IdClass {
         match self {
             Self::Blob => 'B',
             Self::Event => 'E',
+            Self::Organization => 'O',
             Self::Person => 'P',
         }
     }
@@ -41,6 +45,7 @@ impl IdClass {
         match self {
             Self::Blob => "blob.yaml",
             Self::Event => "event.yaml",
+            Self::Organization => "organization.yaml",
             Self::Person => "person.yaml",
         }
         .into()
@@ -51,6 +56,7 @@ impl IdClass {
         match self {
             Self::Blob => "blobs",
             Self::Event => "events",
+            Self::Organization => "organizations",
             Self::Person => "people",
         }
         .into()
@@ -64,6 +70,7 @@ impl FromStr for IdClass {
         Ok(match input.chars().next().unwrap_or_default() {
             'B' => Self::Blob,
             'E' => Self::Event,
+            'O' => Self::Organization,
             'P' => Self::Person,
             _ => return Err(IdError::UnknownClass),
         })

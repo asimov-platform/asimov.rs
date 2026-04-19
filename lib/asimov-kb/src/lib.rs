@@ -23,5 +23,8 @@ pub use id_class::*;
 mod id_error;
 pub use id_error::*;
 
+mod organization_id;
+pub use organization_id::*;
+
 mod person_id;
 pub use person_id::*;
