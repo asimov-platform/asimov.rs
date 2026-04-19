@@ -13,6 +13,7 @@ impl OrganizationId {
     pub const ID_LEN_MIN: usize = 1 + 16;
     pub const ID_LEN_MAX: usize = 1 + 22;
     pub const ID_LEN: RangeInclusive<usize> = Self::ID_LEN_MIN..=Self::ID_LEN_MAX;
+    pub const PATTERN: &'static str = "^O[1-9A-HJ-NP-Za-km-z]{16,22}$";
 
     #[cfg(feature = "uuid")]
     pub fn new() -> Self {

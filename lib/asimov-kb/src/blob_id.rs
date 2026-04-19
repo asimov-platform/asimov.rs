@@ -13,6 +13,7 @@ impl BlobId {
     pub const ID_LEN_MIN: usize = 1 + 16; // TODO
     pub const ID_LEN_MAX: usize = 1 + 22; // TODO
     pub const ID_LEN: RangeInclusive<usize> = Self::ID_LEN_MIN..=Self::ID_LEN_MAX;
+    pub const PATTERN: &'static str = "^B[1-9A-HJ-NP-Za-km-z]{16,22}$";
 
     pub fn as_id(&self) -> &Id<32> {
         &self.0
