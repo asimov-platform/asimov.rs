@@ -59,7 +59,7 @@ serde_with = { workspace = true, optional = true }
 turso = { workspace = true, optional = true }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-uuid = { version = "1.19", default-features = false, features = ["serde", "v7"], optional = true }
+uuid = { workspace = true, features = ["serde", "v7"], optional = true }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-uuid = { version = "1.19", default-features = false, features = ["js", "serde", "v7"], optional = true }
+uuid = { workspace = true, features = ["js", "serde", "v7"], optional = true }
