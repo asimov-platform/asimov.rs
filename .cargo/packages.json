@@ -482,14 +482,29 @@
       ]
     },
     "dependencies": {
+      "asimov-config": {
+        "workspace": true
+      },
       "asimov-core": {
         "workspace": true
+      },
+      "asimov-module": {
+        "workspace": true,
+        "features": [
+          "serde"
+        ]
       },
       "derive_more": {
         "workspace": true,
         "features": [
           "display"
         ]
+      },
+      "serde_json": {
+        "workspace": true
+      },
+      "serde_yaml_ng": {
+        "workspace": true
       },
       "camino": {
         "workspace": true,
@@ -961,6 +976,9 @@
       ],
       "tracing": [],
       "unstable": [],
+      "async-graphql": [
+        "dep:async-graphql"
+      ],
       "blake3": [
         "dep:blake3"
       ],
@@ -983,7 +1001,8 @@
         "dep:rocket"
       ],
       "serde": [
-        "dep:serde"
+        "dep:serde",
+        "dep:serde_with"
       ],
       "turso": [
         "dep:turso"
@@ -1008,6 +1027,11 @@
         "features": [
           "display"
         ]
+      },
+      "async-graphql": {
+        "version": "7.2",
+        "default-features": false,
+        "optional": true
       },
       "blake3": {
         "version": "1.8",
@@ -1051,6 +1075,10 @@
         "workspace": true,
         "optional": true
       },
+      "serde_with": {
+        "workspace": true,
+        "optional": true
+      },
       "turso": {
         "workspace": true,
         "optional": true
@@ -1060,8 +1088,7 @@
       "cfg(not(target_arch = \"wasm32\"))": {
         "dependencies": {
           "uuid": {
-            "version": "1.19",
-            "default-features": false,
+            "workspace": true,
             "features": [
               "serde",
               "v7"
@@ -1073,8 +1100,7 @@
       "cfg(target_arch = \"wasm32\")": {
         "dependencies": {
           "uuid": {
-            "version": "1.19",
-            "default-features": false,
+            "workspace": true,
             "features": [
               "js",
               "serde",
