@@ -1,6 +1,6 @@
 // This is free and unencumbered software released into the public domain.
 
-use super::{ModuleNameIterator, StateDirectory};
+use super::{ModuleManifestIterator, ModuleNameIterator, StateDirectory};
 use alloc::format;
 use camino::Utf8PathBuf;
 use derive_more::Display;
@@ -45,6 +45,10 @@ impl ModuleDirectory {
 
     pub async fn iter_installed(&self) -> Result<ModuleNameIterator> {
         ModuleNameIterator::new(self.path.join("installed")).await
+    }
+
+    pub async fn iter_manifests(&self) -> Result<ModuleManifestIterator> {
+        ModuleManifestIterator::new(self.path.join("installed")).await
     }
 
     pub fn as_str(&self) -> &str {

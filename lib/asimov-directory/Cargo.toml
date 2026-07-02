@@ -36,7 +36,10 @@ tokio = ["dep:tokio"]
 [dependencies]
 asimov-config.workspace = true
 asimov-core.workspace = true
+asimov-module = { workspace = true, features = ["serde"] }
 derive_more = { workspace = true, features = ["display"] }
+serde_json = { workspace = true }
+serde_yaml_ng = { workspace = true }
 
 # Integrations:
 camino = { workspace = true, optional = true }

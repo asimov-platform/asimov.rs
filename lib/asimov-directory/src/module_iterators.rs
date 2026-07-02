@@ -1,10 +1,16 @@
 // This is free and unencumbered software released into the public domain.
 
 use asimov_core::ModuleName;
+use asimov_module::InstalledModuleManifest;
 
 /// An iterator over module names in a module directory.
 pub trait ModuleNameIterator {
     fn next(&mut self) -> impl Future<Output = Option<ModuleName>> + Send;
+}
+
+/// An iterator over module manifests in a module directory.
+pub trait ModuleManifestIterator {
+    fn next(&mut self) -> impl Future<Output = Option<InstalledModuleManifest>> + Send;
 }
 
 /// An iterator over module names in a module directory.
