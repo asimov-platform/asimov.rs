@@ -9,5 +9,15 @@ extern crate alloc;
 #[cfg(feature = "std")]
 extern crate std;
 
+#[doc(hidden)]
+pub use iroh;
+
+pub use iroh::{
+    Endpoint, EndpointAddr, EndpointId,
+    endpoint::presets,
+    protocol::{Router, RouterBuilder},
+};
+pub use iroh_tickets::{ParseError as TicketParsingError, Ticket, endpoint::EndpointTicket};
+
 mod ping_protocol;
 pub use ping_protocol::*;
