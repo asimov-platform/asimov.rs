@@ -14,10 +14,13 @@ pub use iroh;
 
 pub use iroh::{
     Endpoint, EndpointAddr, EndpointId,
-    endpoint::presets,
+    endpoint::presets::Preset,
     protocol::{Router, RouterBuilder},
 };
 pub use iroh_tickets::{ParseError as TicketParsingError, Ticket, endpoint::EndpointTicket};
 
 mod ping_protocol;
 pub use ping_protocol::*;
+
+mod presets;
+pub use presets::*;

@@ -30,7 +30,7 @@ tracing = []
 
 [dependencies]
 asimov-core.workspace = true
-iroh.workspace = true
+iroh = { workspace = true, features = ["metrics", "fast-apple-datapath", "portmapper", "tls-ring"] }
 iroh-metrics.workspace = true
 iroh-tickets.workspace = true
 n0-error.workspace = true
