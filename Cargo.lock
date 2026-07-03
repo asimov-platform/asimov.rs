@@ -1096,7 +1096,7 @@ name = "asimov-proxy"
 version = "25.1.0"
 dependencies = [
  "asimov-core",
- "gofer",
+ "gofer 0.2.0",
  "miette",
  "thiserror 2.0.18",
 ]
@@ -2327,7 +2327,7 @@ dependencies = [
  "dotenvy",
  "error-stack",
  "getenv",
- "gofer",
+ "gofer 0.1.8",
  "known-errors",
  "tracing-core",
  "wild",
@@ -3851,11 +3851,24 @@ dependencies = [
  "clap",
  "data-url",
  "dogma",
+ "percent-encoding",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "gofer"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "608d83327e4bfb7500fb13b02da07d0247174225eff32fe443a70c14b7adff2a"
+dependencies = [
+ "clap",
+ "data-url",
+ "dogma",
  "miette",
  "percent-encoding",
- "reqwest 0.12.28",
  "suppaftp",
  "thiserror 2.0.18",
+ "ureq 3.3.0",
 ]
 
 [[package]]
@@ -4021,7 +4034,7 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror 2.0.18",
- "ureq",
+ "ureq 2.12.1",
  "windows-sys 0.60.2",
 ]
 
@@ -7244,11 +7257,7 @@ checksum = "eddd3ca559203180a307f12d114c268abf583f59b03cb906fd0b3ff8646c1147"
 dependencies = [
  "base64 0.22.1",
  "bytes",
- "encoding_rs",
- "futures-channel",
  "futures-core",
- "futures-util",
- "h2",
  "http 1.4.2",
  "http-body 1.0.1",
  "http-body-util",
@@ -7257,7 +7266,6 @@ dependencies = [
  "hyper-util",
  "js-sys",
  "log",
- "mime",
  "percent-encoding",
  "pin-project-lite",
  "quinn",
@@ -9520,6 +9528,36 @@ dependencies = [
 ]
 
 [[package]]
+name = "ureq"
+version = "3.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dea7109cdcd5864d4eeb1b58a1648dc9bf520360d7af16ec26d0a9354bafcfc0"
+dependencies = [
+ "base64 0.22.1",
+ "encoding_rs",
+ "flate2",
+ "log",
+ "percent-encoding",
+ "rustls",
+ "rustls-pki-types",
+ "ureq-proto",
+ "utf8-zero",
+ "webpki-roots 1.0.8",
+]
+
+[[package]]
+name = "ureq-proto"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e994ba84b0bd1b1b0cf92878b7ef898a5c1760108fe7b6010327e274917a808c"
+dependencies = [
+ "base64 0.22.1",
+ "http 1.4.2",
+ "httparse",
+ "log",
+]
+
+[[package]]
 name = "url"
 version = "2.5.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -9531,6 +9569,12 @@ dependencies = [
  "serde",
  "serde_derive",
 ]
+
+[[package]]
+name = "utf8-zero"
+version = "0.8.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b8c0a043c9540bae7c578c88f91dda8bd82e59ae27c21baca69c8b191aaf5a6e"
 
 [[package]]
 name = "utf8_iter"
