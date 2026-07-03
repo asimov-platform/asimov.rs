@@ -30,3 +30,13 @@ tracing = []
 
 [dependencies]
 asimov-core.workspace = true
+iroh.workspace = true
+iroh-metrics.workspace = true
+n0-error.workspace = true
+tokio = { workspace = true, features = ["time"] }
+
+[dev-dependencies]
+iroh-services.workspace = true
+iroh-tickets.workspace = true
+tokio = { workspace = true, features = ["full"] }
+tracing-subscriber.workspace = true

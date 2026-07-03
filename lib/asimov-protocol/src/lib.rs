@@ -2,8 +2,12 @@
 
 #![no_std]
 #![forbid(unsafe_code)]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 
 extern crate alloc;
 
 #[cfg(feature = "std")]
 extern crate std;
+
+mod ping_protocol;
+pub use ping_protocol::*;
