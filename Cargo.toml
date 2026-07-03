@@ -67,8 +67,22 @@ rdf-model = { version = "0.4.4", default-features = false, features = ["alloc"] 
 rdf-vocab = { version = "0.4.4", default-features = false, features = ["alloc"] }
 xsd = { version = "0.4.4", default-features = false, features = ["alloc"] }
 
-# Interoperability with Valuand:
+# Implementation with Valuand:
 valuand = { version = "0.1", default-features = false }
+
+# Implementation with Iroh:
+iroh = { version = "1.0", default-features = false }
+iroh-blobs = { version = "0.103", default-features = false }
+iroh-gossip = { version = "0.101", default-features = false }
+iroh-metrics = { version = "1.0", default-features = false }
+iroh-services = { version = "1.0", default-features = false }
+iroh-tickets = { version = "1.0", default-features = false }
+n0-error = { version = "1.0", default-features = false }
+
+# Implementation with Tokio:
+tokio = { version = "1", default-features = false }
+tokio-stream = { version = "0.1", default-features = false }
+tokio-util = { version = "0.7", default-features = false }
 
 alloy = { version = "0.5", default-features = false }
 async-flow = { version = "0.1.5", default-features = false }
@@ -151,9 +165,6 @@ tar = { version = "0.4", default-features = false }
 tempfile = { version = "3.20", default-features = false }
 thiserror = { version = "2", default-features = false }
 tldr = { version = "0.1", package = "tldr-traits", default-features = false }
-tokio = { version = "1", default-features = false }
-tokio-stream = { version = "0.1", default-features = false }
-tokio-util = { version = "0.7", default-features = false }
 tower-http = { version = "0.6", default-features = false }
 tracing = { version = "0.1", default-features = false }
 tracing-subscriber = { version = "0.3", default-features = false, features = [
