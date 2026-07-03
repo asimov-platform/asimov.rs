@@ -37,3 +37,8 @@ serde.workspace = true
 
 # Integrations:
 validator = { version = "0.16.1", features = ["derive"], optional = true }
+
+# Preview locally with: RUSTDOCFLAGS="--cfg docsrs" cargo +nightly doc --all-features
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]

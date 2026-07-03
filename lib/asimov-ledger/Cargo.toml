@@ -31,3 +31,8 @@ tracing = []
 [dependencies]
 alloy = { workspace = true, features = ["contract", "sol-types"] }
 asimov-core.workspace = true
+
+# Preview locally with: RUSTDOCFLAGS="--cfg docsrs" cargo +nightly doc --all-features
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]

@@ -103,3 +103,8 @@ required-features = ["mdns"]
 name = "persistence"
 path = "examples/persistence.rs"
 required-features = ["http", "persistence"]
+
+# Preview locally with: RUSTDOCFLAGS="--cfg docsrs" cargo +nightly doc --all-features
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]

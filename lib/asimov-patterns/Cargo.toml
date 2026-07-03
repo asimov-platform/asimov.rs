@@ -33,3 +33,8 @@ asimov-core.workspace = true
 async-trait.workspace = true
 bon.workspace = true
 rdf-model.workspace = true
+
+# Preview locally with: RUSTDOCFLAGS="--cfg docsrs" cargo +nightly doc --all-features
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]

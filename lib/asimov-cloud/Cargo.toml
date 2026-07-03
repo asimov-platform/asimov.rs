@@ -58,3 +58,8 @@ tokio = { workspace = true, features = ["io-util", "rt"] }
 reqwest = { workspace = true, features = ["json"] }
 tokio = { workspace = true, features = ["rt"] }
 tokio_with_wasm = { version = "0.8", features = ["rt"] }
+
+# Preview locally with: RUSTDOCFLAGS="--cfg docsrs" cargo +nightly doc --all-features
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
