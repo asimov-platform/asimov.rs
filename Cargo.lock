@@ -802,28 +802,28 @@ checksum = "d3fb67a6e08acf24fdeccbac2cb6ac4305825bd1f117462e0e6f2f193345ad56"
 
 [[package]]
 name = "asimov-account"
-version = "25.1.0"
+version = "25.2.0"
 dependencies = [
  "asimov-core",
 ]
 
 [[package]]
 name = "asimov-agent"
-version = "25.1.0"
+version = "25.2.0"
 dependencies = [
  "asimov-core",
 ]
 
 [[package]]
 name = "asimov-cache"
-version = "25.1.0"
+version = "25.2.0"
 dependencies = [
  "asimov-core",
 ]
 
 [[package]]
 name = "asimov-cloud"
-version = "25.1.0"
+version = "25.2.0"
 dependencies = [
  "asimov-core",
  "asimov-credit",
@@ -839,21 +839,21 @@ dependencies = [
 
 [[package]]
 name = "asimov-config"
-version = "25.1.0"
+version = "25.2.0"
 dependencies = [
  "asimov-core",
 ]
 
 [[package]]
 name = "asimov-construct"
-version = "25.1.0"
+version = "25.2.0"
 dependencies = [
  "asimov-core",
 ]
 
 [[package]]
 name = "asimov-core"
-version = "25.1.0"
+version = "25.2.0"
 dependencies = [
  "cap-directories",
  "cap-std",
@@ -865,7 +865,7 @@ dependencies = [
 
 [[package]]
 name = "asimov-credit"
-version = "25.1.0"
+version = "25.2.0"
 dependencies = [
  "asimov-core",
  "clap",
@@ -880,14 +880,14 @@ dependencies = [
 
 [[package]]
 name = "asimov-dataset"
-version = "25.1.0"
+version = "25.2.0"
 dependencies = [
  "asimov-core",
 ]
 
 [[package]]
 name = "asimov-directory"
-version = "25.1.0"
+version = "25.2.0"
 dependencies = [
  "asimov-config",
  "asimov-core",
@@ -901,7 +901,7 @@ dependencies = [
 
 [[package]]
 name = "asimov-env"
-version = "25.1.0"
+version = "25.2.0"
 dependencies = [
  "asimov-core",
  "cap-directories",
@@ -911,7 +911,7 @@ dependencies = [
 
 [[package]]
 name = "asimov-flow"
-version = "25.1.0"
+version = "25.2.0"
 dependencies = [
  "asimov-core",
  "async-flow",
@@ -920,14 +920,14 @@ dependencies = [
 
 [[package]]
 name = "asimov-graph"
-version = "25.1.0"
+version = "25.2.0"
 dependencies = [
  "asimov-core",
 ]
 
 [[package]]
 name = "asimov-huggingface"
-version = "25.1.0"
+version = "25.2.0"
 dependencies = [
  "asimov-core",
  "hf-hub",
@@ -937,7 +937,7 @@ dependencies = [
 
 [[package]]
 name = "asimov-id"
-version = "25.1.0"
+version = "25.2.0"
 dependencies = [
  "asimov-core",
  "bs58",
@@ -955,7 +955,7 @@ dependencies = [
 
 [[package]]
 name = "asimov-installer"
-version = "25.1.0"
+version = "25.2.0"
 dependencies = [
  "asimov-core",
  "asimov-env",
@@ -983,7 +983,7 @@ dependencies = [
 
 [[package]]
 name = "asimov-kb"
-version = "25.1.0"
+version = "25.2.0"
 dependencies = [
  "asimov-core",
  "async-graphql",
@@ -1004,7 +1004,7 @@ dependencies = [
 
 [[package]]
 name = "asimov-ledger"
-version = "25.1.0"
+version = "25.2.0"
 dependencies = [
  "alloy",
  "asimov-core",
@@ -1012,7 +1012,7 @@ dependencies = [
 
 [[package]]
 name = "asimov-module"
-version = "25.1.0"
+version = "25.2.0"
 dependencies = [
  "asimov-core",
  "asimov-env",
@@ -1034,7 +1034,7 @@ dependencies = [
 
 [[package]]
 name = "asimov-nexus"
-version = "25.1.0"
+version = "25.2.0"
 dependencies = [
  "asimov-core",
  "asimov-kb",
@@ -1045,14 +1045,14 @@ dependencies = [
 
 [[package]]
 name = "asimov-ontology"
-version = "25.1.0"
+version = "25.2.0"
 dependencies = [
  "asimov-core",
 ]
 
 [[package]]
 name = "asimov-patterns"
-version = "25.1.0"
+version = "25.2.0"
 dependencies = [
  "asimov-core",
  "async-trait",
@@ -1062,14 +1062,14 @@ dependencies = [
 
 [[package]]
 name = "asimov-platform"
-version = "25.1.0"
+version = "25.2.0"
 dependencies = [
  "asimov-core",
 ]
 
 [[package]]
 name = "asimov-prompt"
-version = "25.1.0"
+version = "25.2.0"
 dependencies = [
  "asimov-core",
  "bon",
@@ -1079,7 +1079,7 @@ dependencies = [
 
 [[package]]
 name = "asimov-protocol"
-version = "25.1.0"
+version = "25.2.0"
 dependencies = [
  "asimov-core",
  "iroh",
@@ -1093,7 +1093,7 @@ dependencies = [
 
 [[package]]
 name = "asimov-proxy"
-version = "25.1.0"
+version = "25.2.0"
 dependencies = [
  "asimov-core",
  "gofer 0.2.0",
@@ -1103,7 +1103,7 @@ dependencies = [
 
 [[package]]
 name = "asimov-registry"
-version = "25.1.0"
+version = "25.2.0"
 dependencies = [
  "asimov-core",
  "asimov-env",
@@ -1126,14 +1126,14 @@ dependencies = [
 
 [[package]]
 name = "asimov-repository"
-version = "25.1.0"
+version = "25.2.0"
 dependencies = [
  "asimov-core",
 ]
 
 [[package]]
 name = "asimov-runner"
-version = "25.1.0"
+version = "25.2.0"
 dependencies = [
  "asimov-core",
  "asimov-env",
@@ -1149,14 +1149,14 @@ dependencies = [
 
 [[package]]
 name = "asimov-runtime"
-version = "25.1.0"
+version = "25.2.0"
 dependencies = [
  "asimov-core",
 ]
 
 [[package]]
 name = "asimov-sdk"
-version = "25.1.0"
+version = "25.2.0"
 dependencies = [
  "asimov-config",
  "asimov-core",
@@ -1178,7 +1178,7 @@ dependencies = [
 
 [[package]]
 name = "asimov-server"
-version = "25.1.0"
+version = "25.2.0"
 dependencies = [
  "asimov-core",
  "asimov-prompt",
@@ -1213,7 +1213,7 @@ dependencies = [
 
 [[package]]
 name = "asimov-snapshot"
-version = "25.1.0"
+version = "25.2.0"
 dependencies = [
  "asimov-core",
  "asimov-env",
@@ -1235,21 +1235,21 @@ dependencies = [
 
 [[package]]
 name = "asimov-token"
-version = "25.1.0"
+version = "25.2.0"
 dependencies = [
  "asimov-core",
 ]
 
 [[package]]
 name = "asimov-universe"
-version = "25.1.0"
+version = "25.2.0"
 dependencies = [
  "asimov-core",
 ]
 
 [[package]]
 name = "asimov-vault"
-version = "25.1.0"
+version = "25.2.0"
 dependencies = [
  "asimov-core",
 ]

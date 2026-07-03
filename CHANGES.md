@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 25.2.0 - 2026-07-03
+
+### Added
+- `asimov_config::ConfigProfile` (@artob)
+- `asimov_core::ModuleName` (@artob)
+- `asimov_directory::ConfigDirectory` (@artob)
+- `asimov_directory::ModuleDirectory` (@artob)
+- `asimov_directory::ProgramDirectory` (@artob)
+- `asimov_directory::StateDirectory` (@artob)
+- `asimov_directory::fs::ConfigDirectory` (@artob)
+- `asimov_directory::fs::ModuleDirectory` (@artob)
+- `asimov_directory::fs::ModuleManifestIterator` (@SamuelSarle)
+- `asimov_directory::fs::ProgramDirectory` (@artob)
+- `asimov_directory::fs::StateDirectory` (@artob)
+- `asimov_kb::OrganizationId` (@artob)
+- `asimov_protocol::PingProtocol` (@artob)
+
+### Changed
+- Bump the RDF.rb dependency to 0.4.4 (@artob)
+- Bump the Iroh dependency to 1.0.1 (@artob)
+- Bump all dependencies to their latest patch releases (@artob)
+- Improve interoperability with async_graphql (@artob)
+
 ## 25.1.0 - 2026-01-30
 
 ### Added

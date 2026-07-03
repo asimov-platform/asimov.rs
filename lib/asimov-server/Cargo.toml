@@ -68,7 +68,7 @@ thiserror.workspace = true
 tldr.workspace = true
 tokio = { workspace = true, features = ["io-util", "rt"] }
 tokio-util.workspace = true
-uuid.workspace = true
+uuid = { workspace = true, features = ["std"] }
 
 # Optional dependencies:
 axum = { workspace = true, features = ["tokio"], optional = true }
