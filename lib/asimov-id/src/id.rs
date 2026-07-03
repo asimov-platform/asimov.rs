@@ -102,6 +102,7 @@ impl Into<String> for Id {
 #[cfg(feature = "eloquent")]
 impl eloquent::ToSql for Id {
     fn to_sql(&self) -> Result<String, eloquent::error::EloquentError> {
+        use alloc::string::ToString;
         Ok(self.to_string())
     }
 }

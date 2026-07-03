@@ -98,7 +98,7 @@ impl async_graphql::InputType for PersonId {
 
 #[cfg(feature = "eloquent")]
 impl eloquent::ToSql for PersonId {
-    fn to_sql(&self) -> Result<String, eloquent::error::EloquentError> {
+    fn to_sql(&self) -> Result<alloc::string::String, eloquent::error::EloquentError> {
         self.as_id().to_sql()
     }
 }

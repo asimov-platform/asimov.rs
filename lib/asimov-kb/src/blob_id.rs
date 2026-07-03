@@ -127,7 +127,7 @@ impl Into<p2panda_core::Hash> for BlobId {
 
 #[cfg(feature = "eloquent")]
 impl eloquent::ToSql for BlobId {
-    fn to_sql(&self) -> Result<String, eloquent::error::EloquentError> {
+    fn to_sql(&self) -> Result<alloc::string::String, eloquent::error::EloquentError> {
         self.as_id().to_sql()
     }
 }

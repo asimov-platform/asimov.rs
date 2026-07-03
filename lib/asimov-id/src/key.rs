@@ -137,6 +137,7 @@ impl TryInto<p2panda_core::PublicKey> for Key {
 #[cfg(feature = "eloquent")]
 impl eloquent::ToSql for Key {
     fn to_sql(&self) -> Result<String, eloquent::error::EloquentError> {
+        use alloc::format;
         let hex: String = self.0.iter().map(|b| format!("{b:02X}")).collect();
         Ok(format!("X'{hex}'"))
     }
