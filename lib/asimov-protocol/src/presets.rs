@@ -11,6 +11,6 @@ pub struct DefaultPreset;
 
 impl Preset for DefaultPreset {
     fn apply(self, builder: Builder) -> Builder {
-        N0.apply(builder)
+        N0.apply(builder) // TODO: customize this
     }
 }

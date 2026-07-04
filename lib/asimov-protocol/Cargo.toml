@@ -30,11 +30,19 @@ tracing = []
 
 [dependencies]
 asimov-core.workspace = true
+bytes.workspace = true
 iroh = { workspace = true, features = ["metrics", "fast-apple-datapath", "portmapper", "tls-ring"] }
+iroh-gossip = { workspace = true, features = ["metrics", "net"] }
 iroh-metrics.workspace = true
 iroh-tickets.workspace = true
 n0-error.workspace = true
+rdf-hash = { workspace = true, features = ["blake3"] }
+rdf-model.workspace = true
+thiserror.workspace = true
 tokio = { workspace = true, features = ["time"] }
+known-errors = "0.1.1"
+
+futures-lite = "2.6.1"
 
 [dev-dependencies]
 iroh-services.workspace = true

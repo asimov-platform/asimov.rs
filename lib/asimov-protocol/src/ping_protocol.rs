@@ -26,7 +26,7 @@ pub struct PingMetrics {
     pub pings_recv: Counter,
 }
 
-/// The ping protocol for use with `iroh::protocol::Router`.
+/// The ping protocol for use with `Router`.
 #[derive(Debug, Clone)]
 pub struct PingProtocol {
     /// Shared state for use across incoming connections.
@@ -55,11 +55,11 @@ impl PingProtocol {
     /// Sends a ping on the provided endpoint to a given node address.
     pub async fn ping(
         &self,
-        endpoint: &Endpoint,
-        addr: EndpointAddr,
+        self_endpoint: &Endpoint,
+        peer_addr: EndpointAddr,
     ) -> Result<Duration, Box<dyn Error>> {
         // Open a connection to the accepting node:
-        let conn = endpoint.connect(addr, PING_ALPN).await?;
+        let conn = self_endpoint.connect(peer_addr, PING_ALPN).await?;
 
         // Open a bidirectional QUIC stream:
         let (mut send, mut recv) = conn.open_bi().await?;

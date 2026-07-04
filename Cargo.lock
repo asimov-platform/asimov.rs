@@ -1082,11 +1082,18 @@ name = "asimov-protocol"
 version = "25.2.0"
 dependencies = [
  "asimov-core",
+ "bytes",
+ "futures-lite",
  "iroh",
+ "iroh-gossip",
  "iroh-metrics",
  "iroh-services",
  "iroh-tickets",
+ "known-errors",
  "n0-error",
+ "rdf-hash",
+ "rdf-model",
+ "thiserror 2.0.18",
  "tokio",
  "tracing-subscriber",
 ]
@@ -2789,6 +2796,8 @@ checksum = "7fcc6bb0c903f3f815b48365bb9182092866f54a132d8ebe906f0b66952936e3"
 dependencies = [
  "num-traits",
  "rustversion",
+ "serde",
+ "serde_derive",
  "thiserror 2.0.18",
 ]
 
@@ -3477,6 +3486,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "fixedbitset"
+version = "0.5.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1d674e81391d1e1ab681a28d99df07927c6d4aa5b027d7da16ba32d1d21ecd99"
+
+[[package]]
 name = "flate2"
 version = "1.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3585,6 +3600,19 @@ checksum = "07bbe89c50d7a535e539b8c17bc0b49bdb77747034daa8087407d655f3f7cc1d"
 dependencies = [
  "futures-core",
  "futures-sink",
+]
+
+[[package]]
+name = "futures-concurrency"
+version = "7.7.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "175cd8cca9e1d45b87f18ffa75088f2099e3c4fe5e2f83e42de112560bea8ea6"
+dependencies = [
+ "fixedbitset",
+ "futures-core",
+ "futures-lite",
+ "pin-project",
+ "smallvec",
 ]
 
 [[package]]
@@ -4760,6 +4788,33 @@ dependencies = [
 ]
 
 [[package]]
+name = "iroh-gossip"
+version = "0.101.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4e1dc4b05f73e7a1b9e83b531eb63c3fd671b0af3aeb13b59c546dd7ca747515"
+dependencies = [
+ "blake3",
+ "bytes",
+ "data-encoding",
+ "derive_more 2.1.1",
+ "futures-concurrency",
+ "hex",
+ "indexmap 2.14.0",
+ "iroh",
+ "iroh-base",
+ "iroh-metrics",
+ "irpc",
+ "n0-error",
+ "n0-future",
+ "postcard",
+ "rand 0.10.2",
+ "serde",
+ "tokio",
+ "tokio-util",
+ "tracing",
+]
+
+[[package]]
 name = "iroh-io"
 version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5198,6 +5253,11 @@ name = "known-languages"
 version = "0.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5905bf7733b1abed65eb405d7ea9c5e542ab0d6b1e147d440b9aa682866e6271"
+dependencies = [
+ "borsh",
+ "serde",
+ "serde_json",
+]
 
 [[package]]
 name = "known-schemes"
@@ -5680,6 +5740,7 @@ version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c37e81176a83a77d2514528b91bdafc70ef88aab428f0e1b91aebb8d99888895"
 dependencies = [
+ "anyhow",
  "n0-error-macros",
  "spez",
 ]
@@ -6202,6 +6263,42 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "89284d0c2af7b0eb5e814798aa07265413c8fd72009f7fc82ea25a81fb287ce9"
 dependencies = [
  "memchr",
+]
+
+[[package]]
+name = "oxilangtag"
+version = "0.1.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5d3b4eb570abd4a1dcb062c31fd37b832264d9dc7292c3e69acfe926c87b063f"
+dependencies = [
+ "serde",
+]
+
+[[package]]
+name = "oxiri"
+version = "0.2.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "54b4ed3a7192fa19f5f48f99871f2755047fabefd7f222f12a1df1773796a102"
+
+[[package]]
+name = "oxrdf"
+version = "0.3.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0afd5c28e4a399c57ee2bc3accd40c7b671fdc7b6537499f14e95b265af7d7e0"
+dependencies = [
+ "oxilangtag",
+ "oxiri",
+ "rand 0.9.4",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "oxsdatatypes"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "06fa874d87eae638daae9b4e3198864fe2cce68589f227c0b2cf5b62b1530516"
+dependencies = [
+ "thiserror 2.0.18",
 ]
 
 [[package]]
@@ -7143,6 +7240,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "rdf-hash"
+version = "0.4.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b96a61bb6c3d62d6f4ead1267ee8982d6f1af6b35426197190fd8400b754daf7"
+dependencies = [
+ "blake3",
+ "heapless 0.9.3",
+ "rdf-model",
+]
+
+[[package]]
 name = "rdf-model"
 version = "0.4.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7150,6 +7258,8 @@ checksum = "b179c5cc75c6b194a7d1b15b77992073eb0bb2f6915aecbf3a28c81f3ded9c93"
 dependencies = [
  "dogma",
  "known-languages",
+ "oxrdf",
+ "serde",
  "serde_json",
  "xsd",
 ]
@@ -9673,6 +9783,8 @@ dependencies = [
  "num-rational",
  "num-traits",
  "rust_decimal",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
@@ -9782,6 +9894,7 @@ dependencies = [
  "cfg-if",
  "once_cell",
  "rustversion",
+ "serde",
  "wasm-bindgen-macro",
  "wasm-bindgen-shared",
 ]
@@ -10510,7 +10623,12 @@ dependencies = [
  "dogma",
  "heapless 0.9.3",
  "jiff",
+ "oxrdf",
+ "oxsdatatypes",
  "phf",
+ "rust_decimal",
+ "serde",
+ "serde_json",
  "strum 0.28.0",
  "strum_macros 0.28.0",
  "valuand",
