@@ -3,8 +3,9 @@
 use super::NodeFeatureSet;
 use serde::{Deserialize, Serialize};
 
+pub const CURRENT_VERSION: u16 = 0;
 pub const MINIMUM_VERSION: u16 = 0;
-pub const MAXIMUM_VERSION: u16 = 0;
+pub const MAXIMUM_VERSION: u16 = CURRENT_VERSION;
 pub const REQUIRED_FEATURES: &[&str] = &[];
 pub const SUPPORTED_FEATURES: &[&str] = &[];
 

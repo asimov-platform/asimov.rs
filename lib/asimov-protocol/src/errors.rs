@@ -1,15 +1,42 @@
 // This is free and unencumbered software released into the public domain.
 
+use crate::Message;
 use alloc::boxed::Box;
 use core::error::Error;
+use heapless::CapacityError;
 use known_errors::sysexits::SysexitsError;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
 #[non_exhaustive]
+pub enum AcceptError {
+    #[error(transparent)]
+    Transport(#[from] iroh::protocol::AcceptError),
+
+    #[error(transparent)]
+    Connection(#[from] iroh::endpoint::ConnectionError),
+
+    #[error(transparent)]
+    RecvHello(#[from] RecvError),
+
+    #[error(transparent)]
+    SendHello(#[from] SendError),
+
+    #[error("invalid message from peer")]
+    InvalidMessage(Message),
+}
+
+impl From<AcceptError> for SysexitsError {
+    fn from(_: AcceptError) -> Self {
+        SysexitsError::EX_SOFTWARE // TODO
+    }
+}
+
+#[derive(Debug, Error)]
+#[non_exhaustive]
 pub enum BindError {
     #[error(transparent)]
-    Other(#[from] iroh::endpoint::BindError),
+    Transport(#[from] iroh::endpoint::BindError),
 }
 
 impl From<BindError> for SysexitsError {
@@ -21,20 +48,20 @@ impl From<BindError> for SysexitsError {
 #[derive(Debug, Error)]
 #[non_exhaustive]
 pub enum ConnectError {
-    #[error("invalid response from peer")]
-    InvalidResponse,
+    #[error(transparent)]
+    Transport(#[from] iroh::endpoint::ConnectError),
 
     #[error(transparent)]
-    Postcard(#[from] postcard::Error),
+    Connection(#[from] iroh::endpoint::ConnectionError),
 
     #[error(transparent)]
-    Iroh(#[from] iroh::endpoint::ConnectError),
+    SendHello(#[from] SendError),
 
     #[error(transparent)]
-    NoqConnect(#[from] iroh::endpoint::ConnectionError),
+    RecvHello(#[from] RecvError),
 
-    #[error(transparent)]
-    NoqWrite(#[from] iroh::endpoint::WriteError),
+    #[error("invalid message from peer")]
+    InvalidMessage(Message),
 }
 
 impl From<ConnectError> for SysexitsError {
@@ -105,7 +132,7 @@ impl From<SubscribeError> for SysexitsError {
 #[non_exhaustive]
 pub enum TerminateError {
     #[error(transparent)]
-    Other(#[from] tokio::task::JoinError),
+    Join(#[from] tokio::task::JoinError),
 }
 
 impl From<TerminateError> for SysexitsError {
@@ -118,10 +145,10 @@ impl From<TerminateError> for SysexitsError {
 #[non_exhaustive]
 pub enum SendError {
     #[error(transparent)]
-    Postcard(#[from] postcard::Error),
+    Serialize(#[from] postcard::Error),
 
     #[error(transparent)]
-    Other(#[from] iroh::endpoint::WriteError),
+    Transport(#[from] iroh::endpoint::WriteError),
 }
 
 impl From<SendError> for SysexitsError {
@@ -134,10 +161,13 @@ impl From<SendError> for SysexitsError {
 #[non_exhaustive]
 pub enum RecvError {
     #[error(transparent)]
-    Postcard(#[from] postcard::Error),
+    Transport(#[from] iroh::endpoint::ReadExactError),
 
     #[error(transparent)]
-    Other(#[from] iroh::endpoint::ReadExactError),
+    Capacity(#[from] CapacityError),
+
+    #[error(transparent)]
+    Deserialize(#[from] postcard::Error),
 }
 
 impl From<RecvError> for SysexitsError {

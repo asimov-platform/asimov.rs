@@ -12,6 +12,8 @@ pub enum Message {
 
     Hello(PeerHello),
 
+    Bye,
+
     List(Vec<String>),
 
     Blob(BlobId),

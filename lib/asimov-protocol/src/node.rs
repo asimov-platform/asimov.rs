@@ -2,8 +2,8 @@
 
 use crate::{
     BindError, ConnectError, DefaultPreset, GOSSIP_ALPN, GossipProtocol, NODE_ALPN, NodeProtocol,
-    PeerConnection, PingError, StartError, SubscribeError, TerminateError, Topic,
-    TopicSubscription, node_state::*, peer_connection_state::Ready,
+    PeerConnect, PeerConnection, PingError, StartError, SubscribeError, TerminateError, Topic,
+    TopicSubscription, node_state::*,
 };
 use alloc::vec::Vec;
 use core::{result::Result, time::Duration};
@@ -88,18 +88,20 @@ impl Node<Running> {
 
     pub async fn ping(&self, peer_addr: impl Into<EndpointAddr>) -> Result<Duration, PingError> {
         let endpoint = self.0.router.endpoint();
-        Ok(self.0.node.ping(endpoint, peer_addr.into()).await?)
+        Ok(self.0.node._ping(endpoint, peer_addr.into()).await?)
     }
 
     pub async fn connect(
         &self,
         peer_addr: impl Into<EndpointAddr>,
-    ) -> Result<PeerConnection<Ready>, ConnectError> {
+    ) -> Result<PeerConnection, ConnectError> {
         let endpoint = self.0.router.endpoint();
-        let connection: PeerConnection = endpoint.connect(peer_addr, NODE_ALPN).await?.into();
-        let connection = connection.send_hello().await?;
-        let connection = connection.recv_hello().await?;
-        Ok(connection)
+
+        let state: PeerConnect = endpoint.connect(peer_addr, NODE_ALPN).await?.into();
+        let state = state.send_hello().await?;
+        let state = state.recv_hello().await?;
+
+        Ok(state.into_connection())
     }
 
     pub async fn subscribe(
@@ -130,15 +132,3 @@ impl Node<Running> {
 }
 
 impl Node<Terminating> {}
-
-// async fn subscribe_loop(
-//     mut receiver: GossipReceiver,
-// ) -> Result<(), std::boxed::Box<dyn core::error::Error + Send>> {
-//     //use futures_util::stream::try_stream::TryStreamExt;
-//     //use tokio_stream::stream_ext::StreamExt;
-//     use futures_lite::stream::StreamExt;
-//     while let Some(event) = receiver.try_next().await.unwrap() {
-//         ceprintln!("<s,g>✓</> Event=<s>{event:?}</>");
-//     }
-//     Ok(())
-// }

@@ -1,8 +1,8 @@
 // This is free and unencumbered software released into the public domain.
 
-//! The internode protocol.
+//! The peer-to-peer protocol.
 
-use super::{Message, NodeMetrics};
+use crate::{Message, MessageRecv, MessageSend, NodeMetrics, PeerAccept};
 use alloc::{boxed::Box, sync::Arc};
 use core::{error::Error, result::Result};
 use iroh::{
@@ -42,7 +42,7 @@ impl NodeProtocol {
     }
 
     /// Sends a ping on the provided endpoint to a given node address.
-    pub async fn ping(
+    pub async fn _ping(
         &self,
         self_endpoint: &Endpoint,
         peer_addr: EndpointAddr,
@@ -91,41 +91,46 @@ impl ProtocolHandler for NodeProtocol {
         std::eprintln!("Accepted a connection from node {node_id}"); // DEBUG
 
         // Expect the connecting peer to open a bidirectional QUIC stream:
-        let (mut send, mut recv) = connection.accept_bi().await?;
+        let state: PeerAccept = connection.into();
+        let state = state.recv_hello().await.map_err(AcceptError::from_err)?;
+        let state = state.send_hello().await.map_err(AcceptError::from_err)?;
 
-        // Read the ping request:
-        let request = recv
-            .read_to_end(1024)
-            .await
-            .map_err(AcceptError::from_err)?;
-        let request: Message = postcard::from_bytes(&request).map_err(AcceptError::from_err)?;
-        assert_eq!(request, Message::Ping);
+        let mut connection = state.into_connection();
 
-        let response: Message = match request {
-            Message::Ping => {
-                // Update the metrics counters:
-                self.metrics.pings_recv.inc();
+        let mut is_alive = true;
+        while is_alive {
+            let request = connection.recv().await.map_err(AcceptError::from_err)?;
+            let response: Message = match request {
+                Message::Hello(hello) => {
+                    Message::Hello(hello) // TODO
+                },
 
-                Message::Ping
-            },
+                Message::Bye => {
+                    is_alive = false;
+                    Message::Bye
+                },
 
-            Message::Hello(hello) => {
-                Message::Hello(hello) // TODO
-            },
+                Message::Ping => {
+                    // Update the metrics counters:
+                    self.metrics.pings_recv.inc();
 
-            _ => unimplemented!(), // TODO
-        };
+                    Message::Ping
+                },
+
+                _ => unimplemented!(), // TODO
+            };
+            connection
+                .send(response)
+                .await
+                .map_err(AcceptError::from_err)?;
+        }
 
         // Send the response and finish the send stream:
-        let response = postcard::to_stdvec(&response).map_err(AcceptError::from_err)?;
-        send.write_all(response.as_slice())
-            .await
-            .map_err(AcceptError::from_err)?;
-        send.finish()?;
+        connection.send.finish()?;
 
         // Wait for the remote end to explicitly and gracefully close the
         // connection after receiving our response:
-        connection.closed().await;
+        connection.inner.closed().await;
 
         Ok(())
     }

@@ -7,29 +7,32 @@ use iroh::endpoint::{Connection, RecvStream, SendStream};
 
 /// The transport layer (QUIC) has completed its handshake.
 #[derive(Debug)]
-pub struct Connected {
+pub struct Accepted {
     pub(crate) inner: Connection,
 }
 
-/// The hello request has been sent.
+/// The hello request is expected.
 #[derive(Debug)]
-pub struct Negotiating {
+pub struct HelloExpected {
     pub(crate) inner: Connection,
     pub(crate) send: SendStream,
     pub(crate) recv: RecvStream,
 }
 
-/// The hello response has been received.
+/// The hello request has been received.
 #[derive(Debug)]
-pub struct Ready {
+pub struct HelloReceived {
     pub(crate) inner: Connection,
     pub(crate) send: SendStream,
     pub(crate) recv: RecvStream,
     pub(crate) hello: PeerHello,
 }
 
-/// The connection has been closed.
+/// The hello response has been sent.
 #[derive(Debug)]
-pub struct Closed {
+pub struct HelloSent {
     pub(crate) inner: Connection,
+    pub(crate) send: SendStream,
+    pub(crate) recv: RecvStream,
+    pub(crate) hello: PeerHello,
 }

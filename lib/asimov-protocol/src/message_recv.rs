@@ -16,7 +16,7 @@ pub trait MessageRecv {
 
             let mut buffer: Vec<u8, 1024> = Vec::new();
             assert!(body_len <= buffer.capacity());
-            buffer.resize(body_len, 0).unwrap();
+            buffer.resize(body_len, 0)?;
 
             self.read_exact(buffer.as_mut_slice()).await?;
 
