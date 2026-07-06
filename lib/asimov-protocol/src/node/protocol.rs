@@ -64,7 +64,7 @@ impl NodeProtocol {
         // Read the ping response:
         let response = recv.read_to_end(1024).await?;
         let response: NodeResponse = postcard::from_bytes(&response)?;
-        assert_eq!(response, NodeResponse::Ping);
+        assert_eq!(response, NodeResponse::Pong);
 
         // Measure the duration of this interaction:
         let duration = start.elapsed();
@@ -106,7 +106,11 @@ impl ProtocolHandler for NodeProtocol {
                 // Update the metrics counters:
                 self.metrics.pings_recv.inc();
 
-                NodeResponse::Ping
+                NodeResponse::Pong
+            },
+
+            NodeRequest::Hello(hello) => {
+                NodeResponse::Hello(hello) // TODO
             },
         };
 

@@ -122,6 +122,12 @@ impl Node<state::Running> {
 
 impl Node<state::Terminating> {}
 
+mod hello;
+pub use hello::*;
+
+mod feature_set;
+pub use feature_set::*;
+
 mod metrics;
 pub use metrics::*;
 

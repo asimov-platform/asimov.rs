@@ -1,7 +1,7 @@
 // This is free and unencumbered software released into the public domain.
 
 use crate::{IdClass, IdError};
-use alloc::{format, string::String, vec::Vec};
+use alloc::vec::Vec;
 use core::str::FromStr;
 use derive_more::Display;
 
@@ -43,13 +43,15 @@ impl<const N: usize> Id<N> {
 
     #[cfg(feature = "std")]
     pub fn dir_path(&self) -> std::path::PathBuf {
+        use alloc::format;
         self.class()
             .dir_path()
             .join(format!("{}/{}", self.shard(), self))
     }
 
     #[cfg(feature = "std")]
-    fn shard(&self) -> String {
+    fn shard(&self) -> alloc::string::String {
+        use alloc::string::String;
         let id_str = bs58::encode(self.bytes).into_string();
         let id_len = id_str.chars().count();
         id_str
@@ -140,6 +142,7 @@ impl<const N: usize> async_graphql::InputType for Id<N> {
     type RawValueType = Self;
 
     fn type_name() -> alloc::borrow::Cow<'static, str> {
+        use alloc::format;
         format!("ID<{}>", N).into()
     }
 
@@ -162,7 +165,8 @@ impl<const N: usize> async_graphql::InputType for Id<N> {
 
 #[cfg(feature = "eloquent")]
 impl<const N: usize> eloquent::ToSql for Id<N> {
-    fn to_sql(&self) -> Result<String, eloquent::error::EloquentError> {
+    fn to_sql(&self) -> Result<alloc::string::String, eloquent::error::EloquentError> {
+        use alloc::{format, string::String};
         let hex: String = self.bytes.iter().map(|b| format!("{b:02X}")).collect();
         Ok(format!("X'{hex}'"))
     }
