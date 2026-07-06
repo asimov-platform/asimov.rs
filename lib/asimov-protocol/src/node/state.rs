@@ -20,4 +20,6 @@ pub struct Running {
     pub(crate) peers: Vec<EndpointId>,
 }
 
-pub struct Terminating;
+pub struct Terminating {
+    pub(crate) router: Router,
+}

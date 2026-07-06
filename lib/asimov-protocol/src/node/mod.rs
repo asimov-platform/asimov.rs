@@ -2,7 +2,7 @@
 
 use crate::{
     BindError, DefaultPreset, GOSSIP_ALPN, GossipProtocol, PingError, StartError, SubscribeError,
-    Topic, TopicSubscription,
+    TerminateError, Topic, TopicSubscription,
 };
 use alloc::vec::Vec;
 use core::{result::Result, time::Duration};
@@ -71,8 +71,10 @@ impl Node<state::Running> {
         self.endpoint().closed()
     }
 
-    pub async fn close(&self) {
-        self.endpoint().close().await
+    pub async fn terminate(self) -> Result<Node<state::Terminating>, TerminateError> {
+        let router = self.0.router;
+        router.shutdown().await?;
+        Ok(Node(state::Terminating { router }))
     }
 
     pub async fn online(&self) {

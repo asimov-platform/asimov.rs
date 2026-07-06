@@ -20,19 +20,6 @@ impl From<BindError> for SysexitsError {
 
 #[derive(Debug, Error)]
 #[non_exhaustive]
-pub enum StartError {
-    #[error(transparent)]
-    Other(#[from] Box<dyn Error>),
-}
-
-impl From<StartError> for SysexitsError {
-    fn from(_: StartError) -> Self {
-        SysexitsError::EX_SOFTWARE // TODO
-    }
-}
-
-#[derive(Debug, Error)]
-#[non_exhaustive]
 pub enum PingError {
     #[error(transparent)]
     Other(#[from] Box<dyn Error>),
@@ -40,6 +27,35 @@ pub enum PingError {
 
 impl From<PingError> for SysexitsError {
     fn from(_: PingError) -> Self {
+        SysexitsError::EX_SOFTWARE // TODO
+    }
+}
+
+#[derive(Debug, Error)]
+#[non_exhaustive]
+pub enum PublishError {
+    #[error(transparent)]
+    Gossip(#[from] iroh_gossip::api::ApiError),
+
+    #[error(transparent)]
+    Other(#[from] Box<dyn Error>),
+}
+
+impl From<PublishError> for SysexitsError {
+    fn from(_: PublishError) -> Self {
+        SysexitsError::EX_SOFTWARE // TODO
+    }
+}
+
+#[derive(Debug, Error)]
+#[non_exhaustive]
+pub enum StartError {
+    #[error(transparent)]
+    Other(#[from] Box<dyn Error>),
+}
+
+impl From<StartError> for SysexitsError {
+    fn from(_: StartError) -> Self {
         SysexitsError::EX_SOFTWARE // TODO
     }
 }
@@ -62,16 +78,13 @@ impl From<SubscribeError> for SysexitsError {
 
 #[derive(Debug, Error)]
 #[non_exhaustive]
-pub enum PublishError {
+pub enum TerminateError {
     #[error(transparent)]
-    Gossip(#[from] iroh_gossip::api::ApiError),
-
-    #[error(transparent)]
-    Other(#[from] Box<dyn Error>),
+    Other(#[from] tokio::task::JoinError),
 }
 
-impl From<PublishError> for SysexitsError {
-    fn from(_: PublishError) -> Self {
+impl From<TerminateError> for SysexitsError {
+    fn from(_: TerminateError) -> Self {
         SysexitsError::EX_SOFTWARE // TODO
     }
 }
