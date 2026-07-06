@@ -1,11 +1,18 @@
 // This is free and unencumbered software released into the public domain.
 
-use super::NodeHello;
+use crate::PeerHello;
+use alloc::{string::String, vec::Vec};
+use asimov_kb::BlobId;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Eq, Serialize, Deserialize, PartialEq)]
-pub enum NodeRequest {
+#[non_exhaustive]
+pub enum Message {
     Ping,
 
-    Hello(NodeHello),
+    Hello(PeerHello),
+
+    List(Vec<String>),
+
+    Blob(BlobId),
 }

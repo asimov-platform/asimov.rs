@@ -9,14 +9,14 @@ pub const REQUIRED_FEATURES: &[&str] = &[];
 pub const SUPPORTED_FEATURES: &[&str] = &[];
 
 #[derive(Clone, Debug, Eq, Serialize, Deserialize, PartialEq)]
-pub struct NodeHello {
+pub struct PeerHello {
     pub minimum_version: u16,
     pub maximum_version: u16,
     pub required_features: NodeFeatureSet<'static>,
     pub supported_features: NodeFeatureSet<'static>,
 }
 
-impl Default for NodeHello {
+impl Default for PeerHello {
     fn default() -> Self {
         Self {
             minimum_version: MINIMUM_VERSION,

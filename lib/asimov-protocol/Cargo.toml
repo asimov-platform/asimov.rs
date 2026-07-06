@@ -32,6 +32,7 @@ tracing = []
 asimov-core.workspace = true
 asimov-kb = { workspace = true, features = ["serde"] }
 bytes.workspace = true
+heapless = { workspace = true, features = ["serde"] }
 iroh = { workspace = true, features = ["metrics", "fast-apple-datapath", "portmapper", "tls-ring"] }
 iroh-gossip = { workspace = true, features = ["metrics", "net"] }
 iroh-metrics.workspace = true

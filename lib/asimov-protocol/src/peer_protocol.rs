@@ -2,7 +2,7 @@
 
 //! The internode protocol.
 
-use super::{NodeMetrics, NodeRequest, NodeResponse};
+use super::{Message, NodeMetrics};
 use alloc::{boxed::Box, sync::Arc};
 use core::{error::Error, result::Result};
 use iroh::{
@@ -57,14 +57,14 @@ impl NodeProtocol {
         let start = Instant::now();
 
         // Send the ping request and finish the send stream:
-        let request = postcard::to_stdvec(&NodeRequest::Ping)?;
+        let request = postcard::to_stdvec(&Message::Ping)?;
         send.write_all(request.as_slice()).await?;
         send.finish()?;
 
         // Read the ping response:
         let response = recv.read_to_end(1024).await?;
-        let response: NodeResponse = postcard::from_bytes(&response)?;
-        assert_eq!(response, NodeResponse::Pong);
+        let response: Message = postcard::from_bytes(&response)?;
+        assert_eq!(response, Message::Ping);
 
         // Measure the duration of this interaction:
         let duration = start.elapsed();
@@ -98,20 +98,22 @@ impl ProtocolHandler for NodeProtocol {
             .read_to_end(1024)
             .await
             .map_err(AcceptError::from_err)?;
-        let request: NodeRequest = postcard::from_bytes(&request).map_err(AcceptError::from_err)?;
-        assert_eq!(request, NodeRequest::Ping);
+        let request: Message = postcard::from_bytes(&request).map_err(AcceptError::from_err)?;
+        assert_eq!(request, Message::Ping);
 
-        let response: NodeResponse = match request {
-            NodeRequest::Ping => {
+        let response: Message = match request {
+            Message::Ping => {
                 // Update the metrics counters:
                 self.metrics.pings_recv.inc();
 
-                NodeResponse::Pong
+                Message::Ping
             },
 
-            NodeRequest::Hello(hello) => {
-                NodeResponse::Hello(hello) // TODO
+            Message::Hello(hello) => {
+                Message::Hello(hello) // TODO
             },
+
+            _ => unimplemented!(), // TODO
         };
 
         // Send the response and finish the send stream:

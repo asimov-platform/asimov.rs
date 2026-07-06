@@ -1,5 +1,7 @@
 // This is free and unencumbered software released into the public domain.
 
+#![allow(dead_code)]
+
 use super::NodeProtocol;
 use crate::{Endpoint, GossipProtocol, Router};
 use alloc::vec::Vec;

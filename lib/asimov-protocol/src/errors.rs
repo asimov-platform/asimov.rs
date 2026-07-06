@@ -20,6 +20,31 @@ impl From<BindError> for SysexitsError {
 
 #[derive(Debug, Error)]
 #[non_exhaustive]
+pub enum ConnectError {
+    #[error("invalid response from peer")]
+    InvalidResponse,
+
+    #[error(transparent)]
+    Postcard(#[from] postcard::Error),
+
+    #[error(transparent)]
+    Iroh(#[from] iroh::endpoint::ConnectError),
+
+    #[error(transparent)]
+    NoqConnect(#[from] iroh::endpoint::ConnectionError),
+
+    #[error(transparent)]
+    NoqWrite(#[from] iroh::endpoint::WriteError),
+}
+
+impl From<ConnectError> for SysexitsError {
+    fn from(_: ConnectError) -> Self {
+        SysexitsError::EX_SOFTWARE // TODO
+    }
+}
+
+#[derive(Debug, Error)]
+#[non_exhaustive]
 pub enum PingError {
     #[error(transparent)]
     Other(#[from] Box<dyn Error>),
@@ -85,6 +110,38 @@ pub enum TerminateError {
 
 impl From<TerminateError> for SysexitsError {
     fn from(_: TerminateError) -> Self {
+        SysexitsError::EX_SOFTWARE // TODO
+    }
+}
+
+#[derive(Debug, Error)]
+#[non_exhaustive]
+pub enum SendError {
+    #[error(transparent)]
+    Postcard(#[from] postcard::Error),
+
+    #[error(transparent)]
+    Other(#[from] iroh::endpoint::WriteError),
+}
+
+impl From<SendError> for SysexitsError {
+    fn from(_: SendError) -> Self {
+        SysexitsError::EX_SOFTWARE // TODO
+    }
+}
+
+#[derive(Debug, Error)]
+#[non_exhaustive]
+pub enum RecvError {
+    #[error(transparent)]
+    Postcard(#[from] postcard::Error),
+
+    #[error(transparent)]
+    Other(#[from] iroh::endpoint::ReadExactError),
+}
+
+impl From<RecvError> for SysexitsError {
+    fn from(_: RecvError) -> Self {
         SysexitsError::EX_SOFTWARE // TODO
     }
 }

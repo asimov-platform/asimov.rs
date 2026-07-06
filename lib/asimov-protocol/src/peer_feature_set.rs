@@ -1,7 +1,9 @@
 // This is free and unencumbered software released into the public domain.
 
-use alloc::{string::String, vec::Vec};
+use alloc::vec::Vec;
 use serde::{Deserialize, Deserializer, Serialize};
+
+type String = heapless::String<32>;
 
 #[derive(Clone, Debug, Eq, Serialize, PartialEq)]
 #[serde(untagged)]
