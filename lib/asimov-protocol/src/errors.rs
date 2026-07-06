@@ -74,6 +74,15 @@ impl From<ConnectError> for SysexitsError {
 #[non_exhaustive]
 pub enum PingError {
     #[error(transparent)]
+    ConnectPeer(#[from] ConnectError),
+
+    #[error(transparent)]
+    SendPing(#[from] SendError),
+
+    #[error(transparent)]
+    RecvPing(#[from] RecvError),
+
+    #[error(transparent)]
     Other(#[from] Box<dyn Error>),
 }
 

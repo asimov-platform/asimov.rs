@@ -2,8 +2,9 @@
 
 #![allow(dead_code)]
 
-use crate::{MessageRecv, MessageSend, PeerHello, RecvError, SendError};
+use crate::{Message, MessageRecv, MessageSend, PeerHello, PingError, RecvError, SendError};
 use iroh::endpoint::{Connection, RecvStream, SendStream};
+use tokio::time::{Duration, Instant};
 
 #[derive(Debug)]
 pub struct PeerConnection {
@@ -16,6 +17,23 @@ pub struct PeerConnection {
 impl PeerConnection {
     pub fn hello(&self) -> &PeerHello {
         return &self.hello;
+    }
+
+    pub async fn ping(&mut self) -> Result<Duration, PingError> {
+        // Begin measuring elapsed time:
+        let start = Instant::now();
+
+        // Send the ping request:
+        let _ = self.send(Message::Ping).await?;
+
+        // Read the ping response:
+        let response = self.recv().await?;
+        assert_eq!(response, Message::Ping);
+
+        // Measure the duration of this interaction:
+        let duration = start.elapsed();
+
+        Ok(duration)
     }
 
     // pub fn close(self) -> Result<PeerConnection<Closed>, Infallible> {

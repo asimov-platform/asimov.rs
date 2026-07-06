@@ -87,8 +87,9 @@ impl Node<Running> {
     }
 
     pub async fn ping(&self, peer_addr: impl Into<EndpointAddr>) -> Result<Duration, PingError> {
-        let endpoint = self.0.router.endpoint();
-        Ok(self.0.node._ping(endpoint, peer_addr.into()).await?)
+        let mut connection = self.connect(peer_addr).await?;
+        let rtt = connection.ping().await?;
+        Ok(rtt)
     }
 
     pub async fn connect(
