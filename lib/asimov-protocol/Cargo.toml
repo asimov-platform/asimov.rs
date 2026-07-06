@@ -36,6 +36,7 @@ iroh-gossip = { workspace = true, features = ["metrics", "net"] }
 iroh-metrics.workspace = true
 iroh-tickets.workspace = true
 n0-error.workspace = true
+postcard.workspace = true
 rdf-hash = { workspace = true, features = ["blake3"] }
 rdf-model.workspace = true
 serde.workspace = true

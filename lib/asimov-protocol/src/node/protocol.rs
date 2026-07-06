@@ -2,7 +2,7 @@
 
 //! The internode protocol.
 
-use super::NodeMetrics;
+use super::{NodeMetrics, NodeRequest, NodeResponse};
 use alloc::{boxed::Box, sync::Arc};
 use core::{error::Error, result::Result};
 use iroh::{
@@ -56,13 +56,15 @@ impl NodeProtocol {
         // Begin measuring elapsed time:
         let start = Instant::now();
 
-        // Send the PING request and finish the send stream:
-        send.write_all(b"PING").await?;
+        // Send the ping request and finish the send stream:
+        let request = postcard::to_stdvec(&NodeRequest::Ping)?;
+        send.write_all(request.as_slice()).await?;
         send.finish()?;
 
-        // Read the PONG response:
-        let response = recv.read_to_end(4).await?;
-        assert_eq!(&response, b"PONG");
+        // Read the ping response:
+        let response = recv.read_to_end(1024).await?;
+        let response: NodeResponse = postcard::from_bytes(&response)?;
+        assert_eq!(response, NodeResponse::Ping);
 
         // Measure the duration of this interaction:
         let duration = start.elapsed();
@@ -71,7 +73,7 @@ impl NodeProtocol {
         self.metrics.pings_sent.inc();
 
         // Close the connection explicitly and gracefully:
-        conn.close(0u32.into(), b"BYE!");
+        conn.close(0u32.into(), b"");
 
         Ok(duration)
     }
@@ -84,21 +86,33 @@ impl ProtocolHandler for NodeProtocol {
     /// indefinitely as long as the connection remains open.
     async fn accept(&self, connection: Connection) -> n0_error::Result<(), AcceptError> {
         let node_id = connection.remote_id();
+
         #[cfg(feature = "std")]
         std::eprintln!("Accepted a connection from node {node_id}"); // DEBUG
 
         // Expect the connecting peer to open a bidirectional QUIC stream:
         let (mut send, mut recv) = connection.accept_bi().await?;
 
-        // Read the PING request:
-        let req = recv.read_to_end(4).await.map_err(AcceptError::from_err)?;
-        assert_eq!(&req, b"PING");
+        // Read the ping request:
+        let request = recv
+            .read_to_end(1024)
+            .await
+            .map_err(AcceptError::from_err)?;
+        let request: NodeRequest = postcard::from_bytes(&request).map_err(AcceptError::from_err)?;
+        assert_eq!(request, NodeRequest::Ping);
 
-        // Update the metrics counters:
-        self.metrics.pings_recv.inc();
+        let response: NodeResponse = match request {
+            NodeRequest::Ping => {
+                // Update the metrics counters:
+                self.metrics.pings_recv.inc();
 
-        // Send the PONG response and finish the send stream:
-        send.write_all(b"PONG")
+                NodeResponse::Ping
+            },
+        };
+
+        // Send the response and finish the send stream:
+        let response = postcard::to_stdvec(&response).map_err(AcceptError::from_err)?;
+        send.write_all(response.as_slice())
             .await
             .map_err(AcceptError::from_err)?;
         send.finish()?;
