@@ -38,6 +38,7 @@ iroh-tickets.workspace = true
 n0-error.workspace = true
 rdf-hash = { workspace = true, features = ["blake3"] }
 rdf-model.workspace = true
+serde.workspace = true
 thiserror.workspace = true
 tokio = { workspace = true, features = ["time"] }
 known-errors = "0.1.1"

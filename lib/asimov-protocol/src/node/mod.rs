@@ -1,35 +1,12 @@
 // This is free and unencumbered software released into the public domain.
 
 use crate::{
-    BindError, DefaultPreset, GOSSIP_ALPN, GossipProtocol, PING_ALPN, PingError, PingProtocol,
-    StartError, SubscribeError, Topic, TopicSubscription,
+    BindError, DefaultPreset, GOSSIP_ALPN, GossipProtocol, PingError, StartError, SubscribeError,
+    Topic, TopicSubscription,
 };
 use alloc::vec::Vec;
 use core::{result::Result, time::Duration};
 use iroh::{Endpoint, EndpointAddr, EndpointId, endpoint::EndpointClosed, protocol::Router};
-
-pub mod state {
-    use crate::{Endpoint, GossipProtocol, PingProtocol, Router};
-    use alloc::vec::Vec;
-    use iroh::{EndpointId, endpoint::Builder as EndpointBuilder};
-
-    pub struct Building {
-        pub(crate) endpoint: EndpointBuilder,
-    }
-
-    pub struct Bound {
-        pub(crate) endpoint: Endpoint,
-    }
-
-    pub struct Running {
-        pub(crate) router: Router,
-        pub(crate) pinger: PingProtocol,
-        pub(crate) gossiper: GossipProtocol,
-        pub(crate) peers: Vec<EndpointId>,
-    }
-
-    pub struct Terminating;
-}
 
 #[derive(Debug)]
 pub struct Node<State = state::Building>(State);
@@ -62,16 +39,16 @@ impl Node<state::Bound> {
     pub async fn start(self) -> Result<Node<state::Running>, StartError> {
         let endpoint = self.0.endpoint;
         endpoint.online().await;
-        let ping = PingProtocol::new();
+        let node = NodeProtocol::new();
         let gossip = GossipProtocol::new(endpoint.clone());
         let router = Router::builder(endpoint)
-            .accept(PING_ALPN, ping.clone())
+            .accept(NODE_ALPN, node.clone())
             .accept(GOSSIP_ALPN, gossip.0.clone())
             .spawn();
         Ok(Node(state::Running {
             router,
-            pinger: ping,
-            gossiper: gossip,
+            node,
+            gossip,
             peers: Vec::new(),
         }))
     }
@@ -109,7 +86,7 @@ impl Node<state::Running> {
     pub async fn ping(&self, peer_addr: impl Into<EndpointAddr>) -> Result<Duration, PingError> {
         Ok(self
             .0
-            .pinger
+            .node
             .ping(self.0.router.endpoint(), peer_addr.into())
             .await?)
     }
@@ -121,7 +98,7 @@ impl Node<state::Running> {
         let topic_id = topic.into().id();
         Ok(self
             .0
-            .gossiper
+            .gossip
             .0
             .subscribe(topic_id, self.0.peers.clone())
             .await?
@@ -135,7 +112,7 @@ impl Node<state::Running> {
         let topic_id = topic.into().id();
         Ok(self
             .0
-            .gossiper
+            .gossip
             .0
             .subscribe_and_join(topic_id, self.0.peers.clone())
             .await?
@@ -144,3 +121,17 @@ impl Node<state::Running> {
 }
 
 impl Node<state::Terminating> {}
+
+mod metrics;
+pub use metrics::*;
+
+mod protocol;
+pub use protocol::*;
+
+mod request;
+pub use request::*;
+
+mod response;
+pub use response::*;
+
+pub mod state;

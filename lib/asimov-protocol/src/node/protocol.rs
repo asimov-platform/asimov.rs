@@ -1,7 +1,8 @@
 // This is free and unencumbered software released into the public domain.
 
-//! The internode ping protocol.
+//! The internode protocol.
 
+use super::NodeMetrics;
 use alloc::{boxed::Box, sync::Arc};
 use core::{error::Error, result::Result};
 use iroh::{
@@ -9,46 +10,34 @@ use iroh::{
     endpoint::Connection,
     protocol::{AcceptError, ProtocolHandler},
 };
-use iroh_metrics::{Counter, MetricsGroup};
 use tokio::time::{Duration, Instant};
 
-/// The ALPN string for the ping protocol.
-pub const PING_ALPN: &[u8] = b"asimov/ping";
+/// The ALPN string for the node protocol.
+pub const NODE_ALPN: &[u8] = b"asimov/node";
 
-/// Metrics for the ping protocol.
-#[derive(Debug, Default, MetricsGroup)]
-#[metrics(name = "ping")]
-pub struct PingMetrics {
-    /// The count of valid ping messages sent.
-    pub pings_sent: Counter,
-
-    /// The count of valid ping messages received.
-    pub pings_recv: Counter,
-}
-
-/// The ping protocol for use with `Router`.
+/// The node protocol for use with `Router`.
 #[derive(Debug, Clone)]
-pub struct PingProtocol {
+pub struct NodeProtocol {
     /// Shared state for use across incoming connections.
-    metrics: Arc<PingMetrics>,
+    metrics: Arc<NodeMetrics>,
 }
 
-impl Default for PingProtocol {
+impl Default for NodeProtocol {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl PingProtocol {
-    /// Creates a new ping protocol state.
+impl NodeProtocol {
+    /// Creates a new node protocol state.
     pub fn new() -> Self {
         Self {
-            metrics: Arc::new(PingMetrics::default()),
+            metrics: Arc::new(NodeMetrics::default()),
         }
     }
 
-    /// Returns a handle to the ping metrics.
-    pub fn metrics(&self) -> &Arc<PingMetrics> {
+    /// Returns a handle to the node metrics.
+    pub fn metrics(&self) -> &Arc<NodeMetrics> {
         &self.metrics
     }
 
@@ -59,7 +48,7 @@ impl PingProtocol {
         peer_addr: EndpointAddr,
     ) -> Result<Duration, Box<dyn Error>> {
         // Open a connection to the accepting node:
-        let conn = self_endpoint.connect(peer_addr, PING_ALPN).await?;
+        let conn = self_endpoint.connect(peer_addr, NODE_ALPN).await?;
 
         // Open a bidirectional QUIC stream:
         let (mut send, mut recv) = conn.open_bi().await?;
@@ -88,7 +77,7 @@ impl PingProtocol {
     }
 }
 
-impl ProtocolHandler for PingProtocol {
+impl ProtocolHandler for NodeProtocol {
     /// Each incoming connection for our ALPN results in a call to `accept`.
     ///
     /// The returned future runs on a newly spawned Tokio task, so it can run

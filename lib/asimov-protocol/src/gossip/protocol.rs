@@ -1,6 +1,6 @@
 // This is free and unencumbered software released into the public domain.
 
-//! The internode gossip protocol.
+//! The gossip protocol.
 
 use iroh::Endpoint;
 use iroh_gossip::{ALPN, Gossip};

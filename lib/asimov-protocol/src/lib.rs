@@ -27,14 +27,14 @@ pub use iroh_tickets::{ParseError as TicketParsingError, Ticket, endpoint::Endpo
 mod errors;
 pub use errors::*;
 
-mod node;
+pub mod node;
 pub use node::*;
 
-mod gossip_protocol;
-pub use gossip_protocol::*;
-
-mod ping_protocol;
-pub use ping_protocol::*;
+pub mod gossip {
+    mod protocol;
+    pub use protocol::*;
+}
+pub use gossip::*;
 
 mod presets;
 pub use presets::*;
