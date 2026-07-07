@@ -6,7 +6,5 @@ pub const KEY_LEN_MIN: usize = 1 + 32;
 pub const KEY_LEN_MAX: usize = 1 + 44;
 pub const KEY_LEN: RangeInclusive<usize> = KEY_LEN_MIN..=KEY_LEN_MAX;
 
-pub type Id = crate::PublicKey;
-
 #[deprecated(since = "25.3", note = "use `PublicKey` instead")]
 pub type Key = crate::PublicKey; // TODO: remove in 26.0

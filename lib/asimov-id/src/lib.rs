@@ -22,6 +22,12 @@ pub use key::*;
 mod key_error;
 pub use key_error::*;
 
+mod id;
+pub use id::*;
+
+mod id_error;
+pub use id_error::*;
+
 mod public_key;
 pub use public_key::*;
 
