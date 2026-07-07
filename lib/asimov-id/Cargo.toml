@@ -42,6 +42,7 @@ turso = ["dep:turso"]
 asimov-core.workspace = true
 bs58.workspace = true
 derive_more = { workspace = true, features = ["display"] }
+thiserror.workspace = true
 
 # Interoperability:
 clap = { workspace = true, features = ["derive", "std"], optional = true }
