@@ -7,8 +7,10 @@ use alloc::{format, string::String};
 use core::{borrow::Borrow, ops::RangeInclusive, str::FromStr};
 use derive_more::Display;
 
-pub const HANDLE_LEN_MIN: usize = 1;
-pub const HANDLE_LEN_MAX: usize = 63;
+pub const HANDLE_PREFIX: &str = "Ⓐ";
+
+pub const HANDLE_LEN_MIN: usize = 3;
+pub const HANDLE_LEN_MAX: usize = 31; // should be < PUBLIC_KEY_LEN_MIN
 pub const HANDLE_LEN: RangeInclusive<usize> = HANDLE_LEN_MIN..=HANDLE_LEN_MAX;
 
 #[derive(Clone, Debug, Display, Eq, Hash, Ord, PartialEq, PartialOrd)]

@@ -50,7 +50,7 @@ mod tests {
 
     #[test]
     fn parse_public_key_ones() {
-        let s = "Ⓐ11111111111111111111111111111111";
+        let s = "ⒶY11111111111111111111111111111111";
         let pk = PublicKey::from_str(s).expect("failed to parse public key");
         let expected = [0u8; 32];
         assert_eq!(pk.as_bytes(), expected.as_slice());
@@ -97,7 +97,7 @@ mod tests {
     #[test]
     fn public_key_missing_glyph() {
         // valid length but missing leading glyph
-        let s: String = repeat('1').take(KEY_LEN_MIN).collect();
+        let s: String = repeat('1').take(PUBLIC_KEY_LEN_MIN).collect();
         let input = s; // no glyph
         assert_eq!(
             PublicKey::from_str(&input).unwrap_err(),
@@ -107,7 +107,7 @@ mod tests {
 
     #[test]
     fn public_key_short_length() {
-        let s = String::from("Ⓐ11");
+        let s = String::from("ⒶY11");
         assert_eq!(
             PublicKey::from_str(&s).unwrap_err(),
             KeyError::InvalidLength
@@ -117,8 +117,8 @@ mod tests {
     #[test]
     fn public_key_invalid_encoding() {
         // length is within allowed range but contains invalid base58 characters (e.g. '0')
-        let mut s = String::from("Ⓐ");
-        s.push_str(&"0".repeat(KEY_LEN_MIN - 1));
+        let mut s = String::from("ⒶY");
+        s.push_str(&"0".repeat(PUBLIC_KEY_LEN_MIN - 1));
         assert!(matches!(
             PublicKey::from_str(&s).unwrap_err(),
             KeyError::InvalidEncoding(_)

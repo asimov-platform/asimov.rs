@@ -2,7 +2,7 @@
 
 //! ASIMOV public keys.
 
-use crate::{KEY_LEN, KeyError};
+use crate::{KeyError, PUBLIC_KEY_LEN, PUBLIC_KEY_PREFIX};
 use alloc::{
     string::{String, ToString},
     vec::Vec,
@@ -11,7 +11,7 @@ use core::str::FromStr;
 use derive_more::Display;
 
 #[derive(Clone, Copy, Debug, Default, Display, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[display("Ⓐ{}", bs58::encode(self.0).into_string())]
+#[display("ⒶY{}", bs58::encode(self.0).into_string())]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[cfg_attr(feature = "serde", serde(try_from = "String", into = "String"))]
 pub struct PublicKey(pub(crate) [u8; 32]);
@@ -33,14 +33,14 @@ impl FromStr for PublicKey {
         if input.is_empty() {
             return Err(KeyError::EmptyInput);
         }
-        if !KEY_LEN.contains(&input.len()) {
+        if !PUBLIC_KEY_LEN.contains(&input.len()) {
             return Err(KeyError::InvalidLength);
         }
-        if input.chars().next() != Some('Ⓐ') {
+        let Some(input) = input.strip_prefix(PUBLIC_KEY_PREFIX) else {
             return Err(KeyError::InvalidPrefix);
-        }
+        };
         let mut output = [0u8; 32];
-        let count = bs58::decode(&input['Ⓐ'.len_utf8()..])
+        let count = bs58::decode(&input)
             .onto(&mut output)
             .map_err(|e| KeyError::InvalidEncoding(e))?;
         if count != output.len() {

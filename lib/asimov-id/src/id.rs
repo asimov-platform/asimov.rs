@@ -3,6 +3,8 @@
 use crate::{Handle, IdError, KeyError, PublicKey};
 use core::str::FromStr;
 
+pub const ID_PREFIX: &str = "Ⓐ";
+
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub enum Id {
     Handle(Handle),
