@@ -31,7 +31,7 @@ impl CsvHandleResolver {
 
 impl HandleResolver for CsvHandleResolver {
     /// Resolves a handle into a set of endpoint IDs.
-    fn resolve_handle(&mut self, handle: impl Into<Handle>) -> impl Stream<Item = PeerId> {
+    fn resolve_handle(&mut self, handle: impl Into<Handle>) -> impl Stream<Item = PeerId> + Send {
         let handle = handle.into().into_string();
         async_stream::stream! {
             let mut record = StringRecord::new();
