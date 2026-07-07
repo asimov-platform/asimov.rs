@@ -79,6 +79,9 @@ iroh-services = { version = "1.0", default-features = false }
 iroh-tickets = { version = "1.0", default-features = false }
 n0-error = { version = "1.0", default-features = false }
 
+# Implementation with p2panda:
+p2panda-core = { version = "0.6", default-features = false}
+
 # Implementation with Tokio:
 tokio = { version = "1", default-features = false }
 tokio-stream = { version = "0.1", default-features = false }
@@ -86,6 +89,7 @@ tokio-util = { version = "0.7", default-features = false }
 
 alloy = { version = "0.5", default-features = false }
 async-flow = { version = "0.1.5", default-features = false }
+async-graphql = { version = "7.2", default-features = false }
 async-stream = { version = "0.3", default-features = false }
 async-trait = { version = "0.1", default-features = false }
 axum = { version = "0.8", default-features = false, features = ["macros"] }
@@ -94,13 +98,15 @@ axum-prometheus = { version = "0.8", default-features = false, features = [
     "prometheus",
 ] }
 axum-test = { version = "17.3", default-features = false }
+blake3 = { version = "1.8", default-features = false }
 bon = { version = "3.6", default-features = false }
-bs58 = { version = "0.5", default-features = false }
+bs58 = { version = "0.5", default-features = false, features = ["alloc"] }
 bytes = { version = "1.10", default-features = false }
 camino = { version = "1.2", default-features = false }
 cap-directories = { version = "3.4", default-features = false }
 cap-std = { version = "3.4", default-features = false, features = ["fs_utf8"] }
 cfg_aliases = { version = "0.2", default-features = false }
+clap = { version = "4.5", default-features = false }
 clientele = { version = "0.3.8", default-features = false, features = [
     "argfile",
     "dotenv",
@@ -108,6 +114,7 @@ clientele = { version = "0.3.8", default-features = false, features = [
 ] }
 derive_more = { version = "2", default-features = false }
 dogma = { version = "0.1.11", default-features = false, features = ["traits"] }
+ed25519-dalek = { version = "2.2", default-features = false, features = ["alloc"] }
 eloquent = { version = "2.1", default-features = false }
 flate2 = { version = "1", default-features = false }
 flows = { version = "0.0.6", default-features = false }
@@ -133,6 +140,7 @@ jiff = { version = "0.2", default-features = false }
 know = { version = "0", default-features = true }
 lazy_static = { version = "1.5", default-features = false }
 libloading = { version = "0.8", default-features = false }
+libsql = { version = "0.9", default-features = false }
 local-ip-address = { version = "0.6", default-features = false }
 mdns-sd = { version = "0.13", default-features = false }
 miette = { version = "7.6", default-features = false, features = ["derive"] }
@@ -149,6 +157,7 @@ reqwest = { version = "0.12", default-features = false, features = [
     "rustls-tls",
     "rustls-tls-native-roots",
 ] }
+rocket = { version = "0.5", default-features = false }
 rust-embed = { version = "8.7", default-features = false, features = [
     "deterministic-timestamps",
 ] }

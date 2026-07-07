@@ -27,7 +27,7 @@ std = ["asimov-core/std", "bs58/std", "uuid/std"]
 tracing = []
 unstable = []
 
-# Integrations:
+# Interoperability:
 async-graphql = ["dep:async-graphql"]
 blake3 = ["dep:blake3"]
 clap = ["dep:clap"]
@@ -42,18 +42,18 @@ uuid = ["dep:uuid"]
 
 [dependencies]
 asimov-core.workspace = true
-bs58 = { version = "0.5", default-features = false, features = ["alloc"] }
-derive_more = { version = "2", features = ["display"] }
+bs58.workspace = true
+derive_more = { workspace = true, features = ["display"] }
 
 # Interoperability:
-async-graphql = { version = "7.2", default-features = false, optional = true }
-blake3 = { version = "1.8", default-features = false, optional = true }
-clap = { version = "4.5", default-features = false, features = ["derive", "std"], optional = true }
+async-graphql = { workspace = true, optional = true }
+blake3 = { workspace = true, optional = true }
+clap = { workspace = true, features = ["derive", "std"], optional = true }
 eloquent = { workspace = true, optional = true }
 iroh-blobs = { workspace = true, optional = true }
-libsql = { version = "0.9", default-features = false, optional = true }
-p2panda-core = { version = "0.4", default-features = false, optional = true }
-rocket = { version = "0.5", default-features = false, optional = true }
+libsql = { workspace = true, optional = true }
+p2panda-core = { workspace = true, optional = true }
+rocket = { workspace = true, optional = true }
 serde = { workspace = true, optional = true }
 serde_with = { workspace = true, optional = true }
 turso = { workspace = true, optional = true }

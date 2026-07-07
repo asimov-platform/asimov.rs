@@ -40,17 +40,17 @@ turso = ["dep:turso"]
 
 [dependencies]
 asimov-core.workspace = true
-bs58 = { version = "0.5", default-features = false, features = ["alloc"] }
-derive_more = { version = "2", features = ["display"] }
+bs58.workspace = true
+derive_more = { workspace = true, features = ["display"] }
 
 # Interoperability:
-clap = { version = "4.5", default-features = false, features = ["derive", "std"], optional = true }
-ed25519-dalek = { version = "2.2", default-features = false, features = ["alloc"], optional = true }
+clap = { workspace = true, features = ["derive", "std"], optional = true }
+ed25519-dalek = { workspace = true, optional = true }
 eloquent = { workspace = true, optional = true }
 iroh = { workspace = true, optional = true }
-libsql = { version = "0.9", default-features = false, optional = true }
-p2panda-core = { version = "0.4", default-features = false, optional = true }
-rocket = { version = "0.5", default-features = false, optional = true }
+libsql = { workspace = true, optional = true }
+p2panda-core = { workspace = true, optional = true }
+rocket = { workspace = true, optional = true }
 serde = { workspace = true, optional = true }
 turso = { workspace = true, optional = true }
 
