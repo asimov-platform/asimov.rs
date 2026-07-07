@@ -2,7 +2,7 @@
 
 #![no_std]
 #![forbid(unsafe_code)]
-//#![allow(unused)]
+#![allow(unused)]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 
 extern crate alloc;
@@ -29,6 +29,12 @@ pub use errors::*;
 
 mod gossip_protocol;
 pub use gossip_protocol::*;
+
+mod handle_resolver;
+pub use handle_resolver::*;
+
+mod handle_resolvers;
+pub use handle_resolvers::*;
 
 mod message;
 pub use message::*;
@@ -70,6 +76,9 @@ pub use peer_feature_set::*;
 
 mod peer_hello;
 pub use peer_hello::*;
+
+mod peer_id;
+pub use peer_id::*;
 
 mod peer_protocol;
 pub use peer_protocol::*;

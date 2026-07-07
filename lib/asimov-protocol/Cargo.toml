@@ -17,26 +17,31 @@ categories = ["api-bindings", "data-structures", "network-programming"]
 publish.workspace = true
 
 [package.metadata.readme]
-title = "ASIMOV.rs: Protocol Client"
+title = "ASIMOV.rs: P2P Protocol"
 
 [features]
 default = ["all", "std"]
-all = []
+all = ["csv"]
 std = ["asimov-core/std"]
 unstable = []
 
 # Features:
+csv = ["dep:csv-async", "tokio/fs"]
 tracing = []
 
 [dependencies]
 asimov-core.workspace = true
+asimov-id = { workspace = true, features = ["iroh"] }
 asimov-kb = { workspace = true, features = ["serde"] }
+async-stream.workspace = true
 bytes.workspace = true
+futures-lite.workspace = true
 heapless = { workspace = true, features = ["serde"] }
 iroh = { workspace = true, features = ["metrics", "fast-apple-datapath", "portmapper", "tls-ring"] }
 iroh-gossip = { workspace = true, features = ["metrics", "net"] }
 iroh-metrics.workspace = true
 iroh-tickets.workspace = true
+known-errors.workspace = true
 n0-error.workspace = true
 postcard.workspace = true
 rdf-hash = { workspace = true, features = ["blake3"] }
@@ -44,9 +49,9 @@ rdf-model.workspace = true
 serde.workspace = true
 thiserror.workspace = true
 tokio = { workspace = true, features = ["time"] }
-known-errors = "0.1.1"
 
-futures-lite = "2.6.1"
+# Features:
+csv-async = { workspace = true, features = ["tokio"], optional = true }
 
 [dev-dependencies]
 iroh-services.workspace = true
