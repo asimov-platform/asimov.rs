@@ -3,7 +3,7 @@
 use derive_more::Display;
 
 #[derive(Clone, Debug, Display, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub enum IdError {
+pub enum HandleError {
     EmptyInput,
     InvalidLength(usize),
     InvalidFirstChar(char),

@@ -9,11 +9,11 @@ extern crate alloc;
 #[cfg(feature = "std")]
 extern crate std;
 
-mod id;
-pub use id::*;
+mod handle;
+pub use handle::*;
 
-mod id_error;
-pub use id_error::*;
+mod handle_error;
+pub use handle_error::*;
 
 mod key;
 pub use key::*;

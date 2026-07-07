@@ -6,14 +6,14 @@ use asimov_credit::Credits;
 use core::{error::Error, str::FromStr};
 use derive_more::Display;
 
-pub use asimov_id::{Id, IdError};
+pub use asimov_id::{Handle, HandleError};
 
 #[derive(Clone, Debug, Display, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[display("@{}", self.0)]
-pub struct Account(pub(crate) Id);
+pub struct Account(pub(crate) Handle);
 
 impl FromStr for Account {
-    type Err = IdError;
+    type Err = HandleError;
 
     fn from_str(input: &str) -> Result<Self, Self::Err> {
         Ok(Self(input.parse()?))
@@ -21,7 +21,7 @@ impl FromStr for Account {
 }
 
 impl Account {
-    pub async fn open(id: Id) -> Result<Self, Box<dyn Error>> {
+    pub async fn open(id: Handle) -> Result<Self, Box<dyn Error>> {
         Ok(Self(id))
     }
 
