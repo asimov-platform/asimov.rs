@@ -50,15 +50,24 @@ impl FromStr for PublicKey {
     }
 }
 
-impl From<[u8; 32]> for PublicKey {
-    fn from(input: [u8; 32]) -> Self {
-        Self(input)
+impl AsRef<[u8]> for PublicKey {
+    fn as_ref(&self) -> &[u8] {
+        self.as_bytes()
     }
 }
 
-impl From<&[u8; 32]> for PublicKey {
-    fn from(input: &[u8; 32]) -> Self {
-        Self(input.clone())
+impl<T> From<&T> for PublicKey
+where
+    T: Clone + Into<Self>,
+{
+    fn from(t: &T) -> Self {
+        t.clone().into()
+    }
+}
+
+impl From<[u8; 32]> for PublicKey {
+    fn from(input: [u8; 32]) -> Self {
+        Self(input)
     }
 }
 
@@ -73,24 +82,42 @@ impl From<&Vec<u8>> for PublicKey {
 
 #[cfg(feature = "ed25519-dalek")]
 impl From<&ed25519_dalek::VerifyingKey> for PublicKey {
-    fn from(bytes: &ed25519_dalek::VerifyingKey) -> Self {
-        Self(bytes.as_bytes().clone())
+    fn from(input: &ed25519_dalek::VerifyingKey) -> Self {
+        Self(input.as_bytes().clone())
     }
 }
 
 #[cfg(feature = "iroh")]
-impl From<&iroh::PublicKey> for PublicKey {
-    fn from(bytes: &iroh::PublicKey) -> Self {
-        Self(bytes.as_bytes().clone())
+impl From<iroh::PublicKey> for PublicKey {
+    fn from(input: iroh::PublicKey) -> Self {
+        Self(input.as_bytes().clone())
     }
 }
 
-#[cfg(feature = "p2panda")]
-impl From<&p2panda_core::PublicKey> for PublicKey {
-    fn from(bytes: &p2panda_core::PublicKey) -> Self {
-        Self(bytes.as_bytes().clone())
+#[cfg(feature = "iroh")]
+impl TryFrom<PublicKey> for iroh::PublicKey {
+    type Error = iroh::KeyParsingError;
+
+    fn try_from(input: PublicKey) -> Result<iroh::PublicKey, Self::Error> {
+        iroh::PublicKey::from_bytes(&input.into_bytes())
     }
 }
+
+// #[cfg(feature = "p2panda")]
+// impl From<&p2panda_core::PublicKey> for PublicKey {
+//     fn from(bytes: &p2panda_core::PublicKey) -> Self {
+//         Self(bytes.as_bytes().clone())
+//     }
+// }
+
+// #[cfg(feature = "p2panda")]
+// impl TryInto<p2panda_core::PublicKey> for PublicKey {
+//     type Error = p2panda_core::IdentityError;
+
+//     fn try_into(self) -> Result<p2panda_core::PublicKey, Self::Error> {
+//         p2panda_core::PublicKey::from_bytes(&self.into_bytes())
+//     }
+// }
 
 impl TryFrom<String> for PublicKey {
     type Error = KeyError;
@@ -100,33 +127,9 @@ impl TryFrom<String> for PublicKey {
     }
 }
 
-impl AsRef<[u8]> for PublicKey {
-    fn as_ref(&self) -> &[u8] {
-        self.as_bytes()
-    }
-}
-
-impl Into<String> for PublicKey {
-    fn into(self) -> String {
-        self.to_string()
-    }
-}
-
-#[cfg(feature = "iroh")]
-impl TryInto<iroh::PublicKey> for PublicKey {
-    type Error = iroh::KeyParsingError;
-
-    fn try_into(self) -> Result<iroh::PublicKey, Self::Error> {
-        iroh::PublicKey::from_bytes(&self.into_bytes())
-    }
-}
-
-#[cfg(feature = "p2panda")]
-impl TryInto<p2panda_core::PublicKey> for PublicKey {
-    type Error = p2panda_core::IdentityError;
-
-    fn try_into(self) -> Result<p2panda_core::PublicKey, Self::Error> {
-        p2panda_core::PublicKey::from_bytes(&self.into_bytes())
+impl From<PublicKey> for String {
+    fn from(input: PublicKey) -> String {
+        input.to_string()
     }
 }
 
