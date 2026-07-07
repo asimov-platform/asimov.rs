@@ -27,7 +27,7 @@ std = ["asimov-core/std", "bs58/std", "ed25519-dalek?/std"]
 tracing = []
 unstable = []
 
-# Integrations:
+# Interoperability:
 clap = ["dep:clap"]
 ed25519-dalek = ["dep:ed25519-dalek"]
 eloquent = ["dep:eloquent"]
