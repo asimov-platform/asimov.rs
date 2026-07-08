@@ -113,6 +113,8 @@ clientele = { version = "0.3.8", default-features = false, features = [
     "wild",
 ] }
 csv-async = { version = "1.3", default-features = false }
+data-encoding = { version = "2.11", default-features = false }
+data-encoding-macro = { version = "0.1", default-features = false }
 derive_more = { version = "2", default-features = false }
 dogma = { version = "0.1.11", default-features = false, features = ["traits"] }
 ed25519-dalek = { version = "2.2", default-features = false, features = ["alloc"] }

@@ -2,7 +2,7 @@
 
 //! ASIMOV public keys.
 
-use crate::{KeyError, PUBLIC_KEY_LEN, PUBLIC_KEY_PREFIX};
+use crate::{KeyError, PUBLIC_KEY_LEN, PUBLIC_KEY_PREFIX, PublicKeyEncoding};
 use alloc::{
     string::{String, ToString},
     vec::Vec,
@@ -17,12 +17,37 @@ use derive_more::Display;
 pub struct PublicKey(pub(crate) [u8; 32]);
 
 impl PublicKey {
+    pub const ZERO: Self = Self([0u8; 32]);
+
     pub fn as_bytes(&self) -> &[u8] {
         self.0.as_slice()
     }
 
     pub fn into_bytes(self) -> [u8; 32] {
         self.0
+    }
+
+    pub fn encode(&self, encoding: PublicKeyEncoding) -> Option<String> {
+        use PublicKeyEncoding::*;
+        Some(match encoding {
+            Asimov => self.to_string(),
+            Base58 => bs58::encode(self.0).into_string(),
+            Near => {
+                alloc::format!("ed25519:{}", bs58::encode(self.0).into_string())
+            },
+            #[cfg(feature = "base64")]
+            Base64 => data_encoding::BASE64.encode(self.as_bytes()),
+            #[cfg(feature = "base64")]
+            Base64Url => data_encoding::BASE64URL_NOPAD.encode(self.as_bytes()),
+            #[cfg(feature = "hex")]
+            Hex => data_encoding::HEXLOWER.encode(self.as_bytes()),
+            #[cfg(feature = "z32")]
+            Z32 => data_encoding_macro::new_encoding! {
+                symbols: "ybndrfg8ejkmcpqxot1uwisza345h769",
+            }
+            .encode(self.as_bytes()),
+            _ => return None, // unsupported format
+        })
     }
 }
 

@@ -31,8 +31,8 @@ pub use id_error::*;
 mod public_key;
 pub use public_key::*;
 
-mod public_key_format;
-pub use public_key_format::*;
+mod public_key_encoding;
+pub use public_key_encoding::*;
 
 mod secret_key;
 pub use secret_key::*;
