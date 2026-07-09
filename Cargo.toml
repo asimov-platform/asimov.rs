@@ -119,6 +119,7 @@ derive_more = { version = "2", default-features = false }
 dogma = { version = "0.1.11", default-features = false, features = ["traits"] }
 ed25519-dalek = { version = "2.2", default-features = false, features = ["alloc"] }
 eloquent = { version = "2.1", default-features = false }
+fastrand = { version = "2.4", default-features = false }
 flate2 = { version = "1", default-features = false }
 flows = { version = "0.0.6", default-features = false }
 futures = { version = "0.3", default-features = false }

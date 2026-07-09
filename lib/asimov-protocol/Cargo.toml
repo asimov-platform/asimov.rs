@@ -21,12 +21,13 @@ title = "ASIMOV.rs: P2P Protocol"
 
 [features]
 default = ["all", "std"]
-all = ["csv"]
+all = ["csv", "random"]
 std = ["asimov-core/std"]
 unstable = []
 
 # Features:
 csv = ["dep:csv-async", "tokio/fs"]
+random = ["dep:fastrand"]
 tracing = []
 
 [dependencies]
@@ -52,6 +53,7 @@ tokio = { workspace = true, features = ["time"] }
 
 # Features:
 csv-async = { workspace = true, features = ["tokio"], optional = true }
+fastrand = { workspace = true, optional = true }
 
 [dev-dependencies]
 iroh-services.workspace = true
