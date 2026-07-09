@@ -30,8 +30,13 @@ impl CsvHandleResolver {
 }
 
 impl HandleResolver for CsvHandleResolver {
+    type Error = std::io::Error;
+
     /// Resolves a handle into a set of endpoint IDs.
-    fn resolve_handle(&mut self, handle: impl Into<Handle>) -> impl Stream<Item = PeerId> + Send {
+    fn resolve_handle(
+        &mut self,
+        handle: impl Into<Handle>,
+    ) -> impl Stream<Item = core::result::Result<PeerId, Self::Error>> + Send {
         let handle = handle.into().into_string();
         async_stream::stream! {
             let mut record = StringRecord::new();
@@ -48,7 +53,7 @@ impl HandleResolver for CsvHandleResolver {
                 let Ok(peer_id) = PeerId::from_str(record_peer_id) else {
                     continue; // skip invalid peer IDs
                 };
-                yield peer_id;
+                yield Ok(peer_id);
             }
         }
     }
