@@ -6,6 +6,7 @@ use crate::{
     TopicSubscription, node_state::*,
 };
 use alloc::vec::Vec;
+use asimov_id::PublicKey;
 use core::{result::Result, time::Duration};
 use iroh::{Endpoint, EndpointAddr, EndpointId, endpoint::EndpointClosed, protocol::Router};
 
@@ -29,6 +30,10 @@ impl Node<Building> {
 }
 
 impl Node<Bound> {
+    pub fn public_key(&self) -> PublicKey {
+        self.endpoint().id().into()
+    }
+
     pub fn endpoint_addr(&self) -> EndpointAddr {
         self.endpoint().addr()
     }
@@ -56,6 +61,10 @@ impl Node<Bound> {
 }
 
 impl Node<Running> {
+    pub fn public_key(&self) -> PublicKey {
+        self.endpoint().id().into()
+    }
+
     pub fn endpoint_addr(&self) -> EndpointAddr {
         self.endpoint().addr()
     }
