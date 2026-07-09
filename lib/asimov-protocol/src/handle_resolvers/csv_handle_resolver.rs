@@ -11,7 +11,7 @@ use std::io::{Error, Result};
 use tokio::fs::File;
 use tokio::io::AsyncReadExt;
 
-/// A CSV file resolver for ASIMOV handles.
+/// A CSV file resolver from ASIMOV handles to peer IDs.
 ///
 /// The format of the CSV file is simply `handle,peer_id`.
 /// The records should be sorted for efficient resolution.

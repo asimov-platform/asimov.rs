@@ -32,8 +32,8 @@ impl<'de, 'a> Deserialize<'de> for NodeFeatureSet<'a> {
 }
 
 pub enum FeatureIter<'a> {
-    Borrowed(std::slice::Iter<'a, &'a str>),
-    Owned(std::slice::Iter<'a, String>),
+    Borrowed(core::slice::Iter<'a, &'a str>),
+    Owned(core::slice::Iter<'a, String>),
 }
 
 impl<'a> Iterator for FeatureIter<'a> {

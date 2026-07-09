@@ -2,7 +2,7 @@
 
 #![allow(unused_imports)]
 
-#[cfg(feature = "csv")]
+#[cfg(all(feature = "csv", feature = "std"))]
 mod csv_handle_resolver;
-#[cfg(feature = "csv")]
+#[cfg(all(feature = "csv", feature = "std"))]
 pub use csv_handle_resolver::*;

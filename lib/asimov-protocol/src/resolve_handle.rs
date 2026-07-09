@@ -19,7 +19,10 @@ pub trait ResolveHandle {
         id: impl Into<Id>,
     ) -> impl Future<Output = Result<Option<PeerId>, Self::Error>> {
         #[cfg(not(feature = "random"))]
-        unimplemented!("resolve_random requires the `random` feature");
+        {
+            unimplemented!("resolve_random requires the `random` feature");
+            return async { Ok(None) };
+        }
 
         #[cfg(feature = "random")]
         async move {
