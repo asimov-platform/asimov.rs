@@ -1,6 +1,6 @@
 // This is free and unencumbered software released into the public domain.
 
-use crate::{HandleResolver, PeerId};
+use crate::{PeerId, ResolveHandle};
 use alloc::string::String;
 use asimov_id::Handle;
 use core::str::FromStr;
@@ -25,18 +25,24 @@ impl CsvHandleResolver {
         let reader = AsyncReaderBuilder::new()
             .has_headers(false)
             .create_reader(file);
-        Ok(Self(reader))
+        Ok(Self::from(reader))
     }
 }
 
-impl HandleResolver for CsvHandleResolver {
+impl From<AsyncReader<File>> for CsvHandleResolver {
+    fn from(reader: AsyncReader<File>) -> Self {
+        Self(reader)
+    }
+}
+
+impl ResolveHandle for CsvHandleResolver {
     type Error = std::io::Error;
 
     /// Resolves a handle into a set of endpoint IDs.
     fn resolve_handle(
         &mut self,
         handle: impl Into<Handle>,
-    ) -> impl Stream<Item = core::result::Result<PeerId, Self::Error>> + Send {
+    ) -> impl Stream<Item = Result<PeerId>> + Send {
         let handle = handle.into().into_string();
         async_stream::stream! {
             let mut record = StringRecord::new();

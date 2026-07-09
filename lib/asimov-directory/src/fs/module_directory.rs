@@ -2,7 +2,7 @@
 
 use super::{ModuleManifestIterator, ModuleNameIterator, StateDirectory};
 use alloc::format;
-use camino::Utf8PathBuf;
+use camino::{Utf8Path, Utf8PathBuf};
 use derive_more::Display;
 use std::{
     io::{Error, ErrorKind, Result},
@@ -14,6 +14,12 @@ use std::{
 #[display("ModuleDirectory({:?})", path)]
 pub struct ModuleDirectory {
     pub(crate) path: Utf8PathBuf,
+}
+
+impl AsRef<Utf8PathBuf> for ModuleDirectory {
+    fn as_ref(&self) -> &Utf8PathBuf {
+        &self.path
+    }
 }
 
 impl ModuleDirectory {
@@ -40,15 +46,19 @@ impl ModuleDirectory {
     }
 
     pub async fn iter_enabled(&self) -> Result<ModuleNameIterator> {
-        ModuleNameIterator::new(self.path.join("enabled")).await
+        ModuleNameIterator::new(self.join("enabled")).await
     }
 
     pub async fn iter_installed(&self) -> Result<ModuleNameIterator> {
-        ModuleNameIterator::new(self.path.join("installed")).await
+        ModuleNameIterator::new(self.join("installed")).await
     }
 
     pub async fn iter_manifests(&self) -> Result<ModuleManifestIterator> {
-        ModuleManifestIterator::new(self.path.join("installed")).await
+        ModuleManifestIterator::new(self.join("installed")).await
+    }
+
+    pub fn join(&self, path: impl AsRef<Utf8Path>) -> Utf8PathBuf {
+        self.path.join(path.as_ref())
     }
 
     pub fn as_str(&self) -> &str {

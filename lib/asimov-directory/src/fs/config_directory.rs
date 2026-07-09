@@ -2,7 +2,7 @@
 
 use super::{ConfigProfile, StateDirectory};
 use alloc::format;
-use camino::Utf8PathBuf;
+use camino::{Utf8Path, Utf8PathBuf};
 use derive_more::Display;
 use std::{
     io::{Error, ErrorKind, Result},
@@ -14,6 +14,12 @@ use std::{
 #[display("ConfigDirectory({:?})", path)]
 pub struct ConfigDirectory {
     path: Utf8PathBuf,
+}
+
+impl AsRef<Utf8PathBuf> for ConfigDirectory {
+    fn as_ref(&self) -> &Utf8PathBuf {
+        &self.path
+    }
 }
 
 impl ConfigDirectory {
@@ -42,7 +48,11 @@ impl ConfigDirectory {
     /// Returns the default configuration profile (e.g., at
     /// `$HOME/.asimov/configs/default/`).
     pub fn default_profile(&self) -> Result<ConfigProfile> {
-        ConfigProfile::open(self.path.join("default"))
+        ConfigProfile::open(self.join("default"))
+    }
+
+    pub fn join(&self, path: impl AsRef<Utf8Path>) -> Utf8PathBuf {
+        self.path.join(path.as_ref())
     }
 
     pub fn as_str(&self) -> &str {

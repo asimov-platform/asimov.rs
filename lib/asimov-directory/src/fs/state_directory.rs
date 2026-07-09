@@ -2,7 +2,7 @@
 
 use super::{ConfigDirectory, ModuleDirectory, ProgramDirectory};
 use alloc::format;
-use camino::Utf8PathBuf;
+use camino::{Utf8Path, Utf8PathBuf};
 use derive_more::Display;
 use std::{
     io::{Error, ErrorKind, Result},
@@ -14,6 +14,12 @@ use std::{
 #[display("StateDirectory({:?})", path)]
 pub struct StateDirectory {
     path: Utf8PathBuf,
+}
+
+impl AsRef<Utf8PathBuf> for StateDirectory {
+    fn as_ref(&self) -> &Utf8PathBuf {
+        &self.path
+    }
 }
 
 impl StateDirectory {
@@ -42,17 +48,21 @@ impl StateDirectory {
 
     /// Opens the configuration directory under this state directory.
     pub fn configs(&self) -> Result<ConfigDirectory> {
-        ConfigDirectory::open(self.path.join("configs"))
+        ConfigDirectory::open(self.join("configs"))
     }
 
     /// Opens the module directory under this state directory.
     pub fn modules(&self) -> Result<ModuleDirectory> {
-        ModuleDirectory::open(self.path.join("modules"))
+        ModuleDirectory::open(self.join("modules"))
     }
 
     /// Opens the program directory under this state directory.
     pub fn programs(&self) -> Result<ProgramDirectory> {
-        ProgramDirectory::open(self.path.join("libexec"))
+        ProgramDirectory::open(self.join("libexec"))
+    }
+
+    pub fn join(&self, path: impl AsRef<Utf8Path>) -> Utf8PathBuf {
+        self.path.join(path.as_ref())
     }
 
     pub fn as_str(&self) -> &str {

@@ -4,6 +4,7 @@
 
 use crate::{Message, MessageRecv, MessageSend, NodeMetrics, PeerAccept};
 use alloc::sync::Arc;
+use asimov_id::PublicKey;
 use iroh::{
     endpoint::Connection,
     protocol::{AcceptError, ProtocolHandler},
@@ -45,7 +46,7 @@ impl ProtocolHandler for NodeProtocol {
     /// The returned future runs on a newly spawned Tokio task, so it can run
     /// indefinitely as long as the connection remains open.
     async fn accept(&self, connection: Connection) -> n0_error::Result<(), AcceptError> {
-        let node_id = connection.remote_id();
+        let node_id: PublicKey = connection.remote_id().into();
 
         #[cfg(feature = "std")]
         std::eprintln!("Accepted a connection from node {node_id}"); // DEBUG

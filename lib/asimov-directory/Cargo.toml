@@ -37,6 +37,7 @@ tokio = ["dep:tokio"]
 asimov-config.workspace = true
 asimov-core.workspace = true
 asimov-module = { workspace = true, features = ["serde"] }
+asimov-protocol.workspace = true
 derive_more = { workspace = true, features = ["display"] }
 serde_json = { workspace = true }
 serde_yaml_ng = { workspace = true }

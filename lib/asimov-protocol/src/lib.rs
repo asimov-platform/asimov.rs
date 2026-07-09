@@ -10,11 +10,13 @@ extern crate alloc;
 #[cfg(feature = "std")]
 extern crate std;
 
+pub use futures_lite::{Stream, StreamExt};
+
 #[doc(hidden)]
 pub use iroh;
 
 pub use iroh::{
-    Endpoint, EndpointAddr, EndpointId, PublicKey, SecretKey,
+    Endpoint, EndpointAddr, EndpointId, SecretKey,
     endpoint::presets::Preset,
     protocol::{Router, RouterBuilder},
 };
@@ -24,14 +26,13 @@ pub use iroh_gossip::{
 };
 pub use iroh_tickets::{ParseError as TicketParsingError, Ticket, endpoint::EndpointTicket};
 
+pub use asimov_id::{Handle, HandleError, Id, IdError, KeyError, PublicKey, PublicKeyEncoding};
+
 mod errors;
 pub use errors::*;
 
 mod gossip_protocol;
 pub use gossip_protocol::*;
-
-mod handle_resolver;
-pub use handle_resolver::*;
 
 mod handle_resolvers;
 pub use handle_resolvers::*;
@@ -85,6 +86,9 @@ pub use peer_protocol::*;
 
 mod presets;
 pub use presets::*;
+
+mod resolve_handle;
+pub use resolve_handle::*;
 
 mod topic;
 pub use topic::*;

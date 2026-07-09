@@ -7,7 +7,7 @@ use core::pin::Pin;
 use futures_lite::{Stream, StreamExt, stream};
 
 /// A resolver for ASIMOV handles (e.g., "Ⓐjhacker").
-pub trait HandleResolver {
+pub trait ResolveHandle {
     type Error: core::fmt::Debug + Send;
 
     /// Resolves an ASIMOV ID and yields a random known peer ID.

@@ -2,7 +2,7 @@
 
 use super::StateDirectory;
 use alloc::format;
-use camino::Utf8PathBuf;
+use camino::{Utf8Path, Utf8PathBuf};
 use derive_more::Display;
 use std::{
     io::{Error, ErrorKind, Result},
@@ -14,6 +14,12 @@ use std::{
 #[display("ProgramDirectory({:?})", path)]
 pub struct ProgramDirectory {
     path: Utf8PathBuf,
+}
+
+impl AsRef<Utf8PathBuf> for ProgramDirectory {
+    fn as_ref(&self) -> &Utf8PathBuf {
+        &self.path
+    }
 }
 
 impl ProgramDirectory {
@@ -37,6 +43,10 @@ impl ProgramDirectory {
             )
         })?;
         Ok(ProgramDirectory { path })
+    }
+
+    pub fn join(&self, path: impl AsRef<Utf8Path>) -> Utf8PathBuf {
+        self.path.join(path.as_ref())
     }
 
     pub fn as_str(&self) -> &str {
