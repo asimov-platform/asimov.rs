@@ -64,6 +64,10 @@ impl Handle {
     pub fn to_string_with_glyph(&self) -> String {
         format!("Ⓐ{}", self)
     }
+
+    pub fn to_uri(&self) -> String {
+        format!("https://asimov.social/{}", self.0)
+    }
 }
 
 impl FromStr for Handle {
