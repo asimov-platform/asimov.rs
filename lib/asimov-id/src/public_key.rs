@@ -120,11 +120,24 @@ impl From<iroh::PublicKey> for PublicKey {
 }
 
 #[cfg(feature = "iroh")]
-impl TryFrom<PublicKey> for iroh::PublicKey {
-    type Error = iroh::KeyParsingError;
+impl From<PublicKey> for iroh::PublicKey {
+    fn from(input: PublicKey) -> Self {
+        iroh::PublicKey::from_bytes(&input.into_bytes()).unwrap() // TODO
+    }
+}
 
-    fn try_from(input: PublicKey) -> Result<iroh::PublicKey, Self::Error> {
-        iroh::PublicKey::from_bytes(&input.into_bytes())
+#[cfg(feature = "iroh")]
+impl From<iroh::EndpointAddr> for PublicKey {
+    fn from(input: iroh::EndpointAddr) -> Self {
+        Self(input.id.as_bytes().clone())
+    }
+}
+
+#[cfg(feature = "iroh")]
+impl From<PublicKey> for iroh::EndpointAddr {
+    fn from(input: PublicKey) -> Self {
+        let endpoint_id = iroh::EndpointId::from(input);
+        iroh::EndpointAddr::from(endpoint_id)
     }
 }
 
