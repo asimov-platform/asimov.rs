@@ -29,6 +29,10 @@ impl HandleResolver {
     pub fn handles(&mut self) -> impl Stream<Item = Result<Handle>> + Send {
         self.0.handles()
     }
+
+    pub fn records(&mut self) -> impl Stream<Item = Result<(Handle, PeerId)>> + Send {
+        self.0.records()
+    }
 }
 
 impl ResolveHandle for HandleResolver {

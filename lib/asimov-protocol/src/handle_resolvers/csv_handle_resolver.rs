@@ -5,7 +5,7 @@ use alloc::string::String;
 use asimov_id::Handle;
 use core::str::FromStr;
 use csv_async::{AsyncReader, AsyncReaderBuilder, StringRecord};
-use futures_lite::{Stream, stream};
+use futures_lite::{Stream, StreamExt, pin, stream};
 use iroh::EndpointId;
 use std::io::{Error, Result};
 use tokio::fs::File;
@@ -34,20 +34,38 @@ impl CsvHandleResolver {
             let mut handles = std::collections::HashSet::new();
             #[cfg(not(feature = "std"))]
             let mut handles = alloc::collections::BTreeSet::new();
-            let mut record = StringRecord::new();
-            self.0.rewind().await?;
-            while let Ok(true) = self.0.read_record(&mut record).await {
-                let Some(record_handle) = record.get(0) else {
-                    continue; // skip invalid records
-                };
-                let Some(handle) = record_handle.parse::<Handle>().ok() else {
-                    continue; // skip invalid handles
-                };
+
+            let records = self.records();
+            pin!(records);
+            while let Some(record) = records.next().await {
+                let (handle, _) = record?;
                 if handles.contains(&handle) {
                     continue; // skip duplicate handles
                 }
                 handles.insert(handle.clone());
                 yield Ok(handle);
+            }
+        }
+    }
+
+    pub fn records(&mut self) -> impl Stream<Item = Result<(Handle, PeerId)>> + Send {
+        async_stream::stream! {
+            self.0.rewind().await?;
+            let mut record = StringRecord::new();
+            while let Ok(true) = self.0.read_record(&mut record).await {
+                let Some(record_handle) = record.get(0) else {
+                    continue; // skip invalid records
+                };
+                let Some(record_endpoint) = record.get(1) else {
+                    continue; // skip invalid records
+                };
+                let Ok(handle) = record_handle.parse::<Handle>() else {
+                    continue; // skip invalid handles
+                };
+                let Ok(endpoint) = record_endpoint.parse::<PeerId>() else {
+                    continue; // skip invalid peer IDs
+                };
+                yield Ok((handle, endpoint));
             }
         }
     }
@@ -67,23 +85,16 @@ impl ResolveHandle for CsvHandleResolver {
         &mut self,
         handle: impl Into<Handle>,
     ) -> impl Stream<Item = Result<PeerId>> + Send {
-        let handle = handle.into().into_string();
+        let handle = handle.into();
         async_stream::stream! {
-            let mut record = StringRecord::new();
-            while let Ok(true) = self.0.read_record(&mut record).await {
-                let Some(record_handle) = record.get(0) else {
-                    continue; // skip invalid records
-                };
-                if record_handle != &handle {
+            let records = self.records();
+            pin!(records);
+            while let Some(record) = records.next().await {
+                let (record_handle, record_endpoint) = record?;
+                if record_handle != handle {
                     continue; // skip records that don't match
                 }
-                let Some(record_peer_id) = record.get(1) else {
-                    continue; // skip invalid records
-                };
-                let Ok(peer_id) = PeerId::from_str(record_peer_id) else {
-                    continue; // skip invalid peer IDs
-                };
-                yield Ok(peer_id);
+                yield Ok(record_endpoint);
             }
         }
     }
