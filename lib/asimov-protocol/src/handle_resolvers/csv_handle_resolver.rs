@@ -27,6 +27,30 @@ impl CsvHandleResolver {
             .create_reader(file);
         Ok(Self::from(reader))
     }
+
+    pub fn handles(&mut self) -> impl Stream<Item = Result<Handle>> + Send {
+        async_stream::stream! {
+            #[cfg(feature = "std")]
+            let mut handles = std::collections::HashSet::new();
+            #[cfg(not(feature = "std"))]
+            let mut handles = alloc::collections::BTreeSet::new();
+            let mut record = StringRecord::new();
+            self.0.rewind().await?;
+            while let Ok(true) = self.0.read_record(&mut record).await {
+                let Some(record_handle) = record.get(0) else {
+                    continue; // skip invalid records
+                };
+                let Some(handle) = record_handle.parse::<Handle>().ok() else {
+                    continue; // skip invalid handles
+                };
+                if handles.contains(&handle) {
+                    continue; // skip duplicate handles
+                }
+                handles.insert(handle.clone());
+                yield Ok(handle);
+            }
+        }
+    }
 }
 
 impl From<AsyncReader<File>> for CsvHandleResolver {

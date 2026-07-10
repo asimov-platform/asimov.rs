@@ -25,6 +25,10 @@ impl HandleResolver {
         let path = profile.join("peers.csv");
         Ok(Self(CsvHandleResolver::open(path.as_str()).await?))
     }
+
+    pub fn handles(&mut self) -> impl Stream<Item = Result<Handle>> + Send {
+        self.0.handles()
+    }
 }
 
 impl ResolveHandle for HandleResolver {
