@@ -11,6 +11,12 @@ use std::io::{Error, Result};
 use tokio::fs::File;
 use tokio::io::AsyncReadExt;
 
+#[cfg(not(feature = "std"))]
+use alloc::collections::BTreeSet as Set;
+
+#[cfg(feature = "std")]
+use std::collections::HashSet as Set;
+
 /// A CSV file resolver from ASIMOV handles to peer IDs.
 ///
 /// The format of the CSV file is simply `handle,peer_id`.
@@ -30,11 +36,7 @@ impl CsvHandleResolver {
 
     pub fn handles(&mut self) -> impl Stream<Item = Result<Handle>> + Send {
         async_stream::stream! {
-            #[cfg(feature = "std")]
-            let mut handles = std::collections::HashSet::new();
-            #[cfg(not(feature = "std"))]
-            let mut handles = alloc::collections::BTreeSet::new();
-
+            let mut handles = Set::new();
             let records = self.records();
             pin!(records);
             while let Some(record) = records.next().await {
@@ -87,6 +89,7 @@ impl ResolveHandle for CsvHandleResolver {
     ) -> impl Stream<Item = Result<PeerId>> + Send {
         let handle = handle.into();
         async_stream::stream! {
+            let mut endpoints = Set::new();
             let records = self.records();
             pin!(records);
             while let Some(record) = records.next().await {
@@ -94,6 +97,10 @@ impl ResolveHandle for CsvHandleResolver {
                 if record_handle != handle {
                     continue; // skip records that don't match
                 }
+                if endpoints.contains(&record_endpoint) {
+                    continue; // skip duplicate endpoints
+                }
+                endpoints.insert(record_endpoint.clone());
                 yield Ok(record_endpoint);
             }
         }
