@@ -187,6 +187,10 @@ tempfile = { version = "3.20", default-features = false }
 thiserror = { version = "2", default-features = false }
 tldr = { version = "0.1", package = "tldr-traits", default-features = false }
 toml = { version = "0.8", default-features = false, features = ["parse"] }
+toml_edit = { version = "0.22", default-features = false, features = [
+    "parse",
+    "display",
+] }
 tower-http = { version = "0.7", default-features = false }
 tracing = { version = "0.1", default-features = false }
 tracing-subscriber = { version = "0.3", default-features = false, features = [

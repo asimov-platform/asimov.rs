@@ -22,7 +22,7 @@ title = "ASIMOV.rs: Module Kit"
 [features]
 default = ["all", "std"]
 all = ["module", "tracing", "lint"]
-module = ["std", "dep:anyhow", "dep:cargo-generate", "dep:kstring"]
+module = ["std", "dep:anyhow", "dep:cargo-generate", "dep:kstring", "dep:toml_edit"]
 std = ["thiserror/std", "tracing?/std"]
 unstable = []
 
@@ -50,6 +50,7 @@ kstring = { workspace = true, optional = true }
 serde = { workspace = true, optional = true, features = ["derive"] }
 serde_yaml_ng = { workspace = true, optional = true }
 toml = { workspace = true, optional = true }
+toml_edit = { workspace = true, optional = true }
 tracing = { workspace = true, optional = true }
 
 [dev-dependencies]

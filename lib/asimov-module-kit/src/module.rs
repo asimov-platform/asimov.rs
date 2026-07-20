@@ -11,8 +11,10 @@ use std::{
 };
 use thiserror::Error;
 
+pub mod cargo_toml;
 #[cfg(feature = "lint")]
 pub mod lint;
+pub mod manifest_edit;
 
 pub const DEFAULT_TEMPLATE_GIT: &str = "https://github.com/asimov-modules/asimov-template-module";
 
