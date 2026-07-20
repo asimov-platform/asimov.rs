@@ -109,9 +109,17 @@ pub struct CreatedModule {
 }
 
 pub fn new_module(options: NewModuleOptions) -> Result<CreatedModule, NewModuleError> {
+    tracing::info!(
+        module = %options.name,
+        target = ?options.target_dir,
+        template = ?options.template,
+        "generating new ASIMOV module"
+    );
+
     validate_module_name(&options.name)?;
 
     if options.target_dir.exists() {
+        tracing::error!(target = ?options.target_dir, "target directory already exists");
         return Err(NewModuleError::TargetExists(options.target_dir));
     }
 
@@ -190,7 +198,17 @@ pub fn new_module(options: NewModuleOptions) -> Result<CreatedModule, NewModuleE
     .map(|(key, value)| format!("{key}={value}"))
     .collect();
 
-    generate(args).map_err(NewModuleError::CargoGenerate)?;
+    generate(args).map_err(|err| {
+        tracing::error!(error = %err, "cargo-generate failed");
+        NewModuleError::CargoGenerate(err)
+    })?;
+
+    tracing::info!(
+        module = %options.name,
+        crate_name = %crate_name,
+        target = ?options.target_dir,
+        "module generated"
+    );
 
     Ok(CreatedModule {
         module_name: options.name,
@@ -215,8 +233,7 @@ fn template_path(options: &NewModuleOptions) -> TemplatePath {
 }
 
 fn parse_vcs(vcs: &str) -> Result<Vcs, NewModuleError> {
-    vcs.parse()
-        .map_err(|err| NewModuleError::CargoGenerate(err))
+    vcs.parse().map_err(NewModuleError::CargoGenerate)
 }
 
 fn validate_module_name(name: &str) -> Result<(), NewModuleError> {
@@ -270,6 +287,7 @@ fn title_case_slug(slug: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use tempfile::tempdir;
 
     #[test]
     fn rejects_invalid_module_names() {
@@ -280,6 +298,54 @@ mod tests {
         assert!(matches!(
             new_module(NewModuleOptions::new("target", "Not Valid")),
             Err(NewModuleError::InvalidName(_))
+        ));
+    }
+
+    #[test]
+    fn generates_module_from_local_template() {
+        let template_dir = tempdir().unwrap();
+        fs::write(
+            template_dir.path().join("Cargo.toml"),
+            "[package]\nname = \"{{package_name}}\"\ndescription = \"{{package_description}}\"\n",
+        )
+        .unwrap();
+        fs::create_dir(template_dir.path().join("src")).unwrap();
+        fs::write(
+            template_dir.path().join("src/lib.rs"),
+            "// {{module_title}}\npub const PROGRAM: &str = \"{{program_name}}\";\n",
+        )
+        .unwrap();
+
+        let workspace = tempdir().unwrap();
+        let target_dir = workspace.path().join("widget-module");
+
+        let options =
+            NewModuleOptions::new(&target_dir, "widget").template_path(template_dir.path());
+        let created = new_module(options).unwrap();
+
+        assert_eq!(created.crate_name, "asimov-widget-module");
+        assert_eq!(created.program_name, "asimov-widget-emitter");
+        assert_eq!(created.target_dir, target_dir);
+
+        let cargo_toml = fs::read_to_string(target_dir.join("Cargo.toml")).unwrap();
+        assert!(cargo_toml.contains("name = \"asimov-widget-module\""));
+        assert!(cargo_toml.contains("description = \"ASIMOV module.\""));
+
+        let lib_rs = fs::read_to_string(target_dir.join("src/lib.rs")).unwrap();
+        assert!(lib_rs.contains("ASIMOV Widget Module"));
+        assert!(lib_rs.contains("asimov-widget-emitter"));
+    }
+
+    #[test]
+    fn refuses_to_overwrite_existing_target() {
+        let workspace = tempdir().unwrap();
+        let target_dir = workspace.path().join("existing");
+        fs::create_dir(&target_dir).unwrap();
+
+        let options = NewModuleOptions::new(&target_dir, "widget");
+        assert!(matches!(
+            new_module(options),
+            Err(NewModuleError::TargetExists(_))
         ));
     }
 }
