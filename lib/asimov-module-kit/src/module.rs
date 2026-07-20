@@ -103,7 +103,22 @@ pub enum NewModuleError {
 
     #[error("failed to run `cargo generate`: {0}")]
     CargoGenerate(#[source] anyhow::Error),
+
+    #[error(transparent)]
+    InvalidProgramName(#[from] InvalidProgramName),
 }
+
+/// The program name doesn't match the `asimov-<module>-<kind>` shape.
+///
+/// The `<kind>` segment itself is never checked against any fixed list —
+/// any lowercase, hyphenated word is accepted; only the overall shape
+/// (matching the naming convention already enforced for module names) is
+/// validated here.
+#[derive(Clone, Debug, PartialEq, Eq, Error)]
+#[error(
+    "program name `{0}` is not supported; use the shape `asimov-<module>-<kind>` (lowercase letters, digits, and hyphens)"
+)]
+pub struct InvalidProgramName(pub String);
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct CreatedModule {
@@ -122,6 +137,9 @@ pub fn new_module(options: NewModuleOptions) -> Result<CreatedModule, NewModuleE
     );
 
     validate_module_name(&options.name)?;
+    if let Some(program_name) = &options.program_name {
+        validate_program_name(program_name)?;
+    }
 
     if options.target_dir.exists() {
         tracing::error!(target = ?options.target_dir, "target directory already exists");
@@ -264,6 +282,25 @@ fn validate_module_name(name: &str) -> Result<(), NewModuleError> {
     }
 }
 
+fn validate_program_name(name: &str) -> Result<(), InvalidProgramName> {
+    let Some(rest) = name.strip_prefix("asimov-") else {
+        return Err(InvalidProgramName(name.into()));
+    };
+
+    if rest.is_empty() || rest.starts_with('-') || rest.ends_with('-') || !rest.contains('-') {
+        return Err(InvalidProgramName(name.into()));
+    }
+
+    let valid = rest
+        .bytes()
+        .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-');
+    if valid {
+        Ok(())
+    } else {
+        Err(InvalidProgramName(name.into()))
+    }
+}
+
 fn target_dir_name(target_dir: &Path) -> Result<OsString, NewModuleError> {
     target_dir
         .file_name()
@@ -304,6 +341,31 @@ mod tests {
             new_module(NewModuleOptions::new("target", "Not Valid")),
             Err(NewModuleError::InvalidName(_))
         ));
+    }
+
+    #[test]
+    fn rejects_invalid_program_name() {
+        let mut options = NewModuleOptions::new("target", "widget");
+        options.program_name = Some("Not-Valid".into());
+        assert!(matches!(
+            new_module(options),
+            Err(NewModuleError::InvalidProgramName(_))
+        ));
+    }
+
+    #[test]
+    fn validates_program_name_shape() {
+        assert!(validate_program_name("asimov-widget-emitter").is_ok());
+        assert!(validate_program_name("asimov-widget-multi-word-kind").is_ok());
+        // The kind itself is never restricted to a known list:
+        assert!(validate_program_name("asimov-widget-whatever-custom-kind").is_ok());
+
+        assert!(validate_program_name("").is_err());
+        assert!(validate_program_name("widget-emitter").is_err());
+        assert!(validate_program_name("asimov-widget").is_err());
+        assert!(validate_program_name("asimov-Widget-Emitter").is_err());
+        assert!(validate_program_name("asimov-widget-emitter-").is_err());
+        assert!(validate_program_name("asimov-widgetemitter").is_err());
     }
 
     #[test]
