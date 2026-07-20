@@ -1,0 +1,48 @@
+# See: https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[package]
+name = "asimov-module-kit"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "ASIMOV module authoring toolkit"
+#documentation.workspace = true
+readme = true
+homepage.workspace = true
+repository.workspace = true
+license.workspace = true
+keywords.workspace = true
+categories = ["command-line-utilities", "development-tools"]
+publish.workspace = true
+
+[package.metadata.readme]
+title = "ASIMOV.rs: Module Kit"
+
+[features]
+default = ["all", "std"]
+all = ["module", "tracing"]
+module = ["std", "dep:anyhow", "dep:cargo-generate", "dep:kstring"]
+std = ["thiserror/std", "tracing?/std"]
+unstable = []
+
+# Optional features:
+tracing = ["dep:tracing"]
+
+[dependencies]
+thiserror.workspace = true
+
+# Optional dependencies:
+anyhow = { workspace = true, optional = true, features = ["std"] }
+cargo-generate = { workspace = true, optional = true }
+# Keep cargo-generate's liquid stack compatible with the workspace Rust version.
+kstring = { workspace = true, optional = true }
+tracing = { workspace = true, optional = true }
+
+[dev-dependencies]
+tempfile.workspace = true
+
+# Preview locally with: RUSTDOCFLAGS="--cfg docsrs" cargo +nightly doc --all-features
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
