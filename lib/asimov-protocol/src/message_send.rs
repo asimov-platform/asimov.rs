@@ -1,6 +1,6 @@
 // This is free and unencumbered software released into the public domain.
 
-use crate::{MESSAGE_HEADER_LEN, MessageLen, Message, SendError};
+use crate::{MESSAGE_HEADER_LEN, Message, MessageLen, SendError};
 
 pub trait MessageSend {
     fn send(&mut self, request: Message) -> impl Future<Output = Result<usize, SendError>> {
