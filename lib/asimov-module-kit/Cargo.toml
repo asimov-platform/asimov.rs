@@ -22,7 +22,15 @@ title = "ASIMOV.rs: Module Kit"
 [features]
 default = ["all", "std"]
 all = ["module", "tracing", "lint"]
-module = ["std", "dep:anyhow", "dep:cargo-generate", "dep:kstring", "dep:toml_edit"]
+module = [
+  "std",
+  "dep:anyhow",
+  "dep:cargo-generate",
+  "dep:kstring",
+  "dep:liquid",
+  "dep:tempfile",
+  "dep:toml_edit",
+]
 std = ["thiserror/std", "tracing?/std"]
 unstable = []
 
@@ -47,8 +55,10 @@ asimov-module = { workspace = true, optional = true }
 cargo-generate = { workspace = true, optional = true }
 # Keep cargo-generate's liquid stack compatible with the workspace Rust version.
 kstring = { workspace = true, optional = true }
+liquid = { workspace = true, optional = true }
 serde = { workspace = true, optional = true, features = ["derive"] }
 serde_yaml_ng = { workspace = true, optional = true }
+tempfile = { workspace = true, optional = true }
 toml = { workspace = true, optional = true }
 toml_edit = { workspace = true, optional = true }
 tracing = { workspace = true, optional = true }

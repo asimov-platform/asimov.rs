@@ -1113,6 +1113,7 @@ dependencies = [
  "asimov-module",
  "cargo-generate",
  "kstring",
+ "liquid",
  "serde",
  "serde_yaml_ng",
  "tempfile",
