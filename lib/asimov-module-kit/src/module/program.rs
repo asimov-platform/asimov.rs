@@ -117,12 +117,7 @@ pub fn add_program(options: AddProgramOptions) -> Result<AddedProgram, AddProgra
         }
     }
 
-    let kind = options
-        .program_name
-        .rsplit('-')
-        .next()
-        .unwrap_or(&options.program_name)
-        .to_string();
+    let kind = super::program_kind_of(&options.program_name).to_string();
     let relative_path = format!("src/{kind}/main.rs");
     let source_path = options.module_dir.join(&relative_path);
     if source_path.exists() {
@@ -380,8 +375,10 @@ required-features = ["cli"]
     fn smoke_test_default_git_template() {
         let module_dir = tempdir().unwrap();
         let new_module_options =
-            crate::module::NewModuleOptions::new(module_dir.path().join("widget-module"), "widget");
+            crate::module::NewModuleOptions::new(module_dir.path().join("widget-module"), "widget")
+                .without_program();
         let created = crate::module::new_module(new_module_options).unwrap();
+        assert!(!created.target_dir.join("src/emitter").exists());
 
         let options = AddProgramOptions::new(&created.target_dir, "asimov-widget-fetcher")
             .template_git(crate::module::DEFAULT_TEMPLATE_GIT);

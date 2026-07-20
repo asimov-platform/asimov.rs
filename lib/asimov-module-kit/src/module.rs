@@ -2,7 +2,11 @@
 
 //! Module authoring support.
 
-use alloc::{format, string::String, vec::Vec};
+use alloc::{
+    format,
+    string::{String, ToString},
+    vec::Vec,
+};
 use cargo_generate::{GenerateArgs, TemplatePath, Vcs, generate};
 use std::{
     ffi::OsString,
@@ -48,6 +52,10 @@ pub struct NewModuleOptions {
     pub asimov_version: Option<String>,
     pub publish: bool,
     pub vcs: Option<String>,
+    /// Whether to scaffold an initial program at all. Defaults to `true`;
+    /// set to `false` (via [`Self::without_program`]) to create a bare
+    /// module with no programs — add them later via [`program::add_program`].
+    pub create_program: bool,
 }
 
 impl NewModuleOptions {
@@ -68,6 +76,7 @@ impl NewModuleOptions {
             asimov_version: Some(env!("CARGO_PKG_VERSION").into()),
             publish: false,
             vcs: Some("none".into()),
+            create_program: true,
         }
     }
 
@@ -78,6 +87,12 @@ impl NewModuleOptions {
 
     pub fn template_git(mut self, git: impl Into<String>) -> Self {
         self.template = TemplateSource::Git(git.into());
+        self
+    }
+
+    /// Creates a bare module with no initial program.
+    pub fn without_program(mut self) -> Self {
+        self.create_program = false;
         self
     }
 }
@@ -101,6 +116,9 @@ pub enum NewModuleError {
 
     #[error("failed to create target parent directory `{0}`: {1}")]
     CreateTargetParent(PathBuf, #[source] io::Error),
+
+    #[error("failed to remove unused program scaffold at `{0}`: {1}")]
+    RemoveOrphanProgram(PathBuf, #[source] io::Error),
 
     #[error("failed to run `cargo generate`: {0}")]
     CargoGenerate(#[source] anyhow::Error),
@@ -185,6 +203,7 @@ pub fn new_module(options: NewModuleOptions) -> Result<CreatedModule, NewModuleE
         .program_name
         .clone()
         .unwrap_or_else(|| format!("asimov-{}-emitter", options.name));
+    let program_kind = program_kind_of(&program_name).to_string();
     let repository_url = options
         .repository_url
         .clone()
@@ -214,9 +233,18 @@ pub fn new_module(options: NewModuleOptions) -> Result<CreatedModule, NewModuleE
         ("module_title", module_title.as_str()),
         ("module_summary", module_summary.as_str()),
         ("program_name", program_name.as_str()),
+        ("program_kind", program_kind.as_str()),
         ("repository_url", repository_url.as_str()),
         ("asimov_version", asimov_version.as_str()),
         ("publish", if options.publish { "true" } else { "false" }),
+        (
+            "create_program",
+            if options.create_program {
+                "true"
+            } else {
+                "false"
+            },
+        ),
     ]
     .into_iter()
     .map(|(key, value)| format!("{key}={value}"))
@@ -226,6 +254,17 @@ pub fn new_module(options: NewModuleOptions) -> Result<CreatedModule, NewModuleE
         tracing::error!(error = %err, "cargo-generate failed");
         NewModuleError::CargoGenerate(err)
     })?;
+
+    if !options.create_program {
+        // The template still physically generates the program's source file
+        // even when unreferenced (a cargo-generate limitation with templated
+        // ignore paths) — clean up that orphan directory ourselves.
+        let orphan_dir = options.target_dir.join("src").join(&program_kind);
+        if orphan_dir.exists() {
+            fs::remove_dir_all(&orphan_dir)
+                .map_err(|err| NewModuleError::RemoveOrphanProgram(orphan_dir, err))?;
+        }
+    }
 
     tracing::info!(
         module = %options.name,
@@ -300,6 +339,12 @@ fn validate_program_name(name: &str) -> Result<(), InvalidProgramName> {
     } else {
         Err(InvalidProgramName(name.into()))
     }
+}
+
+/// Derives a program's "kind" from its name — the last hyphen segment.
+/// Never validated against any fixed list; any word is accepted.
+pub(crate) fn program_kind_of(program_name: &str) -> &str {
+    program_name.rsplit('-').next().unwrap_or(program_name)
 }
 
 fn target_dir_name(target_dir: &Path) -> Result<OsString, NewModuleError> {
@@ -415,5 +460,75 @@ mod tests {
             new_module(options),
             Err(NewModuleError::TargetExists(_))
         ));
+    }
+
+    #[test]
+    fn passes_program_kind_for_a_custom_program_name() {
+        let template_dir = tempdir().unwrap();
+        fs::write(
+            template_dir.path().join("Cargo.toml"),
+            "[package]\nname = \"{{package_name}}\"\n",
+        )
+        .unwrap();
+        fs::create_dir(template_dir.path().join("src")).unwrap();
+        fs::write(
+            template_dir.path().join("src/lib.rs"),
+            "// kind: {{program_kind}}\n",
+        )
+        .unwrap();
+
+        let workspace = tempdir().unwrap();
+        let target_dir = workspace.path().join("widget-module");
+
+        let mut options =
+            NewModuleOptions::new(&target_dir, "widget").template_path(template_dir.path());
+        options.program_name = Some("asimov-widget-fetcher".into());
+        new_module(options).unwrap();
+
+        let lib_rs = fs::read_to_string(target_dir.join("src/lib.rs")).unwrap();
+        assert!(lib_rs.contains("kind: fetcher"));
+    }
+
+    #[test]
+    fn creates_module_without_a_program() {
+        let template_dir = tempdir().unwrap();
+        fs::write(
+            template_dir.path().join("Cargo.toml"),
+            concat!(
+                "[package]\n",
+                "name = \"{{package_name}}\"\n",
+                "\n",
+                "{%- if create_program == \"true\" %}\n",
+                "[[bin]]\n",
+                "name = \"{{program_name}}\"\n",
+                "path = \"src/{{program_kind}}/main.rs\"\n",
+                "{%- endif %}\n",
+            ),
+        )
+        .unwrap();
+        fs::create_dir(template_dir.path().join("src")).unwrap();
+        fs::write(template_dir.path().join("src/lib.rs"), "// lib\n").unwrap();
+        // Simulate the real template's known cargo-generate limitation: the
+        // program's source file physically gets generated regardless of
+        // `create_program`, since a templated `ignore` path doesn't reliably
+        // exclude it (see module::new_module's orphan-cleanup step).
+        fs::create_dir(template_dir.path().join("src/emitter")).unwrap();
+        fs::write(
+            template_dir.path().join("src/emitter/main.rs"),
+            "fn main() {}",
+        )
+        .unwrap();
+
+        let workspace = tempdir().unwrap();
+        let target_dir = workspace.path().join("bare-module");
+
+        let options = NewModuleOptions::new(&target_dir, "bare")
+            .template_path(template_dir.path())
+            .without_program();
+        new_module(options).unwrap();
+
+        assert!(!target_dir.join("src/emitter").exists());
+        let cargo_toml = fs::read_to_string(target_dir.join("Cargo.toml")).unwrap();
+        assert!(!cargo_toml.contains("[[bin]]"));
     }
 }
