@@ -1110,10 +1110,14 @@ name = "asimov-module-kit"
 version = "25.2.0"
 dependencies = [
  "anyhow",
+ "asimov-module",
  "cargo-generate",
  "kstring",
+ "serde",
+ "serde_yaml_ng",
  "tempfile",
  "thiserror 2.0.18",
+ "toml 0.8.23",
  "tracing",
 ]
 

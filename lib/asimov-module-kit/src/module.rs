@@ -11,6 +11,9 @@ use std::{
 };
 use thiserror::Error;
 
+#[cfg(feature = "lint")]
+pub mod lint;
+
 pub const DEFAULT_TEMPLATE_GIT: &str = "https://github.com/asimov-modules/asimov-template-module";
 
 #[derive(Clone, Debug, PartialEq, Eq)]
