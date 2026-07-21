@@ -49,7 +49,9 @@ fn insert_program_line(contents: &str, program_name: &str) -> Option<String> {
         .find(|(_, line)| line.trim_start() == "programs:")
         .map(|(i, _)| i)?;
 
-    let indent = " ".repeat(4);
+    let programs_line = lines[programs_idx];
+    let base_indent = programs_line.len() - programs_line.trim_start().len();
+    let indent = " ".repeat(base_indent + 2);
     let mut insert_at = programs_idx + 1;
     while lines
         .get(insert_at)
@@ -61,9 +63,14 @@ fn insert_program_line(contents: &str, program_name: &str) -> Option<String> {
     let mut result: Vec<String> = lines.iter().map(|s| s.to_string()).collect();
     result.insert(insert_at, format!("{indent}- {program_name}"));
 
-    let mut joined = result.join("\n");
+    let newline = if contents.contains("\r\n") {
+        "\r\n"
+    } else {
+        "\n"
+    };
+    let mut joined = result.join(newline);
     if contents.ends_with('\n') {
-        joined.push('\n');
+        joined.push_str(newline);
     }
     Some(joined)
 }
@@ -136,6 +143,42 @@ handles:
             assert!(updated.contains(line), "missing original line: {line:?}");
         }
         assert!(updated.starts_with("# See: https://asimov-specs.github.io/module-manifest/\n"));
+    }
+
+    #[test]
+    fn derives_indent_from_the_programs_line() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("module.yaml");
+        // `programs:` indented 4 spaces here (nested one level deeper than
+        // the default fixture) — list items should land at 6, not a
+        // hardcoded 4.
+        let manifest = "provides:\n    programs:\n      - asimov-widget-emitter\n";
+        fs::write(&path, manifest).unwrap();
+
+        append_provides_program(&path, "asimov-widget-fetcher").unwrap();
+
+        let updated = fs::read_to_string(&path).unwrap();
+        assert_eq!(
+            updated,
+            "provides:\n    programs:\n      - asimov-widget-emitter\n      - asimov-widget-fetcher\n"
+        );
+    }
+
+    #[test]
+    fn preserves_crlf_line_endings() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("module.yaml");
+        let manifest = MANIFEST.replace('\n', "\r\n");
+        fs::write(&path, &manifest).unwrap();
+
+        append_provides_program(&path, "asimov-widget-fetcher").unwrap();
+
+        let updated = fs::read_to_string(&path).unwrap();
+        let expected = manifest.replace(
+            "    - asimov-widget-emitter\r\n",
+            "    - asimov-widget-emitter\r\n    - asimov-widget-fetcher\r\n",
+        );
+        assert_eq!(updated, expected);
     }
 
     #[test]

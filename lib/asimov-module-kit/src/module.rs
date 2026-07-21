@@ -158,6 +158,11 @@ pub fn new_module(options: NewModuleOptions) -> Result<CreatedModule, NewModuleE
     validate_module_name(&options.name)?;
     if let Some(program_name) = &options.program_name {
         validate_program_name(program_name)?;
+        if !program_name.starts_with(&format!("asimov-{}-", options.name)) {
+            return Err(NewModuleError::InvalidProgramName(InvalidProgramName(
+                program_name.clone(),
+            )));
+        }
     }
 
     if options.target_dir.exists() {
@@ -203,7 +208,10 @@ pub fn new_module(options: NewModuleOptions) -> Result<CreatedModule, NewModuleE
         .program_name
         .clone()
         .unwrap_or_else(|| format!("asimov-{}-emitter", options.name));
-    let program_kind = program_kind_of(&program_name).to_string();
+    let program_kind = program_name
+        .strip_prefix(&format!("asimov-{}-", options.name))
+        .unwrap_or_else(|| program_kind_of(&program_name))
+        .to_string();
     let repository_url = options
         .repository_url
         .clone()
@@ -400,6 +408,16 @@ mod tests {
     }
 
     #[test]
+    fn rejects_program_name_not_matching_module() {
+        let mut options = NewModuleOptions::new("target", "widget");
+        options.program_name = Some("asimov-other-fetcher".into());
+        assert!(matches!(
+            new_module(options),
+            Err(NewModuleError::InvalidProgramName(_))
+        ));
+    }
+
+    #[test]
     fn validates_program_name_shape() {
         assert!(validate_program_name("asimov-widget-emitter").is_ok());
         assert!(validate_program_name("asimov-widget-multi-word-kind").is_ok());
@@ -487,6 +505,35 @@ mod tests {
 
         let lib_rs = fs::read_to_string(target_dir.join("src/lib.rs")).unwrap();
         assert!(lib_rs.contains("kind: fetcher"));
+    }
+
+    #[test]
+    fn passes_full_program_kind_for_a_multi_hyphen_kind() {
+        let template_dir = tempdir().unwrap();
+        fs::write(
+            template_dir.path().join("Cargo.toml"),
+            "[package]\nname = \"{{package_name}}\"\n",
+        )
+        .unwrap();
+        fs::create_dir(template_dir.path().join("src")).unwrap();
+        fs::write(
+            template_dir.path().join("src/lib.rs"),
+            "// kind: {{program_kind}}\n",
+        )
+        .unwrap();
+
+        let workspace = tempdir().unwrap();
+        let target_dir = workspace.path().join("widget-module");
+
+        let mut options =
+            NewModuleOptions::new(&target_dir, "widget").template_path(template_dir.path());
+        // The naive last-hyphen-segment heuristic would derive just "kind";
+        // knowing the module name lets us derive the full custom kind.
+        options.program_name = Some("asimov-widget-custom-multi-word-kind".into());
+        new_module(options).unwrap();
+
+        let lib_rs = fs::read_to_string(target_dir.join("src/lib.rs")).unwrap();
+        assert!(lib_rs.contains("kind: custom-multi-word-kind"));
     }
 
     #[test]

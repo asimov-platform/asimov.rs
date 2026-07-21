@@ -201,7 +201,13 @@ fn find_program_sources(src_dir: &Path) -> Vec<PathBuf> {
             };
             for bin_entry in bin_entries.flatten() {
                 let bin_path = bin_entry.path();
-                if bin_path.extension().and_then(|e| e.to_str()) == Some("rs") {
+                if bin_path.is_dir() {
+                    // Nested convention: `src/bin/<name>/main.rs`.
+                    let main_rs = bin_path.join("main.rs");
+                    if main_rs.exists() {
+                        sources.push(main_rs);
+                    }
+                } else if bin_path.extension().and_then(|e| e.to_str()) == Some("rs") {
                     sources.push(bin_path);
                 }
             }
@@ -454,6 +460,19 @@ handles:
 
         let findings = lint_module(LintOptions::new(dir.path())).unwrap();
         assert!(findings.is_empty(), "unexpected findings: {findings:#?}");
+    }
+
+    #[test]
+    fn nested_bin_convention_orphan_is_detected() {
+        let dir = tempdir().unwrap();
+        clean_module(dir.path());
+        // Unreferenced, using the nested `src/bin/<name>/main.rs` convention.
+        write(dir.path(), "src/bin/fetcher/main.rs", "fn main() {}");
+
+        let findings = lint_module(LintOptions::new(dir.path())).unwrap();
+        assert_eq!(findings.len(), 1);
+        assert_eq!(findings[0].severity, Severity::Warning);
+        assert_eq!(findings[0].code, LintCode::OrphanProgramSource);
     }
 
     #[test]

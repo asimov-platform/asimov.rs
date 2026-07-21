@@ -78,6 +78,9 @@ pub enum AddProgramError {
     #[error(transparent)]
     CargoTomlEdit(#[from] cargo_toml::CargoTomlError),
 
+    #[error(transparent)]
+    ManifestEdit(#[from] manifest_edit::ManifestEditError),
+
     #[error("failed to render program source: {0}")]
     Liquid(#[source] liquid::Error),
 
@@ -145,8 +148,15 @@ pub fn add_program(options: AddProgramOptions) -> Result<AddedProgram, AddProgra
     fs::write(&cargo_toml_path, doc.to_string())?;
 
     let manifest_path = options.module_dir.join(".asimov/module.yaml");
-    let manifest_updated = manifest_path.exists()
-        && manifest_edit::append_provides_program(&manifest_path, &options.program_name).is_ok();
+    let manifest_updated = if manifest_path.exists() {
+        match manifest_edit::append_provides_program(&manifest_path, &options.program_name) {
+            Ok(()) => true,
+            Err(manifest_edit::ManifestEditError::UnexpectedShape(_)) => false,
+            Err(err) => return Err(err.into()),
+        }
+    } else {
+        false
+    };
 
     Ok(AddedProgram {
         program_name: options.program_name,
@@ -372,6 +382,28 @@ required-features = ["cli"]
         assert!(added.source_path.exists());
         let cargo_toml = fs::read_to_string(module_dir.path().join("Cargo.toml")).unwrap();
         assert!(cargo_toml.contains("asimov-widget-fetcher"));
+    }
+
+    #[test]
+    fn propagates_manifest_io_errors_instead_of_swallowing_them() {
+        let template_dir = tempdir().unwrap();
+        fixture_template(template_dir.path());
+        let module_dir = tempdir().unwrap();
+        fixture_module(module_dir.path());
+
+        // Replace the manifest file with a directory so reading it fails
+        // with a real I/O error, not `UnexpectedShape`.
+        fs::remove_file(module_dir.path().join(".asimov/module.yaml")).unwrap();
+        fs::create_dir(module_dir.path().join(".asimov/module.yaml")).unwrap();
+
+        let options = AddProgramOptions::new(module_dir.path(), "asimov-widget-fetcher")
+            .template_path(template_dir.path());
+        assert!(matches!(
+            add_program(options),
+            Err(AddProgramError::ManifestEdit(
+                manifest_edit::ManifestEditError::Io(_)
+            ))
+        ));
     }
 
     #[test]
