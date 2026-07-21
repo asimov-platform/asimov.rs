@@ -147,8 +147,19 @@ pub fn lint_module(options: LintOptions) -> Result<Vec<LintFinding>, LintError> 
     let active_bin_paths: Vec<PathBuf> = cargo_toml
         .bin
         .iter()
-        .filter_map(|bin| bin.path.as_ref())
-        .map(PathBuf::from)
+        .filter_map(|bin| match &bin.path {
+            Some(path) => Some(PathBuf::from(path)),
+            // Cargo's implicit convention for a `[[bin]]` without an
+            // explicit `path`: `src/bin/<name>.rs`, else `src/bin/<name>/main.rs`.
+            None => {
+                let flat = PathBuf::from(format!("src/bin/{}.rs", bin.name));
+                if module_dir.join(&flat).exists() {
+                    return Some(flat);
+                }
+                let nested = PathBuf::from(format!("src/bin/{}/main.rs", bin.name));
+                module_dir.join(&nested).exists().then_some(nested)
+            },
+        })
         .collect();
 
     for source in find_program_sources(&module_dir.join("src")) {
@@ -381,6 +392,48 @@ path = "src/bin/emitter.rs"
 "#,
         );
         write(dir.path(), "src/bin/emitter.rs", "fn main() {}");
+        write(
+            dir.path(),
+            ".asimov/module.yaml",
+            r#"
+name: widget
+provides:
+  programs:
+    - asimov-widget-emitter
+handles:
+  url_protocols:
+    - widget
+  url_prefixes:
+  url_patterns:
+  file_extensions:
+  content_types:
+"#,
+        );
+
+        let findings = lint_module(LintOptions::new(dir.path())).unwrap();
+        assert!(findings.is_empty(), "unexpected findings: {findings:#?}");
+    }
+
+    #[test]
+    fn bin_without_explicit_path_is_not_a_false_positive_orphan() {
+        let dir = tempdir().unwrap();
+        write(
+            dir.path(),
+            "Cargo.toml",
+            r#"
+[package]
+name = "asimov-widget-module"
+
+[[bin]]
+name = "asimov-widget-emitter"
+"#,
+        );
+        // No `path` given: Cargo's implicit convention is `src/bin/<name>.rs`.
+        write(
+            dir.path(),
+            "src/bin/asimov-widget-emitter.rs",
+            "fn main() {}",
+        );
         write(
             dir.path(),
             ".asimov/module.yaml",

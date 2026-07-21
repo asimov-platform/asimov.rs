@@ -168,7 +168,10 @@ fn render_program_source(
                 .build()
                 .map_err(AddProgramError::Liquid)?;
             let template = parser.parse(&text).map_err(AddProgramError::Liquid)?;
-            let globals = liquid::object!({ "program_name": options.program_name.clone() });
+            let globals = liquid::object!({
+                "program_name": options.program_name.clone(),
+                "program_kind": kind.to_string(),
+            });
             template.render(&globals).map_err(AddProgramError::Liquid)
         },
         TemplateSource::Git(git) => {
@@ -230,7 +233,7 @@ mod tests {
         fs::create_dir_all(dir.join("src/{{program_kind}}")).unwrap();
         fs::write(
             dir.join("src/{{program_kind}}/main.rs.liquid"),
-            "// {{ program_name }}\nfn main() { println!(\"{{ program_name }}\"); }\n",
+            "// {{ program_name }} ({{ program_kind }})\nfn main() { println!(\"{{ program_name }}\"); }\n",
         )
         .unwrap();
     }
@@ -277,6 +280,7 @@ required-features = ["cli"]
 
         let source = fs::read_to_string(&added.source_path).unwrap();
         assert!(source.contains("asimov-widget-fetcher"));
+        assert!(source.contains("(fetcher)"));
 
         let cargo_toml = fs::read_to_string(module_dir.path().join("Cargo.toml")).unwrap();
         assert!(cargo_toml.contains("name = \"asimov-widget-fetcher\""));
