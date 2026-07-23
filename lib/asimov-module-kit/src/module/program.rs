@@ -2,14 +2,13 @@
 
 //! Adding a program to an existing module.
 
-use super::{InvalidProgramName, TemplateSource, cargo_toml, manifest_edit, validate_program_name};
+use super::{InvalidProgramName, cargo_toml, manifest_edit, validate_program_name};
 use alloc::{
     format,
     string::{String, ToString},
     vec,
     vec::Vec,
 };
-use cargo_generate::{GenerateArgs, TemplatePath, Vcs, generate};
 use std::{fs, io, path::PathBuf};
 use thiserror::Error;
 use toml_edit::DocumentMut;
@@ -20,37 +19,37 @@ pub struct AddProgramOptions {
     pub program_name: String,
     /// Defaults to a sibling `[[bin]]`'s `required-features`, else `["cli"]`.
     pub required_features: Vec<String>,
-    pub template: TemplateSource,
-    pub branch: Option<String>,
+    /// A local directory containing the template's
+    /// `.template/program.rs.liquid` (e.g. an `asimov-template-module`
+    /// checkout). Never a git URL — callers that only have one (like
+    /// [`super::new_module`]) are responsible for resolving it to a local
+    /// checkout first.
+    pub template_path: PathBuf,
 }
 
 impl AddProgramOptions {
-    pub fn new(module_dir: impl Into<PathBuf>, program_name: impl Into<String>) -> Self {
+    pub fn new(
+        module_dir: impl Into<PathBuf>,
+        program_name: impl Into<String>,
+        template_path: impl Into<PathBuf>,
+    ) -> Self {
         Self {
             module_dir: module_dir.into(),
             program_name: program_name.into(),
             required_features: Vec::new(),
-            template: TemplateSource::default(),
-            branch: None,
+            template_path: template_path.into(),
         }
-    }
-
-    pub fn template_path(mut self, path: impl Into<PathBuf>) -> Self {
-        self.template = TemplateSource::Path(path.into());
-        self
-    }
-
-    pub fn template_git(mut self, git: impl Into<String>) -> Self {
-        self.template = TemplateSource::Git(git.into());
-        self
     }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct AddedProgram {
     pub program_name: String,
-    /// Derived from `program_name`'s last hyphen segment. Never validated
-    /// against any fixed list of kinds — any word is accepted.
+    /// Derived from `program_name` by stripping the module's own
+    /// `asimov-<module>-` prefix when it's known (from the module's own
+    /// `Cargo.toml`), falling back to the last hyphen segment otherwise.
+    /// Never validated against any fixed list of kinds — any word is
+    /// accepted.
     pub kind: String,
     pub source_path: PathBuf,
     /// `false` if `.asimov/module.yaml` was missing or not in the expected
@@ -65,6 +64,14 @@ pub enum AddProgramError {
 
     #[error("not a module (no Cargo.toml found): {0}")]
     NotAModule(PathBuf),
+
+    #[error(
+        "program `{program_name}` doesn't belong to this module; expected the shape `asimov-{module_name}-<kind>`"
+    )]
+    ProgramModuleMismatch {
+        program_name: String,
+        module_name: String,
+    },
 
     #[error("program `{0}` already declared in Cargo.toml")]
     ProgramAlreadyExists(String),
@@ -84,9 +91,6 @@ pub enum AddProgramError {
     #[error("failed to render program source: {0}")]
     Liquid(#[source] liquid::Error),
 
-    #[error("failed to run `cargo generate`: {0}")]
-    CargoGenerate(#[source] anyhow::Error),
-
     #[error(transparent)]
     Io(#[from] io::Error),
 }
@@ -102,6 +106,29 @@ pub fn add_program(options: AddProgramOptions) -> Result<AddedProgram, AddProgra
     let mut doc: DocumentMut = fs::read_to_string(&cargo_toml_path)?
         .parse()
         .map_err(AddProgramError::CargoToml)?;
+
+    // Best-effort: if the package name follows the usual
+    // `asimov-<module>-module` convention, cross-check that the program
+    // being added actually belongs to this module and not some other one,
+    // and use it below to derive the program's kind precisely (rather than
+    // the naive last-hyphen-segment heuristic, which breaks for
+    // multi-hyphen custom kinds).
+    let module_name: Option<String> = doc
+        .get("package")
+        .and_then(|t| t.get("name"))
+        .and_then(|v| v.as_str())
+        .and_then(|name| name.strip_prefix("asimov-"))
+        .and_then(|name| name.strip_suffix("-module"))
+        .map(String::from);
+    if let Some(module_name) = &module_name {
+        let expected_prefix = format!("asimov-{module_name}-");
+        if !options.program_name.starts_with(&expected_prefix) {
+            return Err(AddProgramError::ProgramModuleMismatch {
+                program_name: options.program_name,
+                module_name: module_name.clone(),
+            });
+        }
+    }
 
     let mut required_features = options.required_features.clone();
     if let Some(bins) = doc.get("bin").and_then(|item| item.as_array_of_tables()) {
@@ -120,7 +147,15 @@ pub fn add_program(options: AddProgramOptions) -> Result<AddedProgram, AddProgra
         }
     }
 
-    let kind = super::program_kind_of(&options.program_name).to_string();
+    let kind = module_name
+        .as_deref()
+        .and_then(|module_name| {
+            options
+                .program_name
+                .strip_prefix(&format!("asimov-{module_name}-"))
+        })
+        .unwrap_or_else(|| super::program_kind_of(&options.program_name))
+        .to_string();
     let relative_path = format!("src/{kind}/main.rs");
     let source_path = options.module_dir.join(&relative_path);
     if source_path.exists() {
@@ -170,68 +205,17 @@ fn render_program_source(
     options: &AddProgramOptions,
     kind: &str,
 ) -> Result<String, AddProgramError> {
-    match &options.template {
-        TemplateSource::Path(path) => {
-            let liquid_path = path.join("src/{{program_kind}}/main.rs.liquid");
-            let text = fs::read_to_string(&liquid_path)?;
-            let parser = liquid::ParserBuilder::with_stdlib()
-                .build()
-                .map_err(AddProgramError::Liquid)?;
-            let template = parser.parse(&text).map_err(AddProgramError::Liquid)?;
-            let globals = liquid::object!({
-                "program_name": options.program_name.clone(),
-                "program_kind": kind.to_string(),
-            });
-            template.render(&globals).map_err(AddProgramError::Liquid)
-        },
-        TemplateSource::Git(git) => {
-            let scratch = tempfile::tempdir()?;
-            let args = GenerateArgs {
-                template_path: TemplatePath {
-                    git: Some(git.clone()),
-                    branch: options.branch.clone(),
-                    ..TemplatePath::default()
-                },
-                name: Some("scratch-module".into()),
-                force: true,
-                silent: true,
-                destination: Some(scratch.path().into()),
-                vcs: Some(Vcs::None),
-                no_workspace: true,
-                define: [
-                    ("package_name", "asimov-scratch-module"),
-                    ("package_description", "scratch"),
-                    ("package_authors", "ASIMOV Community"),
-                    ("module_name", "scratch"),
-                    ("module_label", "Scratch"),
-                    ("module_title", "Scratch"),
-                    ("module_summary", "scratch"),
-                    ("program_name", options.program_name.as_str()),
-                    ("program_kind", kind),
-                    (
-                        "repository_url",
-                        "https://example.com/asimov-scratch-module",
-                    ),
-                    ("asimov_version", env!("CARGO_PKG_VERSION")),
-                    ("publish", "false"),
-                    ("create_program", "true"),
-                ]
-                .into_iter()
-                .map(|(key, value)| format!("{key}={value}"))
-                .collect(),
-                ..GenerateArgs::default()
-            };
-
-            generate(args).map_err(AddProgramError::CargoGenerate)?;
-
-            let rendered_path = scratch
-                .path()
-                .join("scratch-module/src")
-                .join(kind)
-                .join("main.rs");
-            Ok(fs::read_to_string(rendered_path)?)
-        },
-    }
+    let liquid_path = options.template_path.join(".template/program.rs.liquid");
+    let text = fs::read_to_string(&liquid_path)?;
+    let parser = liquid::ParserBuilder::with_stdlib()
+        .build()
+        .map_err(AddProgramError::Liquid)?;
+    let template = parser.parse(&text).map_err(AddProgramError::Liquid)?;
+    let globals = liquid::object!({
+        "program_name": options.program_name.clone(),
+        "program_kind": kind.to_string(),
+    });
+    template.render(&globals).map_err(AddProgramError::Liquid)
 }
 
 #[cfg(test)]
@@ -240,9 +224,9 @@ mod tests {
     use tempfile::tempdir;
 
     fn fixture_template(dir: &std::path::Path) {
-        fs::create_dir_all(dir.join("src/{{program_kind}}")).unwrap();
+        fs::create_dir_all(dir.join(".template")).unwrap();
         fs::write(
-            dir.join("src/{{program_kind}}/main.rs.liquid"),
+            dir.join(".template/program.rs.liquid"),
             "// {{ program_name }} ({{ program_kind }})\nfn main() { println!(\"{{ program_name }}\"); }\n",
         )
         .unwrap();
@@ -280,8 +264,11 @@ required-features = ["cli"]
         let module_dir = tempdir().unwrap();
         fixture_module(module_dir.path());
 
-        let options = AddProgramOptions::new(module_dir.path(), "asimov-widget-fetcher")
-            .template_path(template_dir.path());
+        let options = AddProgramOptions::new(
+            module_dir.path(),
+            "asimov-widget-fetcher",
+            template_dir.path(),
+        );
         let added = add_program(options).unwrap();
 
         assert_eq!(added.kind, "fetcher");
@@ -310,8 +297,11 @@ required-features = ["cli"]
         let module_dir = tempdir().unwrap();
         fixture_module(module_dir.path());
 
-        let options = AddProgramOptions::new(module_dir.path(), "asimov-widget-emitter")
-            .template_path(template_dir.path());
+        let options = AddProgramOptions::new(
+            module_dir.path(),
+            "asimov-widget-emitter",
+            template_dir.path(),
+        );
         assert!(matches!(
             add_program(options),
             Err(AddProgramError::ProgramAlreadyExists(_))
@@ -331,11 +321,32 @@ required-features = ["cli"]
         )
         .unwrap();
 
-        let options = AddProgramOptions::new(module_dir.path(), "asimov-widget-fetcher")
-            .template_path(template_dir.path());
+        let options = AddProgramOptions::new(
+            module_dir.path(),
+            "asimov-widget-fetcher",
+            template_dir.path(),
+        );
         assert!(matches!(
             add_program(options),
             Err(AddProgramError::SourcePathExists(_))
+        ));
+    }
+
+    #[test]
+    fn rejects_program_name_not_matching_module() {
+        let template_dir = tempdir().unwrap();
+        fixture_template(template_dir.path());
+        let module_dir = tempdir().unwrap();
+        fixture_module(module_dir.path());
+
+        let options = AddProgramOptions::new(
+            module_dir.path(),
+            "asimov-camera-fetcher",
+            template_dir.path(),
+        );
+        assert!(matches!(
+            add_program(options),
+            Err(AddProgramError::ProgramModuleMismatch { .. })
         ));
     }
 
@@ -345,8 +356,11 @@ required-features = ["cli"]
         fixture_template(template_dir.path());
         let module_dir = tempdir().unwrap();
 
-        let options = AddProgramOptions::new(module_dir.path(), "asimov-widget-fetcher")
-            .template_path(template_dir.path());
+        let options = AddProgramOptions::new(
+            module_dir.path(),
+            "asimov-widget-fetcher",
+            template_dir.path(),
+        );
         assert!(matches!(
             add_program(options),
             Err(AddProgramError::NotAModule(_))
@@ -360,8 +374,11 @@ required-features = ["cli"]
         let module_dir = tempdir().unwrap();
         fixture_module(module_dir.path());
 
-        let options = AddProgramOptions::new(module_dir.path(), "asimov-widget-whatever")
-            .template_path(template_dir.path());
+        let options = AddProgramOptions::new(
+            module_dir.path(),
+            "asimov-widget-whatever",
+            template_dir.path(),
+        );
         let added = add_program(options).unwrap();
         assert_eq!(added.kind, "whatever");
     }
@@ -374,8 +391,11 @@ required-features = ["cli"]
         fixture_module(module_dir.path());
         fs::remove_dir_all(module_dir.path().join(".asimov")).unwrap();
 
-        let options = AddProgramOptions::new(module_dir.path(), "asimov-widget-fetcher")
-            .template_path(template_dir.path());
+        let options = AddProgramOptions::new(
+            module_dir.path(),
+            "asimov-widget-fetcher",
+            template_dir.path(),
+        );
         let added = add_program(options).unwrap();
         assert!(!added.manifest_updated);
         // The program source and Cargo.toml entry are still written:
@@ -396,30 +416,16 @@ required-features = ["cli"]
         fs::remove_file(module_dir.path().join(".asimov/module.yaml")).unwrap();
         fs::create_dir(module_dir.path().join(".asimov/module.yaml")).unwrap();
 
-        let options = AddProgramOptions::new(module_dir.path(), "asimov-widget-fetcher")
-            .template_path(template_dir.path());
+        let options = AddProgramOptions::new(
+            module_dir.path(),
+            "asimov-widget-fetcher",
+            template_dir.path(),
+        );
         assert!(matches!(
             add_program(options),
             Err(AddProgramError::ManifestEdit(
                 manifest_edit::ManifestEditError::Io(_)
             ))
         ));
-    }
-
-    #[test]
-    #[ignore = "network smoke test against the real default template; run manually"]
-    fn smoke_test_default_git_template() {
-        let module_dir = tempdir().unwrap();
-        let new_module_options =
-            crate::module::NewModuleOptions::new(module_dir.path().join("widget-module"), "widget")
-                .without_program();
-        let created = crate::module::new_module(new_module_options).unwrap();
-        assert!(!created.target_dir.join("src/emitter").exists());
-
-        let options = AddProgramOptions::new(&created.target_dir, "asimov-widget-fetcher")
-            .template_git(crate::module::DEFAULT_TEMPLATE_GIT);
-        let added = add_program(options).unwrap();
-        assert_eq!(added.kind, "fetcher");
-        assert!(added.source_path.exists());
     }
 }
