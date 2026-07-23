@@ -192,7 +192,9 @@ pub fn new_module(options: NewModuleOptions) -> Result<CreatedModule, NewModuleE
                 program_name.clone(),
             )));
         }
-        programs_to_create.push(program_name.clone());
+        if !programs_to_create.contains(program_name) {
+            programs_to_create.push(program_name.clone());
+        }
     }
     for extra_program in &options.extra_programs {
         validate_program_name(extra_program)?;
@@ -201,7 +203,9 @@ pub fn new_module(options: NewModuleOptions) -> Result<CreatedModule, NewModuleE
                 extra_program.clone(),
             )));
         }
-        programs_to_create.push(extra_program.clone());
+        if !programs_to_create.contains(extra_program) {
+            programs_to_create.push(extra_program.clone());
+        }
     }
     if programs_to_create.is_empty() && options.create_program {
         programs_to_create.push(format!("asimov-{}-emitter", options.name));
@@ -665,6 +669,39 @@ mod tests {
         assert!(target_dir.join("src/emitter/main.rs").exists());
         assert!(target_dir.join("src/fetcher/main.rs").exists());
         assert!(target_dir.join("src/importer/main.rs").exists());
+    }
+
+    #[test]
+    fn deduplicates_programs_to_create() {
+        let template_dir = tempdir().unwrap();
+        fs::write(
+            template_dir.path().join("Cargo.toml"),
+            "[package]\nname = \"{{package_name}}\"\n",
+        )
+        .unwrap();
+        fs::create_dir(template_dir.path().join("src")).unwrap();
+        fs::write(template_dir.path().join("src/lib.rs"), "// lib\n").unwrap();
+        fixture_program_template(template_dir.path());
+
+        let workspace = tempdir().unwrap();
+        let target_dir = workspace.path().join("widget-module");
+
+        // `program_name` and `extra_programs` overlapping is possible since
+        // the fields are public; it shouldn't reach `add_program` twice.
+        let mut options =
+            NewModuleOptions::new(&target_dir, "widget").template_path(template_dir.path());
+        options.program_name = Some("asimov-widget-fetcher".into());
+        options.extra_programs = [
+            "asimov-widget-fetcher".to_string(),
+            "asimov-widget-importer".to_string(),
+        ]
+        .into();
+        let created = new_module(options).unwrap();
+
+        assert_eq!(
+            created.program_names,
+            ["asimov-widget-fetcher", "asimov-widget-importer"]
+        );
     }
 
     #[test]
