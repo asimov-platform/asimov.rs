@@ -2,12 +2,9 @@
 
 //! Module authoring support.
 
-use alloc::{
-    format,
-    string::{String, ToString},
-    vec::Vec,
-};
+use alloc::{boxed::Box, format, string::String, vec::Vec};
 use cargo_generate::{GenerateArgs, TemplatePath, Vcs, generate};
+use git2::build::RepoBuilder;
 use std::{
     ffi::OsString,
     fs, io,
@@ -48,6 +45,10 @@ pub struct NewModuleOptions {
     pub module_title: Option<String>,
     pub module_summary: Option<String>,
     pub program_name: Option<String>,
+    /// Additional programs to scaffold beyond `program_name`, added the same
+    /// way [`program::add_program`] would, right after the module itself is
+    /// generated.
+    pub extra_programs: Vec<String>,
     pub repository_url: Option<String>,
     pub asimov_version: Option<String>,
     pub publish: bool,
@@ -72,6 +73,7 @@ impl NewModuleOptions {
             module_title: None,
             module_summary: None,
             program_name: None,
+            extra_programs: Vec::new(),
             repository_url: None,
             asimov_version: Some(env!("CARGO_PKG_VERSION").into()),
             publish: false,
@@ -93,6 +95,23 @@ impl NewModuleOptions {
     /// Creates a bare module with no initial program.
     pub fn without_program(mut self) -> Self {
         self.create_program = false;
+        self
+    }
+
+    /// Sets the module's initial set of programs. Given an empty list, the
+    /// template's own default program is used, unchanged (today's
+    /// `asimov-<name>-emitter`). Given one or more names, the default is
+    /// skipped entirely and *every* name is added the same way
+    /// [`program::add_program`] would, right after the template is
+    /// generated — there is no special-cased "first" program.
+    pub fn programs(mut self, names: impl IntoIterator<Item = String>) -> Self {
+        let names: Vec<String> = names.into_iter().collect();
+        if names.is_empty() {
+            return self;
+        }
+        self.create_program = false;
+        self.program_name = None;
+        self.extra_programs = names;
         self
     }
 }
@@ -117,14 +136,20 @@ pub enum NewModuleError {
     #[error("failed to create target parent directory `{0}`: {1}")]
     CreateTargetParent(PathBuf, #[source] io::Error),
 
-    #[error("failed to remove unused program scaffold at `{0}`: {1}")]
-    RemoveOrphanProgram(PathBuf, #[source] io::Error),
-
     #[error("failed to run `cargo generate`: {0}")]
     CargoGenerate(#[source] anyhow::Error),
 
     #[error(transparent)]
     InvalidProgramName(#[from] InvalidProgramName),
+
+    #[error("failed to add program `{0}`: {1}")]
+    AddProgram(String, #[source] Box<program::AddProgramError>),
+
+    #[error("failed to create a temporary directory: {0}")]
+    TempDir(#[source] io::Error),
+
+    #[error("failed to clone template `{0}`: {1}")]
+    CloneTemplate(String, #[source] git2::Error),
 }
 
 /// The program name doesn't match the `asimov-<module>-<kind>` shape.
@@ -143,7 +168,9 @@ pub struct InvalidProgramName(pub String);
 pub struct CreatedModule {
     pub module_name: String,
     pub crate_name: String,
-    pub program_name: String,
+    /// The names of the programs scaffolded, in the order they were added.
+    /// Empty if the module was created bare.
+    pub program_names: Vec<String>,
     pub target_dir: PathBuf,
 }
 
@@ -156,13 +183,28 @@ pub fn new_module(options: NewModuleOptions) -> Result<CreatedModule, NewModuleE
     );
 
     validate_module_name(&options.name)?;
+    let expected_program_prefix = format!("asimov-{}-", options.name);
+    let mut programs_to_create: Vec<String> = Vec::new();
     if let Some(program_name) = &options.program_name {
         validate_program_name(program_name)?;
-        if !program_name.starts_with(&format!("asimov-{}-", options.name)) {
+        if !program_name.starts_with(&expected_program_prefix) {
             return Err(NewModuleError::InvalidProgramName(InvalidProgramName(
                 program_name.clone(),
             )));
         }
+        programs_to_create.push(program_name.clone());
+    }
+    for extra_program in &options.extra_programs {
+        validate_program_name(extra_program)?;
+        if !extra_program.starts_with(&expected_program_prefix) {
+            return Err(NewModuleError::InvalidProgramName(InvalidProgramName(
+                extra_program.clone(),
+            )));
+        }
+        programs_to_create.push(extra_program.clone());
+    }
+    if programs_to_create.is_empty() && options.create_program {
+        programs_to_create.push(format!("asimov-{}-emitter", options.name));
     }
 
     if options.target_dir.exists() {
@@ -204,14 +246,6 @@ pub fn new_module(options: NewModuleOptions) -> Result<CreatedModule, NewModuleE
     } else {
         options.package_authors.join(", ")
     };
-    let program_name = options
-        .program_name
-        .clone()
-        .unwrap_or_else(|| format!("asimov-{}-emitter", options.name));
-    let program_kind = program_name
-        .strip_prefix(&format!("asimov-{}-", options.name))
-        .unwrap_or_else(|| program_kind_of(&program_name))
-        .to_string();
     let repository_url = options
         .repository_url
         .clone()
@@ -221,8 +255,18 @@ pub fn new_module(options: NewModuleOptions) -> Result<CreatedModule, NewModuleE
         .clone()
         .unwrap_or_else(|| env!("CARGO_PKG_VERSION").into());
 
+    // Resolve the template to a single local checkout up front: a git
+    // source is cloned exactly once here, and that same local checkout is
+    // reused below both for the module's own generation and for every
+    // `add_program` call — instead of each of those independently
+    // re-fetching the same template.
+    let (template_dir, _template_clone) = resolve_template(&options)?;
+
     let mut args = GenerateArgs {
-        template_path: template_path(&options),
+        template_path: TemplatePath {
+            path: Some(template_dir.to_string_lossy().into_owned()),
+            ..TemplatePath::default()
+        },
         name: Some(target_name.to_string_lossy().into_owned()),
         force: true,
         silent: true,
@@ -240,19 +284,9 @@ pub fn new_module(options: NewModuleOptions) -> Result<CreatedModule, NewModuleE
         ("module_label", module_label.as_str()),
         ("module_title", module_title.as_str()),
         ("module_summary", module_summary.as_str()),
-        ("program_name", program_name.as_str()),
-        ("program_kind", program_kind.as_str()),
         ("repository_url", repository_url.as_str()),
         ("asimov_version", asimov_version.as_str()),
         ("publish", if options.publish { "true" } else { "false" }),
-        (
-            "create_program",
-            if options.create_program {
-                "true"
-            } else {
-                "false"
-            },
-        ),
     ]
     .into_iter()
     .map(|(key, value)| format!("{key}={value}"))
@@ -263,15 +297,20 @@ pub fn new_module(options: NewModuleOptions) -> Result<CreatedModule, NewModuleE
         NewModuleError::CargoGenerate(err)
     })?;
 
-    if !options.create_program {
-        // The template still physically generates the program's source file
-        // even when unreferenced (a cargo-generate limitation with templated
-        // ignore paths) — clean up that orphan directory ourselves.
-        let orphan_dir = options.target_dir.join("src").join(&program_kind);
-        if orphan_dir.exists() {
-            fs::remove_dir_all(&orphan_dir)
-                .map_err(|err| NewModuleError::RemoveOrphanProgram(orphan_dir, err))?;
-        }
+    // The template itself never scaffolds any program (its `Cargo.toml`
+    // and `.asimov/module.yaml` are always bare) — every program, whether
+    // it's the implicit default or an explicit list, is added uniformly
+    // through `add_program`, reusing the same resolved template checkout.
+    let mut program_names = Vec::new();
+    for program_name in programs_to_create {
+        program::add_program(program::AddProgramOptions {
+            module_dir: options.target_dir.clone(),
+            program_name: program_name.clone(),
+            required_features: Vec::new(),
+            template_path: template_dir.clone(),
+        })
+        .map_err(|err| NewModuleError::AddProgram(program_name.clone(), Box::new(err)))?;
+        program_names.push(program_name);
     }
 
     tracing::info!(
@@ -284,23 +323,37 @@ pub fn new_module(options: NewModuleOptions) -> Result<CreatedModule, NewModuleE
     Ok(CreatedModule {
         module_name: options.name,
         crate_name,
-        program_name,
+        program_names,
         target_dir: options.target_dir,
     })
 }
 
-fn template_path(options: &NewModuleOptions) -> TemplatePath {
-    let mut template_path = TemplatePath::default();
+/// Resolves the template to a single local directory. A [`TemplateSource::Path`]
+/// is used as-is; a [`TemplateSource::Git`] is cloned once into a temporary
+/// directory, returned alongside its [`tempfile::TempDir`] guard so callers
+/// can keep it alive for as long as the checkout is still needed.
+///
+/// This is a plain, unauthenticated clone — sufficient for the default,
+/// public `asimov-template-module` repository, but not for private templates
+/// requiring credentials.
+fn resolve_template(
+    options: &NewModuleOptions,
+) -> Result<(PathBuf, Option<tempfile::TempDir>), NewModuleError> {
     match &options.template {
-        TemplateSource::Git(git) => {
-            template_path.git = Some(git.clone());
-            template_path.branch.clone_from(&options.branch);
-        },
-        TemplateSource::Path(path) => {
-            template_path.path = Some(path.to_string_lossy().into_owned());
+        TemplateSource::Path(path) => Ok((path.clone(), None)),
+        TemplateSource::Git(url) => {
+            let scratch = tempfile::tempdir().map_err(NewModuleError::TempDir)?;
+            let mut builder = RepoBuilder::new();
+            if let Some(branch) = &options.branch {
+                builder.branch(branch);
+            }
+            builder
+                .clone(url, scratch.path())
+                .map_err(|err| NewModuleError::CloneTemplate(url.clone(), err))?;
+            let path = scratch.path().to_path_buf();
+            Ok((path, Some(scratch)))
         },
     }
-    template_path
 }
 
 fn parse_vcs(vcs: &str) -> Result<Vcs, NewModuleError> {
@@ -383,6 +436,7 @@ fn title_case_slug(slug: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use alloc::string::ToString;
     use tempfile::tempdir;
 
     #[test]
@@ -432,6 +486,15 @@ mod tests {
         assert!(validate_program_name("asimov-widgetemitter").is_err());
     }
 
+    fn fixture_program_template(dir: &std::path::Path) {
+        fs::create_dir_all(dir.join(".template")).unwrap();
+        fs::write(
+            dir.join(".template/program.rs.liquid"),
+            "// {{ program_name }} ({{ program_kind }})\nfn main() {}\n",
+        )
+        .unwrap();
+    }
+
     #[test]
     fn generates_module_from_local_template() {
         let template_dir = tempdir().unwrap();
@@ -443,9 +506,10 @@ mod tests {
         fs::create_dir(template_dir.path().join("src")).unwrap();
         fs::write(
             template_dir.path().join("src/lib.rs"),
-            "// {{module_title}}\npub const PROGRAM: &str = \"{{program_name}}\";\n",
+            "// {{module_title}}\n",
         )
         .unwrap();
+        fixture_program_template(template_dir.path());
 
         let workspace = tempdir().unwrap();
         let target_dir = workspace.path().join("widget-module");
@@ -455,16 +519,20 @@ mod tests {
         let created = new_module(options).unwrap();
 
         assert_eq!(created.crate_name, "asimov-widget-module");
-        assert_eq!(created.program_name, "asimov-widget-emitter");
+        assert_eq!(created.program_names, ["asimov-widget-emitter"]);
         assert_eq!(created.target_dir, target_dir);
 
         let cargo_toml = fs::read_to_string(target_dir.join("Cargo.toml")).unwrap();
         assert!(cargo_toml.contains("name = \"asimov-widget-module\""));
         assert!(cargo_toml.contains("description = \"ASIMOV module.\""));
+        assert!(cargo_toml.contains("name = \"asimov-widget-emitter\""));
+        assert!(cargo_toml.contains("path = \"src/emitter/main.rs\""));
 
         let lib_rs = fs::read_to_string(target_dir.join("src/lib.rs")).unwrap();
         assert!(lib_rs.contains("ASIMOV Widget Module"));
-        assert!(lib_rs.contains("asimov-widget-emitter"));
+
+        let program_rs = fs::read_to_string(target_dir.join("src/emitter/main.rs")).unwrap();
+        assert!(program_rs.contains("asimov-widget-emitter"));
     }
 
     #[test]
@@ -489,11 +557,8 @@ mod tests {
         )
         .unwrap();
         fs::create_dir(template_dir.path().join("src")).unwrap();
-        fs::write(
-            template_dir.path().join("src/lib.rs"),
-            "// kind: {{program_kind}}\n",
-        )
-        .unwrap();
+        fs::write(template_dir.path().join("src/lib.rs"), "// lib\n").unwrap();
+        fixture_program_template(template_dir.path());
 
         let workspace = tempdir().unwrap();
         let target_dir = workspace.path().join("widget-module");
@@ -503,8 +568,8 @@ mod tests {
         options.program_name = Some("asimov-widget-fetcher".into());
         new_module(options).unwrap();
 
-        let lib_rs = fs::read_to_string(target_dir.join("src/lib.rs")).unwrap();
-        assert!(lib_rs.contains("kind: fetcher"));
+        let program_rs = fs::read_to_string(target_dir.join("src/fetcher/main.rs")).unwrap();
+        assert!(program_rs.contains("(fetcher)"));
     }
 
     #[test]
@@ -516,11 +581,8 @@ mod tests {
         )
         .unwrap();
         fs::create_dir(template_dir.path().join("src")).unwrap();
-        fs::write(
-            template_dir.path().join("src/lib.rs"),
-            "// kind: {{program_kind}}\n",
-        )
-        .unwrap();
+        fs::write(template_dir.path().join("src/lib.rs"), "// lib\n").unwrap();
+        fixture_program_template(template_dir.path());
 
         let workspace = tempdir().unwrap();
         let target_dir = workspace.path().join("widget-module");
@@ -532,8 +594,9 @@ mod tests {
         options.program_name = Some("asimov-widget-custom-multi-word-kind".into());
         new_module(options).unwrap();
 
-        let lib_rs = fs::read_to_string(target_dir.join("src/lib.rs")).unwrap();
-        assert!(lib_rs.contains("kind: custom-multi-word-kind"));
+        let program_rs =
+            fs::read_to_string(target_dir.join("src/custom-multi-word-kind/main.rs")).unwrap();
+        assert!(program_rs.contains("(custom-multi-word-kind)"));
     }
 
     #[test]
@@ -541,30 +604,12 @@ mod tests {
         let template_dir = tempdir().unwrap();
         fs::write(
             template_dir.path().join("Cargo.toml"),
-            concat!(
-                "[package]\n",
-                "name = \"{{package_name}}\"\n",
-                "\n",
-                "{%- if create_program == \"true\" %}\n",
-                "[[bin]]\n",
-                "name = \"{{program_name}}\"\n",
-                "path = \"src/{{program_kind}}/main.rs\"\n",
-                "{%- endif %}\n",
-            ),
+            "[package]\nname = \"{{package_name}}\"\n",
         )
         .unwrap();
         fs::create_dir(template_dir.path().join("src")).unwrap();
         fs::write(template_dir.path().join("src/lib.rs"), "// lib\n").unwrap();
-        // Simulate the real template's known cargo-generate limitation: the
-        // program's source file physically gets generated regardless of
-        // `create_program`, since a templated `ignore` path doesn't reliably
-        // exclude it (see module::new_module's orphan-cleanup step).
-        fs::create_dir(template_dir.path().join("src/emitter")).unwrap();
-        fs::write(
-            template_dir.path().join("src/emitter/main.rs"),
-            "fn main() {}",
-        )
-        .unwrap();
+        fixture_program_template(template_dir.path());
 
         let workspace = tempdir().unwrap();
         let target_dir = workspace.path().join("bare-module");
@@ -572,10 +617,102 @@ mod tests {
         let options = NewModuleOptions::new(&target_dir, "bare")
             .template_path(template_dir.path())
             .without_program();
-        new_module(options).unwrap();
+        let created = new_module(options).unwrap();
 
+        assert!(created.program_names.is_empty());
         assert!(!target_dir.join("src/emitter").exists());
         let cargo_toml = fs::read_to_string(target_dir.join("Cargo.toml")).unwrap();
         assert!(!cargo_toml.contains("[[bin]]"));
+    }
+
+    #[test]
+    fn creates_module_with_multiple_programs() {
+        let template_dir = tempdir().unwrap();
+        fs::write(
+            template_dir.path().join("Cargo.toml"),
+            "[package]\nname = \"{{package_name}}\"\n",
+        )
+        .unwrap();
+        fs::create_dir(template_dir.path().join("src")).unwrap();
+        fs::write(template_dir.path().join("src/lib.rs"), "// lib\n").unwrap();
+        fixture_program_template(template_dir.path());
+
+        let workspace = tempdir().unwrap();
+        let target_dir = workspace.path().join("widget-module");
+
+        let options = NewModuleOptions::new(&target_dir, "widget")
+            .template_path(template_dir.path())
+            .programs([
+                "asimov-widget-emitter".to_string(),
+                "asimov-widget-fetcher".to_string(),
+                "asimov-widget-importer".to_string(),
+            ]);
+        let created = new_module(options).unwrap();
+
+        assert_eq!(
+            created.program_names,
+            [
+                "asimov-widget-emitter",
+                "asimov-widget-fetcher",
+                "asimov-widget-importer"
+            ]
+        );
+
+        let cargo_toml = fs::read_to_string(target_dir.join("Cargo.toml")).unwrap();
+        assert_eq!(cargo_toml.matches("[[bin]]").count(), 3);
+        assert!(cargo_toml.contains("name = \"asimov-widget-fetcher\""));
+        assert!(cargo_toml.contains("name = \"asimov-widget-importer\""));
+        assert!(target_dir.join("src/emitter/main.rs").exists());
+        assert!(target_dir.join("src/fetcher/main.rs").exists());
+        assert!(target_dir.join("src/importer/main.rs").exists());
+    }
+
+    #[test]
+    fn rejects_extra_program_not_matching_module() {
+        let template_dir = tempdir().unwrap();
+        fs::write(
+            template_dir.path().join("Cargo.toml"),
+            "[package]\nname = \"{{package_name}}\"\n",
+        )
+        .unwrap();
+        fs::create_dir(template_dir.path().join("src")).unwrap();
+        fs::write(template_dir.path().join("src/lib.rs"), "// lib\n").unwrap();
+
+        let workspace = tempdir().unwrap();
+        let target_dir = workspace.path().join("widget-module");
+
+        let mut options = NewModuleOptions::new(&target_dir, "widget")
+            .template_path(template_dir.path())
+            .without_program();
+        options.extra_programs = ["asimov-other-fetcher".to_string()].into();
+
+        assert!(matches!(
+            new_module(options),
+            Err(NewModuleError::InvalidProgramName(_))
+        ));
+        assert!(!target_dir.exists());
+    }
+
+    #[test]
+    #[ignore = "network smoke test against the real default template; run manually"]
+    fn smoke_test_default_git_template_with_multiple_programs() {
+        let workspace = tempdir().unwrap();
+        let target_dir = workspace.path().join("widget-module");
+
+        // A `Git` source is cloned exactly once here, and that single
+        // checkout is reused for both the base module and every extra
+        // program below — not re-fetched per program.
+        let options = NewModuleOptions::new(&target_dir, "widget").programs([
+            "asimov-widget-fetcher".to_string(),
+            "asimov-widget-importer".to_string(),
+        ]);
+        let created = new_module(options).unwrap();
+
+        assert_eq!(
+            created.program_names,
+            ["asimov-widget-fetcher", "asimov-widget-importer"]
+        );
+        assert!(target_dir.join("src/fetcher/main.rs").exists());
+        assert!(target_dir.join("src/importer/main.rs").exists());
     }
 }
