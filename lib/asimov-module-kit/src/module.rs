@@ -237,14 +237,6 @@ pub fn new_module(options: NewModuleOptions) -> Result<CreatedModule, NewModuleE
         .module_title
         .clone()
         .unwrap_or_else(|| format!("ASIMOV {module_label} Module"));
-    let module_summary = options
-        .module_summary
-        .clone()
-        .unwrap_or_else(|| "ASIMOV module.".into());
-    let package_description = options
-        .package_description
-        .clone()
-        .unwrap_or_else(|| module_summary.clone());
     let package_authors = if options.package_authors.is_empty() {
         "ASIMOV Community".into()
     } else {
@@ -281,18 +273,25 @@ pub fn new_module(options: NewModuleOptions) -> Result<CreatedModule, NewModuleE
     };
 
     args.define = [
-        ("package_name", crate_name.as_str()),
-        ("package_description", package_description.as_str()),
-        ("package_authors", package_authors.as_str()),
-        ("module_name", options.name.as_str()),
-        ("module_label", module_label.as_str()),
-        ("module_title", module_title.as_str()),
-        ("module_summary", module_summary.as_str()),
-        ("repository_url", repository_url.as_str()),
-        ("asimov_version", asimov_version.as_str()),
-        ("publish", if options.publish { "true" } else { "false" }),
+        Some(("package_name", crate_name.as_str())),
+        options
+            .package_description
+            .as_deref()
+            .map(|v| ("package_description", v)),
+        Some(("package_authors", package_authors.as_str())),
+        Some(("module_name", options.name.as_str())),
+        Some(("module_label", module_label.as_str())),
+        Some(("module_title", module_title.as_str())),
+        options
+            .module_summary
+            .as_deref()
+            .map(|v| ("module_summary", v)),
+        Some(("repository_url", repository_url.as_str())),
+        Some(("asimov_version", asimov_version.as_str())),
+        Some(("publish", if options.publish { "true" } else { "false" })),
     ]
     .into_iter()
+    .flatten()
     .map(|(key, value)| format!("{key}={value}"))
     .collect();
 
@@ -518,8 +517,9 @@ mod tests {
         let workspace = tempdir().unwrap();
         let target_dir = workspace.path().join("widget-module");
 
-        let options =
+        let mut options =
             NewModuleOptions::new(&target_dir, "widget").template_path(template_dir.path());
+        options.package_description = Some("A widget module.".into());
         let created = new_module(options).unwrap();
 
         assert_eq!(created.crate_name, "asimov-widget-module");
@@ -528,7 +528,7 @@ mod tests {
 
         let cargo_toml = fs::read_to_string(target_dir.join("Cargo.toml")).unwrap();
         assert!(cargo_toml.contains("name = \"asimov-widget-module\""));
-        assert!(cargo_toml.contains("description = \"ASIMOV module.\""));
+        assert!(cargo_toml.contains("description = \"A widget module.\""));
         assert!(cargo_toml.contains("name = \"asimov-widget-emitter\""));
         assert!(cargo_toml.contains("path = \"src/emitter/main.rs\""));
 
