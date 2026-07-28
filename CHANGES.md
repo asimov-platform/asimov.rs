@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 25.3.0 - 2026-07-28
+
+### Added
+- `asimov_module_kit` (@oleksandrvoyager)
+- `asimov_protocol::CsvHandleResolver` (@artob)
+- `asimov_protocol::HandleResolver` (@artob)
+- `asimov_protocol::PeerProtocol` (@artob)
+- `asimov_protocol::GossipProtocol` (@artob)
+
+### Changed
+- Redefine `asimov_id::Id` (@artob)
+- Rename `asimov_id::Key` to `PublicKey` (@artob)
+- Rename `asimov_id::Id` to `Handle` (@artob)
+- Bump many dependencies to their latest releases (@artob)
+
 ## 25.2.0 - 2026-07-03
 
 ### Added
