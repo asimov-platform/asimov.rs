@@ -2,7 +2,7 @@
 
 use alloc::{borrow::Cow, format, string::String};
 use asimov_core::Named;
-use camino::Utf8PathBuf;
+use camino::{Utf8Path, Utf8PathBuf};
 use derive_more::Display;
 use std::{
     io::{Error, ErrorKind, Result},
@@ -14,6 +14,12 @@ use std::{
 #[display("ConfigProfile({:?})", path)]
 pub struct ConfigProfile {
     path: Utf8PathBuf,
+}
+
+impl AsRef<Utf8PathBuf> for ConfigProfile {
+    fn as_ref(&self) -> &Utf8PathBuf {
+        &self.path
+    }
 }
 
 impl ConfigProfile {
@@ -42,6 +48,10 @@ impl ConfigProfile {
             .ok()
             .and_then(|p| p.file_name().map(String::from))
             .map_or(Cow::default(), Cow::Owned)
+    }
+
+    pub fn join(&self, path: impl AsRef<Utf8Path>) -> Utf8PathBuf {
+        self.path.join(path.as_ref())
     }
 
     pub fn as_str(&self) -> &str {

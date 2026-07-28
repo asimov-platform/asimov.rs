@@ -1,0 +1,204 @@
+// This is free and unencumbered software released into the public domain.
+
+//! ASIMOV public keys.
+
+use crate::{KeyError, PUBLIC_KEY_LEN, PUBLIC_KEY_PREFIX, PublicKeyEncoding};
+use alloc::{
+    string::{String, ToString},
+    vec::Vec,
+};
+use core::str::FromStr;
+use derive_more::Display;
+
+#[derive(Clone, Copy, Debug, Default, Display, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[display("ⒶY{}", bs58::encode(self.0).into_string())]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+#[cfg_attr(feature = "serde", serde(try_from = "String", into = "String"))]
+pub struct PublicKey(pub(crate) [u8; 32]);
+
+impl PublicKey {
+    pub const ZERO: Self = Self([0u8; 32]);
+
+    pub fn as_bytes(&self) -> &[u8] {
+        self.0.as_slice()
+    }
+
+    pub fn into_bytes(self) -> [u8; 32] {
+        self.0
+    }
+
+    pub fn encode(&self, encoding: PublicKeyEncoding) -> Option<String> {
+        use PublicKeyEncoding::*;
+        Some(match encoding {
+            Asimov => self.to_string(),
+            Base58 => bs58::encode(self.0).into_string(),
+            Near => {
+                alloc::format!("ed25519:{}", bs58::encode(self.0).into_string())
+            },
+            #[cfg(feature = "base64")]
+            Base64 => data_encoding::BASE64.encode(self.as_bytes()),
+            #[cfg(feature = "base64")]
+            Base64Url => data_encoding::BASE64URL_NOPAD.encode(self.as_bytes()),
+            #[cfg(feature = "hex")]
+            Hex => data_encoding::HEXLOWER.encode(self.as_bytes()),
+            #[cfg(feature = "z32")]
+            Z32 => data_encoding_macro::new_encoding! {
+                symbols: "ybndrfg8ejkmcpqxot1uwisza345h769",
+            }
+            .encode(self.as_bytes()),
+            _ => return None, // unsupported format
+        })
+    }
+}
+
+impl FromStr for PublicKey {
+    type Err = KeyError;
+
+    fn from_str(input: &str) -> Result<Self, Self::Err> {
+        if input.is_empty() {
+            return Err(KeyError::EmptyInput);
+        }
+        if !PUBLIC_KEY_LEN.contains(&input.len()) {
+            return Err(KeyError::InvalidLength);
+        }
+        let Some(input) = input.strip_prefix(PUBLIC_KEY_PREFIX) else {
+            return Err(KeyError::InvalidPrefix);
+        };
+        let mut output = [0u8; 32];
+        let count = bs58::decode(&input)
+            .onto(&mut output)
+            .map_err(|e| KeyError::InvalidEncoding(e))?;
+        if count != output.len() {
+            return Err(KeyError::InvalidLength);
+        }
+        Ok(Self(output))
+    }
+}
+
+impl AsRef<[u8]> for PublicKey {
+    fn as_ref(&self) -> &[u8] {
+        self.as_bytes()
+    }
+}
+
+impl<T> From<&T> for PublicKey
+where
+    T: Clone + Into<Self>,
+{
+    fn from(t: &T) -> Self {
+        t.clone().into()
+    }
+}
+
+impl From<[u8; 32]> for PublicKey {
+    fn from(input: [u8; 32]) -> Self {
+        Self(input)
+    }
+}
+
+impl From<&Vec<u8>> for PublicKey {
+    fn from(input: &Vec<u8>) -> Self {
+        let mut bytes = [0u8; 32];
+        let len = bytes.len().min(input.len());
+        bytes[..len].copy_from_slice(&input[..len]);
+        Self(bytes)
+    }
+}
+
+#[cfg(feature = "ed25519-dalek")]
+impl From<&ed25519_dalek::VerifyingKey> for PublicKey {
+    fn from(input: &ed25519_dalek::VerifyingKey) -> Self {
+        Self(input.as_bytes().clone())
+    }
+}
+
+#[cfg(feature = "iroh")]
+impl From<iroh::PublicKey> for PublicKey {
+    fn from(input: iroh::PublicKey) -> Self {
+        Self(input.as_bytes().clone())
+    }
+}
+
+#[cfg(feature = "iroh")]
+impl From<PublicKey> for iroh::PublicKey {
+    fn from(input: PublicKey) -> Self {
+        iroh::PublicKey::from_bytes(&input.into_bytes()).unwrap() // TODO
+    }
+}
+
+#[cfg(feature = "iroh")]
+impl From<iroh::EndpointAddr> for PublicKey {
+    fn from(input: iroh::EndpointAddr) -> Self {
+        Self(input.id.as_bytes().clone())
+    }
+}
+
+#[cfg(feature = "iroh")]
+impl From<PublicKey> for iroh::EndpointAddr {
+    fn from(input: PublicKey) -> Self {
+        let endpoint_id = iroh::EndpointId::from(input);
+        iroh::EndpointAddr::from(endpoint_id)
+    }
+}
+
+// #[cfg(feature = "p2panda")]
+// impl From<&p2panda_core::PublicKey> for PublicKey {
+//     fn from(bytes: &p2panda_core::PublicKey) -> Self {
+//         Self(bytes.as_bytes().clone())
+//     }
+// }
+
+// #[cfg(feature = "p2panda")]
+// impl TryInto<p2panda_core::PublicKey> for PublicKey {
+//     type Error = p2panda_core::IdentityError;
+
+//     fn try_into(self) -> Result<p2panda_core::PublicKey, Self::Error> {
+//         p2panda_core::PublicKey::from_bytes(&self.into_bytes())
+//     }
+// }
+
+impl TryFrom<String> for PublicKey {
+    type Error = KeyError;
+
+    fn try_from(input: String) -> Result<Self, Self::Error> {
+        Self::from_str(&input)
+    }
+}
+
+impl From<PublicKey> for String {
+    fn from(input: PublicKey) -> String {
+        input.to_string()
+    }
+}
+
+#[cfg(feature = "eloquent")]
+impl eloquent::ToSql for PublicKey {
+    fn to_sql(&self) -> Result<String, eloquent::error::EloquentError> {
+        use alloc::format;
+        let hex: String = self.0.iter().map(|b| format!("{b:02X}")).collect();
+        Ok(format!("X'{hex}'"))
+    }
+}
+
+#[cfg(feature = "libsql")]
+impl libsql::params::IntoValue for PublicKey {
+    fn into_value(self) -> libsql::Result<libsql::Value> {
+        Ok(libsql::Value::Blob(self.0.to_vec()))
+    }
+}
+
+#[cfg(feature = "rocket")]
+impl<'r> rocket::request::FromParam<'r> for PublicKey {
+    type Error = KeyError;
+
+    fn from_param(input: &'r str) -> Result<Self, Self::Error> {
+        Self::from_str(input)
+    }
+}
+
+#[cfg(feature = "turso")]
+impl turso::IntoValue for PublicKey {
+    fn into_value(self) -> turso::Result<turso::Value> {
+        Ok(turso::Value::Blob(self.0.to_vec()))
+    }
+}

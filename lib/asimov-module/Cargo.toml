@@ -70,3 +70,8 @@ tracing-subscriber = { workspace = true, optional = true }
 
 [dev-dependencies]
 serde_yaml_ng = { workspace = true }
+
+# Preview locally with: RUSTDOCFLAGS="--cfg docsrs" cargo +nightly doc --all-features
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]

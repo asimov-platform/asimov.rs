@@ -22,7 +22,7 @@ title = "ASIMOV.rs: State Management"
 [features]
 default = ["all", "std"]
 all = ["fs"]
-std = ["asimov-core/std"]
+std = ["asimov-core/std", "asimov-protocol/std"]
 unstable = []
 
 # Features:
@@ -37,6 +37,7 @@ tokio = ["dep:tokio"]
 asimov-config.workspace = true
 asimov-core.workspace = true
 asimov-module = { workspace = true, features = ["serde"] }
+asimov-protocol = { workspace = true, features = ["csv"] }
 derive_more = { workspace = true, features = ["display"] }
 serde_json = { workspace = true }
 serde_yaml_ng = { workspace = true }
@@ -47,3 +48,8 @@ tokio = { workspace = true, features = ["fs"], optional = true }
 
 [dev-dependencies]
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+
+# Preview locally with: RUSTDOCFLAGS="--cfg docsrs" cargo +nightly doc --all-features
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]

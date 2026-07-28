@@ -35,3 +35,8 @@ getenv.workspace = true
 # Optional dependencies:
 cap-directories = { workspace = true, optional = true }
 cap-std = { workspace = true, optional = true }
+
+# Preview locally with: RUSTDOCFLAGS="--cfg docsrs" cargo +nightly doc --all-features
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
