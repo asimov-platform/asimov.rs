@@ -6,6 +6,15 @@
       "metadata": {
         "readme": {
           "title": "ASIMOV.rs: Account Management"
+        },
+        "docs": {
+          "rs": {
+            "all-features": true,
+            "rustdoc-args": [
+              "--cfg",
+              "docsrs"
+            ]
+          }
         }
       }
     },
@@ -34,6 +43,15 @@
       "metadata": {
         "readme": {
           "title": "ASIMOV.rs: Agent Support"
+        },
+        "docs": {
+          "rs": {
+            "all-features": true,
+            "rustdoc-args": [
+              "--cfg",
+              "docsrs"
+            ]
+          }
         }
       }
     },
@@ -62,6 +80,15 @@
       "metadata": {
         "readme": {
           "title": "ASIMOV.rs: Cache Management"
+        },
+        "docs": {
+          "rs": {
+            "all-features": true,
+            "rustdoc-args": [
+              "--cfg",
+              "docsrs"
+            ]
+          }
         }
       }
     },
@@ -90,6 +117,15 @@
       "metadata": {
         "readme": {
           "title": "ASIMOV.rs: Cloud Client"
+        },
+        "docs": {
+          "rs": {
+            "all-features": true,
+            "rustdoc-args": [
+              "--cfg",
+              "docsrs"
+            ]
+          }
         }
       }
     },
@@ -215,6 +251,15 @@
       "metadata": {
         "readme": {
           "title": "ASIMOV.rs: Configuration Management"
+        },
+        "docs": {
+          "rs": {
+            "all-features": true,
+            "rustdoc-args": [
+              "--cfg",
+              "docsrs"
+            ]
+          }
         }
       }
     },
@@ -243,6 +288,15 @@
       "metadata": {
         "readme": {
           "title": "ASIMOV.rs: Construct Support"
+        },
+        "docs": {
+          "rs": {
+            "all-features": true,
+            "rustdoc-args": [
+              "--cfg",
+              "docsrs"
+            ]
+          }
         }
       }
     },
@@ -277,6 +331,15 @@
       "metadata": {
         "readme": {
           "title": "ASIMOV.rs: Core Library"
+        },
+        "docs": {
+          "rs": {
+            "all-features": true,
+            "rustdoc-args": [
+              "--cfg",
+              "docsrs"
+            ]
+          }
         }
       }
     },
@@ -339,6 +402,15 @@
       "metadata": {
         "readme": {
           "title": "ASIMOV.rs: Credit Types"
+        },
+        "docs": {
+          "rs": {
+            "all-features": true,
+            "rustdoc-args": [
+              "--cfg",
+              "docsrs"
+            ]
+          }
         }
       }
     },
@@ -425,6 +497,15 @@
       "metadata": {
         "readme": {
           "title": "ASIMOV.rs: Dataset Management"
+        },
+        "docs": {
+          "rs": {
+            "all-features": true,
+            "rustdoc-args": [
+              "--cfg",
+              "docsrs"
+            ]
+          }
         }
       }
     },
@@ -453,6 +534,15 @@
       "metadata": {
         "readme": {
           "title": "ASIMOV.rs: State Management"
+        },
+        "docs": {
+          "rs": {
+            "all-features": true,
+            "rustdoc-args": [
+              "--cfg",
+              "docsrs"
+            ]
+          }
         }
       }
     },
@@ -465,7 +555,8 @@
         "fs"
       ],
       "std": [
-        "asimov-core/std"
+        "asimov-core/std",
+        "asimov-protocol/std"
       ],
       "unstable": [],
       "fs": [
@@ -492,6 +583,12 @@
         "workspace": true,
         "features": [
           "serde"
+        ]
+      },
+      "asimov-protocol": {
+        "workspace": true,
+        "features": [
+          "csv"
         ]
       },
       "derive_more": {
@@ -539,6 +636,15 @@
       "metadata": {
         "readme": {
           "title": "ASIMOV.rs: Environment Support"
+        },
+        "docs": {
+          "rs": {
+            "all-features": true,
+            "rustdoc-args": [
+              "--cfg",
+              "docsrs"
+            ]
+          }
         }
       }
     },
@@ -587,6 +693,15 @@
       "metadata": {
         "readme": {
           "title": "ASIMOV.rs: Flow Types"
+        },
+        "docs": {
+          "rs": {
+            "all-features": true,
+            "rustdoc-args": [
+              "--cfg",
+              "docsrs"
+            ]
+          }
         }
       }
     },
@@ -631,6 +746,15 @@
       "metadata": {
         "readme": {
           "title": "ASIMOV.rs: Graph Types"
+        },
+        "docs": {
+          "rs": {
+            "all-features": true,
+            "rustdoc-args": [
+              "--cfg",
+              "docsrs"
+            ]
+          }
         }
       }
     },
@@ -660,6 +784,15 @@
       "metadata": {
         "readme": {
           "title": "ASIMOV.rs: Hugging Face Client"
+        },
+        "docs": {
+          "rs": {
+            "all-features": true,
+            "rustdoc-args": [
+              "--cfg",
+              "docsrs"
+            ]
+          }
         }
       }
     },
@@ -697,6 +830,15 @@
       "metadata": {
         "readme": {
           "title": "ASIMOV.rs: Identifier Types"
+        },
+        "docs": {
+          "rs": {
+            "all-features": true,
+            "rustdoc-args": [
+              "--cfg",
+              "docsrs"
+            ]
+          }
         }
       }
     },
@@ -706,21 +848,36 @@
         "std"
       ],
       "all": [
-        "ed25519",
-        "tracing"
-      ],
-      "ed25519": [
-        "ed25519-dalek"
+        "encodings"
       ],
       "std": [
         "asimov-core/std",
         "bs58/std",
+        "data-encoding?/std",
         "ed25519-dalek?/std"
       ],
       "tracing": [],
       "unstable": [],
+      "encodings": [
+        "base64",
+        "hex",
+        "z32"
+      ],
+      "base64": [
+        "dep:data-encoding"
+      ],
+      "hex": [
+        "dep:data-encoding"
+      ],
+      "z32": [
+        "dep:data-encoding",
+        "dep:data-encoding-macro"
+      ],
       "clap": [
         "dep:clap"
+      ],
+      "ed25519": [
+        "ed25519-dalek"
       ],
       "ed25519-dalek": [
         "dep:ed25519-dalek"
@@ -752,21 +909,28 @@
         "workspace": true
       },
       "bs58": {
-        "version": "0.5",
-        "default-features": false,
-        "features": [
-          "alloc"
-        ]
+        "workspace": true
       },
       "derive_more": {
-        "version": "2",
+        "workspace": true,
         "features": [
-          "display"
+          "display",
+          "from_str"
         ]
       },
+      "thiserror": {
+        "workspace": true
+      },
+      "data-encoding": {
+        "workspace": true,
+        "optional": true
+      },
+      "data-encoding-macro": {
+        "workspace": true,
+        "optional": true
+      },
       "clap": {
-        "version": "4.5",
-        "default-features": false,
+        "workspace": true,
         "features": [
           "derive",
           "std"
@@ -774,11 +938,7 @@
         "optional": true
       },
       "ed25519-dalek": {
-        "version": "2.2",
-        "default-features": false,
-        "features": [
-          "alloc"
-        ],
+        "workspace": true,
         "optional": true
       },
       "eloquent": {
@@ -786,23 +946,19 @@
         "optional": true
       },
       "iroh": {
-        "version": "0.95",
-        "default-features": false,
+        "workspace": true,
         "optional": true
       },
       "libsql": {
-        "version": "0.9",
-        "default-features": false,
+        "workspace": true,
         "optional": true
       },
       "p2panda-core": {
-        "version": "0.4",
-        "default-features": false,
+        "workspace": true,
         "optional": true
       },
       "rocket": {
-        "version": "0.5",
-        "default-features": false,
+        "workspace": true,
         "optional": true
       },
       "serde": {
@@ -822,6 +978,15 @@
       "metadata": {
         "readme": {
           "title": "ASIMOV.rs: Installer Implementation"
+        },
+        "docs": {
+          "rs": {
+            "all-features": true,
+            "rustdoc-args": [
+              "--cfg",
+              "docsrs"
+            ]
+          }
         }
       }
     },
@@ -953,6 +1118,15 @@
       "metadata": {
         "readme": {
           "title": "ASIMOV.rs: Knowledge Base"
+        },
+        "docs": {
+          "rs": {
+            "all-features": true,
+            "rustdoc-args": [
+              "--cfg",
+              "docsrs"
+            ]
+          }
         }
       }
     },
@@ -1016,31 +1190,24 @@
         "workspace": true
       },
       "bs58": {
-        "version": "0.5",
-        "default-features": false,
-        "features": [
-          "alloc"
-        ]
+        "workspace": true
       },
       "derive_more": {
-        "version": "2",
+        "workspace": true,
         "features": [
           "display"
         ]
       },
       "async-graphql": {
-        "version": "7.2",
-        "default-features": false,
+        "workspace": true,
         "optional": true
       },
       "blake3": {
-        "version": "1.8",
-        "default-features": false,
+        "workspace": true,
         "optional": true
       },
       "clap": {
-        "version": "4.5",
-        "default-features": false,
+        "workspace": true,
         "features": [
           "derive",
           "std"
@@ -1052,23 +1219,19 @@
         "optional": true
       },
       "iroh-blobs": {
-        "version": "0.97",
-        "default-features": false,
+        "workspace": true,
         "optional": true
       },
       "libsql": {
-        "version": "0.9",
-        "default-features": false,
+        "workspace": true,
         "optional": true
       },
       "p2panda-core": {
-        "version": "0.4",
-        "default-features": false,
+        "workspace": true,
         "optional": true
       },
       "rocket": {
-        "version": "0.5",
-        "default-features": false,
+        "workspace": true,
         "optional": true
       },
       "serde": {
@@ -1123,6 +1286,15 @@
       "metadata": {
         "readme": {
           "title": "ASIMOV.rs: Ledger Types"
+        },
+        "docs": {
+          "rs": {
+            "all-features": true,
+            "rustdoc-args": [
+              "--cfg",
+              "docsrs"
+            ]
+          }
         }
       }
     },
@@ -1162,6 +1334,15 @@
       "metadata": {
         "readme": {
           "title": "ASIMOV.rs: Module Support"
+        },
+        "docs": {
+          "rs": {
+            "all-features": true,
+            "rustdoc-args": [
+              "--cfg",
+              "docsrs"
+            ]
+          }
         }
       }
     },
@@ -1287,11 +1468,98 @@
   },
   {
     "package": {
+      "name": "asimov-module-kit",
+      "description": "ASIMOV module authoring toolkit",
+      "readme": true,
+      "categories": [
+        "command-line-utilities",
+        "development-tools"
+      ],
+      "metadata": {
+        "readme": {
+          "title": "ASIMOV.rs: Module Kit"
+        },
+        "docs": {
+          "rs": {
+            "all-features": true,
+            "rustdoc-args": [
+              "--cfg",
+              "docsrs"
+            ]
+          }
+        }
+      }
+    },
+    "features": {
+      "default": [
+        "all",
+        "std"
+      ],
+      "all": [
+        "module",
+        "tracing"
+      ],
+      "module": [
+        "std",
+        "dep:anyhow",
+        "dep:cargo-generate",
+        "dep:kstring"
+      ],
+      "std": [
+        "thiserror/std",
+        "tracing?/std"
+      ],
+      "unstable": [],
+      "tracing": [
+        "dep:tracing"
+      ]
+    },
+    "dependencies": {
+      "thiserror": {
+        "workspace": true
+      },
+      "anyhow": {
+        "workspace": true,
+        "optional": true,
+        "features": [
+          "std"
+        ]
+      },
+      "cargo-generate": {
+        "workspace": true,
+        "optional": true
+      },
+      "kstring": {
+        "workspace": true,
+        "optional": true
+      },
+      "tracing": {
+        "workspace": true,
+        "optional": true
+      }
+    },
+    "dev-dependencies": {
+      "tempfile": {
+        "workspace": true
+      }
+    }
+  },
+  {
+    "package": {
       "name": "asimov-nexus",
       "readme": true,
       "metadata": {
         "readme": {
           "title": "ASIMOV.rs: Nexus Client"
+        },
+        "docs": {
+          "rs": {
+            "all-features": true,
+            "rustdoc-args": [
+              "--cfg",
+              "docsrs"
+            ]
+          }
         }
       }
     },
@@ -1344,6 +1612,15 @@
       "metadata": {
         "readme": {
           "title": "ASIMOV.rs: Ontology Types"
+        },
+        "docs": {
+          "rs": {
+            "all-features": true,
+            "rustdoc-args": [
+              "--cfg",
+              "docsrs"
+            ]
+          }
         }
       }
     },
@@ -1377,6 +1654,15 @@
       "metadata": {
         "readme": {
           "title": "ASIMOV.rs: Program Patterns"
+        },
+        "docs": {
+          "rs": {
+            "all-features": true,
+            "rustdoc-args": [
+              "--cfg",
+              "docsrs"
+            ]
+          }
         }
       }
     },
@@ -1414,6 +1700,15 @@
       "metadata": {
         "readme": {
           "title": "ASIMOV.rs: Platform Support"
+        },
+        "docs": {
+          "rs": {
+            "all-features": true,
+            "rustdoc-args": [
+              "--cfg",
+              "docsrs"
+            ]
+          }
         }
       }
     },
@@ -1449,6 +1744,15 @@
       "metadata": {
         "readme": {
           "title": "ASIMOV.rs: Prompt Types"
+        },
+        "docs": {
+          "rs": {
+            "all-features": true,
+            "rustdoc-args": [
+              "--cfg",
+              "docsrs"
+            ]
+          }
         }
       }
     },
@@ -1500,7 +1804,16 @@
       ],
       "metadata": {
         "readme": {
-          "title": "ASIMOV.rs: Protocol Client"
+          "title": "ASIMOV.rs: P2P Protocol"
+        },
+        "docs": {
+          "rs": {
+            "all-features": true,
+            "rustdoc-args": [
+              "--cfg",
+              "docsrs"
+            ]
+          }
         }
       }
     },
@@ -1509,15 +1822,129 @@
         "all",
         "std"
       ],
-      "all": [],
+      "all": [
+        "csv",
+        "random"
+      ],
       "std": [
         "asimov-core/std"
       ],
       "unstable": [],
+      "csv": [
+        "dep:csv-async",
+        "tokio/fs"
+      ],
+      "random": [
+        "dep:fastrand"
+      ],
       "tracing": []
     },
     "dependencies": {
       "asimov-core": {
+        "workspace": true
+      },
+      "asimov-id": {
+        "workspace": true,
+        "features": [
+          "iroh"
+        ]
+      },
+      "asimov-kb": {
+        "workspace": true,
+        "features": [
+          "serde"
+        ]
+      },
+      "async-stream": {
+        "workspace": true
+      },
+      "bytes": {
+        "workspace": true
+      },
+      "futures-lite": {
+        "workspace": true
+      },
+      "heapless": {
+        "workspace": true,
+        "features": [
+          "serde"
+        ]
+      },
+      "iroh": {
+        "workspace": true,
+        "features": [
+          "metrics",
+          "fast-apple-datapath",
+          "portmapper",
+          "tls-ring"
+        ]
+      },
+      "iroh-gossip": {
+        "workspace": true,
+        "features": [
+          "metrics",
+          "net"
+        ]
+      },
+      "iroh-metrics": {
+        "workspace": true
+      },
+      "iroh-tickets": {
+        "workspace": true
+      },
+      "known-errors": {
+        "workspace": true
+      },
+      "n0-error": {
+        "workspace": true
+      },
+      "postcard": {
+        "workspace": true
+      },
+      "rdf-hash": {
+        "workspace": true,
+        "features": [
+          "blake3"
+        ]
+      },
+      "rdf-model": {
+        "workspace": true
+      },
+      "serde": {
+        "workspace": true
+      },
+      "thiserror": {
+        "workspace": true
+      },
+      "tokio": {
+        "workspace": true,
+        "features": [
+          "time"
+        ]
+      },
+      "csv-async": {
+        "workspace": true,
+        "features": [
+          "tokio"
+        ],
+        "optional": true
+      },
+      "fastrand": {
+        "workspace": true,
+        "optional": true
+      }
+    },
+    "dev-dependencies": {
+      "iroh-services": {
+        "workspace": true
+      },
+      "tokio": {
+        "workspace": true,
+        "features": [
+          "full"
+        ]
+      },
+      "tracing-subscriber": {
         "workspace": true
       }
     }
@@ -1529,6 +1956,15 @@
       "metadata": {
         "readme": {
           "title": "ASIMOV.rs: Proxy Support"
+        },
+        "docs": {
+          "rs": {
+            "all-features": true,
+            "rustdoc-args": [
+              "--cfg",
+              "docsrs"
+            ]
+          }
         }
       }
     },
@@ -1567,6 +2003,15 @@
       "metadata": {
         "readme": {
           "title": "ASIMOV.rs: Registry Client"
+        },
+        "docs": {
+          "rs": {
+            "all-features": true,
+            "rustdoc-args": [
+              "--cfg",
+              "docsrs"
+            ]
+          }
         }
       }
     },
@@ -1686,6 +2131,15 @@
       "metadata": {
         "readme": {
           "title": "ASIMOV.rs: Repository Access"
+        },
+        "docs": {
+          "rs": {
+            "all-features": true,
+            "rustdoc-args": [
+              "--cfg",
+              "docsrs"
+            ]
+          }
         }
       }
     },
@@ -1714,6 +2168,15 @@
       "metadata": {
         "readme": {
           "title": "ASIMOV.rs: Runner Implementation"
+        },
+        "docs": {
+          "rs": {
+            "all-features": true,
+            "rustdoc-args": [
+              "--cfg",
+              "docsrs"
+            ]
+          }
         }
       }
     },
@@ -1796,6 +2259,15 @@
       "metadata": {
         "readme": {
           "title": "ASIMOV.rs: Runtime Support"
+        },
+        "docs": {
+          "rs": {
+            "all-features": true,
+            "rustdoc-args": [
+              "--cfg",
+              "docsrs"
+            ]
+          }
         }
       }
     },
@@ -1830,6 +2302,15 @@
       "metadata": {
         "readme": {
           "title": "ASIMOV.rs"
+        },
+        "docs": {
+          "rs": {
+            "all-features": true,
+            "rustdoc-args": [
+              "--cfg",
+              "docsrs"
+            ]
+          }
         }
       }
     },
@@ -2008,6 +2489,15 @@
       "metadata": {
         "readme": {
           "title": "ASIMOV.rs: Server Implementation"
+        },
+        "docs": {
+          "rs": {
+            "all-features": true,
+            "rustdoc-args": [
+              "--cfg",
+              "docsrs"
+            ]
+          }
         }
       }
     },
@@ -2136,7 +2626,10 @@
         "workspace": true
       },
       "uuid": {
-        "workspace": true
+        "workspace": true,
+        "features": [
+          "std"
+        ]
       },
       "axum": {
         "workspace": true,
@@ -2245,6 +2738,15 @@
       "metadata": {
         "readme": {
           "title": "ASIMOV.rs: Snapshot Management"
+        },
+        "docs": {
+          "rs": {
+            "all-features": true,
+            "rustdoc-args": [
+              "--cfg",
+              "docsrs"
+            ]
+          }
         }
       }
     },
@@ -2348,6 +2850,15 @@
       "metadata": {
         "readme": {
           "title": "ASIMOV.rs: Token Types"
+        },
+        "docs": {
+          "rs": {
+            "all-features": true,
+            "rustdoc-args": [
+              "--cfg",
+              "docsrs"
+            ]
+          }
         }
       }
     },
@@ -2376,6 +2887,15 @@
       "metadata": {
         "readme": {
           "title": "ASIMOV.rs: Universe Registry"
+        },
+        "docs": {
+          "rs": {
+            "all-features": true,
+            "rustdoc-args": [
+              "--cfg",
+              "docsrs"
+            ]
+          }
         }
       }
     },
@@ -2408,6 +2928,15 @@
       "metadata": {
         "readme": {
           "title": "ASIMOV.rs: Vault Access"
+        },
+        "docs": {
+          "rs": {
+            "all-features": true,
+            "rustdoc-args": [
+              "--cfg",
+              "docsrs"
+            ]
+          }
         }
       }
     },

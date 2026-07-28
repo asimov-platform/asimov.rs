@@ -1,9 +1,9 @@
-# ASIMOV.rs: Account Management
+# ASIMOV.rs: Module Kit
 
 [![License](https://img.shields.io/badge/license-Public%20Domain-blue.svg)](https://unlicense.org)
 [![Compatibility](https://img.shields.io/badge/rust-1.93%2B-blue)](https://blog.rust-lang.org/2026/01/22/Rust-1.93.0/)
-[![Package](https://img.shields.io/crates/v/asimov-account)](https://crates.io/crates/asimov-account)
-[![Documentation](https://img.shields.io/docsrs/asimov-account?label=docs.rs)](https://docs.rs/asimov-account)
+[![Package](https://img.shields.io/crates/v/asimov-module-kit)](https://crates.io/crates/asimov-module-kit)
+[![Documentation](https://img.shields.io/docsrs/asimov-module-kit?label=docs.rs)](https://docs.rs/asimov-module-kit)
 
 This package is part of [ASIMOV.rs], a polyglot development platform
 for [trustworthy neurosymbolic machine intelligence].
@@ -41,21 +41,21 @@ for [trustworthy neurosymbolic machine intelligence].
 ### Installation via Cargo
 
 ```bash
-cargo add asimov-account
+cargo add asimov-module-kit
 ```
 
 ### Installation in `Cargo.toml`
 
 ```toml
 [dependencies]
-asimov-account = { version = "25" }
+asimov-module-kit = { version = "25" }
 ```
 
 Alternatively, enable only specific features:
 
 ```toml
 [dependencies]
-asimov-account = { version = "25", default-features = false, features = ["tracing"] }
+asimov-module-kit = { version = "25", default-features = false, features = ["tracing"] }
 ```
 
 ## 👉 Examples
@@ -63,12 +63,12 @@ asimov-account = { version = "25", default-features = false, features = ["tracin
 ### Importing the Library
 
 ```rust
-use asimov_account::*;
+use asimov_module_kit::*;
 ```
 
 ## 📚 Reference
 
-[docs.rs/asimov-account](https://docs.rs/asimov-account)
+[docs.rs/asimov-module-kit](https://docs.rs/asimov-module-kit)
 
 ### Packages
 

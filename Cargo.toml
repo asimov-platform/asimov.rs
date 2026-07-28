@@ -40,6 +40,7 @@ asimov-installer = { version = "25.2.0", default-features = false }
 asimov-kb = { version = "25.2.0", default-features = false }
 asimov-ledger = { version = "25.2.0", default-features = false }
 asimov-module = { version =  "25.2.0", default-features = false }
+asimov-module-kit = { version = "25.2.0", default-features = false }
 asimov-nexus = { version = "25.2.0", default-features = false }
 asimov-ontology = { version = "25.2.0", default-features = false }
 asimov-patterns = { version = "25.2.0", default-features = false }
@@ -88,6 +89,7 @@ tokio-stream = { version = "0.1", default-features = false }
 tokio-util = { version = "0.7", default-features = false }
 
 alloy = { version = "0.5", default-features = false }
+anyhow = { version = "1", default-features = false }
 async-flow = { version = "0.1.5", default-features = false }
 async-graphql = { version = "7.2", default-features = false }
 async-stream = { version = "0.3", default-features = false }
@@ -103,8 +105,9 @@ bon = { version = "3.6", default-features = false }
 bs58 = { version = "0.5", default-features = false, features = ["alloc"] }
 bytes = { version = "1.10", default-features = false }
 camino = { version = "1.2", default-features = false }
-cap-directories = { version = "3.4", default-features = false }
-cap-std = { version = "3.4", default-features = false, features = ["fs_utf8"] }
+cap-directories = { version = "4.0", default-features = false }
+cap-std = { version = "4.0", default-features = false, features = ["fs_utf8"] }
+cargo-generate = { version = "0.23", default-features = false }
 cfg_aliases = { version = "0.2", default-features = false }
 clap = { version = "4.5", default-features = false }
 clientele = { version = "0.3.8", default-features = false, features = [
@@ -135,6 +138,10 @@ gofer = { version = "0.2.0", default-features = false, features = [
     "all",
     "miette",
 ] }
+git2 = { version = "0.21", default-features = false, features = [
+    "https",
+    "ssh",
+] }
 heapless = { version = "0.9", default-features = false }
 hex = { version = "0.4", default-features = false }
 hf-hub = { version = "0.4.2", default-features = false, features = ["ureq"] }
@@ -144,9 +151,11 @@ indicatif = "0.17.11"
 jiff = { version = "0.2", default-features = false }
 know = { version = "0", default-features = true }
 known-errors = { version = "0.1", default-features = false, features = ["sysexits"] }
+kstring = { version = "=2.0.2", default-features = false }
 lazy_static = { version = "1.5", default-features = false }
 libloading = { version = "0.8", default-features = false }
 libsql = { version = "0.9", default-features = false }
+liquid = { version = "0.26", default-features = false, features = ["stdlib"] }
 local-ip-address = { version = "0.6", default-features = false }
 mdns-sd = { version = "0.13", default-features = false }
 miette = { version = "7.6", default-features = false, features = ["derive"] }
@@ -182,6 +191,11 @@ tar = { version = "0.4", default-features = false }
 tempfile = { version = "3.20", default-features = false }
 thiserror = { version = "2", default-features = false }
 tldr = { version = "0.1", package = "tldr-traits", default-features = false }
+toml = { version = "0.8", default-features = false, features = ["parse"] }
+toml_edit = { version = "0.22", default-features = false, features = [
+    "parse",
+    "display",
+] }
 tower-http = { version = "0.7", default-features = false }
 tracing = { version = "0.1", default-features = false }
 tracing-subscriber = { version = "0.3", default-features = false, features = [
@@ -213,6 +227,7 @@ asimov-installer = { path = "lib/asimov-installer" }
 asimov-kb = { path = "lib/asimov-kb" }
 asimov-ledger = { path = "lib/asimov-ledger" }
 asimov-module = { path = "lib/asimov-module" }
+asimov-module-kit = { path = "lib/asimov-module-kit" }
 asimov-nexus = { path = "lib/asimov-nexus" }
 asimov-ontology = { path = "lib/asimov-ontology" }
 asimov-patterns = { path = "lib/asimov-patterns" }
