@@ -1,7 +1,7 @@
 # See: https://github.com/citation-file-format/citation-file-format/blob/1.2.0/schema-guide.md
 ---
 cff-version: 1.2.0
-title: ASIMOV Software Development Kit (SDK) for Rust
+title: ASIMOV Software Development Kit (SDK)
 message: >-
   If you use this software, please cite it using the metadata from this file.
 type: software
@@ -25,5 +25,5 @@ abstract: >-
 keywords:
   - asimov
   - sdk
-  - rust
+  - neurosymbolic
 license: Unlicense

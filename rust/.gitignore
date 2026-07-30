@@ -12,3 +12,8 @@
 
 # Editor backup files
 *~
+
+# Rust artifacts
+/rust-toolchain
+/rust-toolchain.toml
+/target

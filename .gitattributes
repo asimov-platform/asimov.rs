@@ -1,3 +1,6 @@
-.cargo/packages.json linguist-generated -diff
 Cargo.lock linguist-generated -diff
+Gemfile.lock linguist-generated -diff
 Rakefile linguist-vendored
+bun.lock linguist-generated -diff
+pubspec.lock linguist-generated -diff
+uv.lock linguist-generated -diff

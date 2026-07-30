@@ -1,0 +1,114 @@
+require 'fileutils'
+require 'json'
+require 'pathname'
+require 'stringio'
+require 'tomlrb' # https://rubygems.org/gems/tomlrb
+require 'yaml'
+
+task default: %w(.cargo/packages.json .cargo/packages.md readmes)
+
+PACKAGES = Dir['lib/**/Cargo.toml'].sort_by do |path|
+  path.delete_prefix('lib/').delete_suffix('/Cargo.toml')
+end.map { Pathname(it) }.freeze
+
+task readmes: PACKAGES.map { it.parent.join('README.md').to_s }.to_a
+
+PACKAGES.each do |package_toml|
+  package_path = package_toml.parent
+  package_meta = Tomlrb.load_file(package_toml, symbolize_keys: true)
+  package_name = package_meta[:package][:name]
+  #next if package_name == 'flows'
+  package_title = (package_meta[:package][:metadata][:readme][:title] rescue nil)
+  package_description = package_meta[:package][:description]
+
+  file package_path.join('README.md') => %[.readme/README.md.j2] do |t|
+    template_path = Pathname(t.prerequisites.first).realpath
+    File.open(t.name, 'w') do |out|
+      Dir.chdir(package_path) do
+        FileUtils.ln_sf(template_path, 'README.md.j2')
+        begin
+          command = %W[minijinja-cli --strict README.md.j2 /dev/stdin -fjson]
+          IO.popen(command, "r+") do |pipe|
+            pipe.puts JSON.pretty_unparse({
+              package: {
+                title: package_title,
+                name: package_name,
+                description: package_description,
+              }
+            })
+            pipe.close_write
+            out.puts pipe.read
+          end
+        ensure
+          FileUtils.rm('README.md.j2')
+        end
+      end
+    end
+  end
+end
+
+file '.cargo/packages.json': PACKAGES do |t|
+  File.open(t.name, 'w') do |out|
+    out.puts generate_json(t.prerequisites)
+  end
+end
+
+file '.cargo/packages.md': PACKAGES do |t|
+  File.open(t.name, 'w') do |out|
+    out.puts generate_markdown(t.prerequisites)
+  end
+end
+
+namespace :version do
+  desc "Bump the version number"
+  task :bump do
+    old_version = File.read('VERSION').strip
+    new_version = old_version.gsub(/\.\d+$/, &:succ)
+    warn `git grep -l #{old_version} | xargs sd -F #{old_version} #{new_version}`.chomp
+  end
+end
+
+def generate_markdown(input_paths)
+  StringIO.open do |out|
+    out.puts "| Package | Crate | Docs |"
+    out.puts "| :------ | :---- | :--- |"
+    load_projects(input_paths).each do |project|
+      package_name = project[:package][:name]
+      package_link = "[#{package_name}](https://github.com/asimov-platform/asimov.rs/tree/master/lib/#{package_name})"
+      #package_summary = project[:package][:description]
+      package_links = [
+        "[![Package](https://img.shields.io/crates/v/#{package_name})](https://crates.io/crates/#{package_name})",
+        "[![Documentation](https://img.shields.io/docsrs/#{package_name}?label=docs.rs)](https://docs.rs/#{package_name})",
+      ]
+      out.puts "| " + [
+        package_link,
+        #package_summary,
+        package_links[0],
+        package_links[1],
+      ].join(" | ") + " |"
+    end
+    out.string
+  end
+end
+
+def generate_json(input_paths)
+  JSON.pretty_unparse(load_projects(input_paths))
+end
+
+def load_projects(input_paths)
+  input_paths.map do |input_path|
+    manifest = Tomlrb.load_file(input_path, symbolize_keys: true)
+    remove_workspace_only(manifest)
+  end
+end
+
+def remove_workspace_only(data, in_deps: false)
+  case data
+    when Hash
+      data.reject { |_, v| !in_deps && (v == {workspace: true}) }
+          .to_h { |k, v| [k, remove_workspace_only(v, in_deps: k.to_s.include?("dependencies"))] }
+    when Array
+      data.map { |item| remove_workspace_only(item, in_deps: in_deps) }
+    else data
+  end
+end

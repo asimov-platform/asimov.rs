@@ -1,27 +1,23 @@
-BINDGEN = bindgen
-BINDGENFLAGS = --use-core
-CARGO = cargo
+all:
 
-SOURCES := $(wildcard lib/*/src/*.rs lib/*/src/*/*.rs lib/*/src/*/*/*.rs)
-VERSION := $(shell cat VERSION)
+clean:
+	@rc=0; \
+	for dir in dart js python ruby rust; do \
+		if [ -d $$dir ]; then \
+			$(MAKE) -C $$dir clean || rc=$$?; \
+		fi; \
+	done; \
+	exit $$rc
 
-all: Cargo.toml $(SOURCES)
-	$(CARGO) build
+maintainer-clean:
+	@rc=0; \
+	for dir in dart js python ruby rust; do \
+		if [ -d $$dir ]; then \
+			$(MAKE) -C $$dir maintainer-clean || rc=$$?; \
+		fi; \
+	done; \
+	exit $$rc
 
-check: Cargo.toml $(SOURCES)
-	$(CARGO) test
-
-clean: Cargo.toml
-	@rm -rf *~ target
-	$(CARGO) clean
-
-distclean: clean
-
-mostlyclean: clean
-
-maintainer-clean: clean
-
-.PHONY: all check
-.PHONY: clean distclean mostlyclean maintainer-clean
+.PHONY: all clean maintainer-clean
 .SECONDARY:
 .SUFFIXES:
