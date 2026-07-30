@@ -7371,9 +7371,9 @@ dependencies = [
 
 [[package]]
 name = "p2panda-core"
-version = "0.6.1"
+version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "27a463e79633277c88888f3b2e7bc6eb10e240e9b21a8aa262eb1aa814e4bf08"
+checksum = "dd0ba9bb72d4eef6a6d1e835cff545ebadac1f5fea79241e9c47bfdccad17bdf"
 dependencies = [
  "blake3",
  "ciborium",
