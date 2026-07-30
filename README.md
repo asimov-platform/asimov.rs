@@ -86,7 +86,7 @@ pdm add asimov.py
 #### Installation from [RubyGems]
 
 ```bash
-gem install asimov.rb
+gem install asimov.rb --pre
 bundle add asimov.rb
 ```
 </details>
