@@ -21,7 +21,7 @@
 
 ## ✨ Features
 
-- Polyglot software also available for Python, Ruby, Rust, and TypeScript.
+- Polyglot software also available for Dart, Python, Ruby, and Rust.
 - Cuts red tape: 100% free and unencumbered public domain software.
 
 ## 🛠️ Prerequisites
@@ -37,15 +37,15 @@
 ## 👨‍💻 Development
 
 ```bash
-git clone https://github.com/asimov-platform/asimov-sdk.git
+git clone git+https://github.com/asimov-platform/asimov-sdk.git
 ```
 
 ---
 
-[![Share on X](https://img.shields.io/badge/share%20on-x-03A9F4?logo=x)](https://x.com/intent/post?url=https%3A%2F%2Fgithub.com%2Fasimov-platform%2Fasimov-sdk&text=ASIMOV%20Software%20Development%20Kit%20%28SDK%29)
-[![Share on Reddit](https://img.shields.io/badge/share%20on-reddit-red?logo=reddit)](https://reddit.com/submit?url=https%3A%2F%2Fgithub.com%2Fasimov-platform%2Fasimov-sdk&title=ASIMOV%20Software%20Development%20Kit%20%28SDK%29)
-[![Share on Hacker News](https://img.shields.io/badge/share%20on-hn-orange?logo=ycombinator)](https://news.ycombinator.com/submitlink?u=https%3A%2F%2Fgithub.com%2Fasimov-platform%2Fasimov-sdk&t=ASIMOV%20Software%20Development%20Kit%20%28SDK%29)
-[![Share on Facebook](https://img.shields.io/badge/share%20on-fb-1976D2?logo=facebook)](https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fgithub.com%2Fasimov-platform%2Fasimov-sdk)
-[![Share on LinkedIn](https://img.shields.io/badge/share%20on-linkedin-3949AB?logo=linkedin)](https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fgithub.com%2Fasimov-platform%2Fasimov-sdk)
+[![Share on X](https://img.shields.io/badge/share%20on-x-03A9F4?logo=x)](https://x.com/intent/post?url=git%2Bhttps%3A%2F%2Fgithub.com%2Fasimov-platform%2Fasimov-sdk&text=ASIMOV%20Software%20Development%20Kit%20%28SDK%29)
+[![Share on Reddit](https://img.shields.io/badge/share%20on-reddit-red?logo=reddit)](https://reddit.com/submit?url=git%2Bhttps%3A%2F%2Fgithub.com%2Fasimov-platform%2Fasimov-sdk&title=ASIMOV%20Software%20Development%20Kit%20%28SDK%29)
+[![Share on Hacker News](https://img.shields.io/badge/share%20on-hn-orange?logo=ycombinator)](https://news.ycombinator.com/submitlink?u=git%2Bhttps%3A%2F%2Fgithub.com%2Fasimov-platform%2Fasimov-sdk&t=ASIMOV%20Software%20Development%20Kit%20%28SDK%29)
+[![Share on Facebook](https://img.shields.io/badge/share%20on-fb-1976D2?logo=facebook)](https://www.facebook.com/sharer/sharer.php?u=git%2Bhttps%3A%2F%2Fgithub.com%2Fasimov-platform%2Fasimov-sdk)
+[![Share on LinkedIn](https://img.shields.io/badge/share%20on-linkedin-3949AB?logo=linkedin)](https://www.linkedin.com/sharing/share-offsite/?url=git%2Bhttps%3A%2F%2Fgithub.com%2Fasimov-platform%2Fasimov-sdk)
 
 [Node]: https://nodejs.org
