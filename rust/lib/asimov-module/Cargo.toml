@@ -21,7 +21,7 @@ title = "ASIMOV.rs: Module Support"
 
 [features]
 default = ["all", "std"]
-all = ["cli", "tracing", "serde", "asimov-env?/all"]
+all = ["cli", "index", "tracing", "serde", "asimov-env?/all"]
 cli = ["std", "dep:clientele", "clientele?/clap"]
 std = [
   "asimov-core/std",
@@ -43,6 +43,7 @@ std = [
 unstable = []
 
 # Optional features:
+index = ["std", "serde", "tracing", "dep:reqwest"]
 json = ["dep:serde_json"]
 serde = ["dep:serde", "json", "yaml"]
 tracing = ["dep:tracing", "dep:tracing-subscriber", "clientele?/tracing"]
@@ -62,6 +63,7 @@ mime = { version = "0.3", default-features = false }
 asimov-env = { workspace = true, optional = true }
 clientele = { workspace = true, optional = true }
 getenv = { workspace = true, optional = true }
+reqwest = { workspace = true, optional = true }
 serde = { workspace = true, optional = true }
 serde_json = { workspace = true, optional = true }
 serde_yaml_ng = { workspace = true, optional = true }
