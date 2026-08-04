@@ -68,6 +68,10 @@ impl Index {
             .map(|term| term.to_lowercase())
             .collect();
 
+        if terms.is_empty() {
+            return self.modules.iter().collect();
+        }
+
         self.modules
             .iter()
             .filter(|module| {
