@@ -1126,7 +1126,7 @@ version = "25.3.0"
 dependencies = [
  "cap-directories",
  "cap-std",
- "dogma",
+ "dogma 0.2.1",
  "know",
  "serde",
  "tracing",
@@ -1291,7 +1291,7 @@ dependencies = [
  "asimov-core",
  "asimov-env",
  "clientele",
- "dogma",
+ "dogma 0.2.1",
  "getenv",
  "iri-string",
  "mime",
@@ -1618,7 +1618,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d9301d32b149afa29350111fdb6941b7fbb8d525aa934b24b77571050999e413"
 dependencies = [
  "async-trait",
- "dogma",
+ "dogma 0.1.11",
  "replace_with",
  "thiserror 2.0.19",
 ]
@@ -2736,7 +2736,7 @@ checksum = "07ab70eb434a01fc8bc1787981828ccf36f1e80a1242b915e085e913b4290e66"
 dependencies = [
  "argfile",
  "clap",
- "dogma",
+ "dogma 0.1.11",
  "dotenvy",
  "error-stack",
  "getenv",
@@ -3602,6 +3602,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "dogma"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2613a308ba56b339d7d33b6481f02be2380e20c24f5c0ed0ec84bcbfe1f094fe"
+dependencies = [
+ "iri-string",
+ "known-schemes",
+ "serde",
+]
+
+[[package]]
 name = "dotenvy"
 version = "0.15.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4315,7 +4326,7 @@ version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "08b5c1c21911873fcb901979b0fa4287d3a5ac4296a88cd4764333c0567f26c9"
 dependencies = [
- "dogma",
+ "dogma 0.1.11",
  "secrecy",
 ]
 
@@ -4686,7 +4697,7 @@ checksum = "fd6761a81efac6a3b56c289383c0e94539ee8ad7441feb682436778019a5bfb0"
 dependencies = [
  "clap",
  "data-url",
- "dogma",
+ "dogma 0.1.11",
  "percent-encoding",
  "thiserror 2.0.19",
 ]
@@ -4699,7 +4710,7 @@ checksum = "608d83327e4bfb7500fb13b02da07d0247174225eff32fe443a70c14b7adff2a"
 dependencies = [
  "clap",
  "data-url",
- "dogma",
+ "dogma 0.1.11",
  "miette",
  "percent-encoding",
  "suppaftp",
@@ -8382,7 +8393,7 @@ version = "0.4.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b179c5cc75c6b194a7d1b15b77992073eb0bb2f6915aecbf3a28c81f3ded9c93"
 dependencies = [
- "dogma",
+ "dogma 0.1.11",
  "known-languages",
  "oxrdf",
  "serde",
@@ -11898,7 +11909,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7e9985f027b1353c63b85723fa9e7e2914afd70452f1fffc64bbca62a7dd8f3f"
 dependencies = [
  "decorum",
- "dogma",
+ "dogma 0.1.11",
  "heapless 0.9.3",
  "jiff",
  "oxrdf",
