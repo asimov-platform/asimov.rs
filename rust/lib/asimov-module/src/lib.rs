@@ -49,6 +49,11 @@ pub use asimov_core::ModuleName;
 mod models;
 pub use models::*;
 
+#[cfg(feature = "index")]
+pub mod index;
+#[cfg(feature = "index")]
+pub use index::*;
+
 pub mod resolve;
 
 #[cfg(all(feature = "serde", feature = "json"))]

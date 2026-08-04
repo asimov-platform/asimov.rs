@@ -200,42 +200,38 @@ impl Registry {
 
         let mut modules = Vec::new();
 
-        if self.options.search_legacy_path || self.options.auto_migrate_legacy_path {
-            if let Some(modules_dir) = &self.legacy_modules_dir {
-                if let Ok(mut read_dir) = tokio::fs::read_dir(modules_dir).await {
-                    while let Ok(Some(entry)) = read_dir.next_entry().await {
-                        let path = entry.path();
-                        if !tokio::fs::metadata(&path)
+        if (self.options.search_legacy_path || self.options.auto_migrate_legacy_path)
+            && let Some(modules_dir) = &self.legacy_modules_dir
+            && let Ok(mut read_dir) = tokio::fs::read_dir(modules_dir).await
+        {
+            while let Ok(Some(entry)) = read_dir.next_entry().await {
+                let path = entry.path();
+                if !tokio::fs::metadata(&path)
+                    .await
+                    .map(|md| md.is_file())
+                    .unwrap_or(false)
+                {
+                    continue;
+                }
+
+                let Some(file_name) = path.file_name().and_then(|n| n.to_str()) else {
+                    continue;
+                };
+
+                if let Ok(manifest) = read_manifest(&path).await {
+                    if self.options.auto_migrate_legacy_path {
+                        tracing::debug!(?path, "found a legacy manifest file, migrating...");
+
+                        let dst = installed_dir.join(file_name);
+
+                        tokio::fs::rename(&path, &dst)
                             .await
-                            .map(|md| md.is_file())
-                            .unwrap_or(false)
-                        {
-                            continue;
-                        }
-
-                        let Some(file_name) = path.file_name().and_then(|n| n.to_str()) else {
-                            continue;
-                        };
-
-                        if let Ok(manifest) = read_manifest(&path).await {
-                            if self.options.auto_migrate_legacy_path {
-                                tracing::debug!(
-                                    ?path,
-                                    "found a legacy manifest file, migrating..."
-                                );
-
-                                let dst = installed_dir.join(file_name);
-
-                                tokio::fs::rename(&path, &dst)
-                                .await
-                                .inspect_err(|e| {
-                                    tracing::debug!(from = ?path, to = ?dst, "failed to migrate legacy manifest file: {e}")
-                                })
-                                .ok();
-                            } else {
-                                modules.push(manifest);
-                            }
-                        }
+                            .inspect_err(|e| {
+                                tracing::debug!(from = ?path, to = ?dst, "failed to migrate legacy manifest file: {e}")
+                            })
+                            .ok();
+                    } else {
+                        modules.push(manifest);
                     }
                 }
             }
