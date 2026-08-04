@@ -61,24 +61,21 @@ impl Index {
     /// handled inputs. An empty query matches every module.
     ///
     /// The matching modules are returned in index order.
-    pub fn search(&self, query: impl AsRef<str>) -> Vec<&ModuleManifest> {
+    pub fn search(&self, query: impl AsRef<str>) -> impl Iterator<Item = &ModuleManifest> {
         let terms: Vec<String> = query
             .as_ref()
             .split_whitespace()
             .map(|term| term.to_lowercase())
             .collect();
 
-        if terms.is_empty() {
-            return self.modules.iter().collect();
-        }
+        self.modules.iter().filter(move |module| {
+            if terms.is_empty() {
+                return true;
+            }
 
-        self.modules
-            .iter()
-            .filter(|module| {
-                let haystack = searchable_text(module);
-                terms.iter().all(|term| haystack.contains(term.as_str()))
-            })
-            .collect()
+            let haystack = searchable_text(module);
+            terms.iter().all(|term| haystack.contains(term.as_str()))
+        })
     }
 }
 

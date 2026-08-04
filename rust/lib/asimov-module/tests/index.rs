@@ -55,7 +55,6 @@ fn test_search_terms() {
     let names = |query| -> Vec<String> {
         index
             .search(query)
-            .into_iter()
             .map(|module| module.name.clone())
             .collect()
     };
