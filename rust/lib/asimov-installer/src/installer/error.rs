@@ -47,8 +47,8 @@ pub enum UninstallError {
     Disable(#[from] registry::DisableError),
     #[error("unable to remove installed module binary `{0}`: {1}")]
     RemoveBinary(String, #[source] registry::RemoveBinaryError),
-    #[error("unable to remove installed module manifest: {0}")]
-    RemoveManifest(#[from] registry::RemoveManifestError),
+    #[error("unable to remove installed module: {0}")]
+    RemoveModule(#[from] registry::RemoveModuleError),
 }
 
 mod common {
@@ -160,6 +160,8 @@ mod common {
         AddBinary(#[from] registry::AddBinaryError),
         #[error("failed to add manifest: {0}")]
         AddManifest(#[from] registry::AddManifestError),
+        #[error("failed to add README: {0}")]
+        AddReadme(#[from] registry::AddReadmeError),
     }
 }
 pub use common::*;

@@ -38,6 +38,13 @@ pub struct InstallOptions {
     pub model_size: Option<String>,
 }
 
+#[derive(Clone, Debug)]
+struct Preinstalled {
+    manifest: ModuleManifest,
+    version: String,
+    readme: Option<String>,
+}
+
 impl Installer {
     pub fn new(client: reqwest::Client, registry: Registry) -> Self {
         Self { client, registry }
@@ -58,12 +65,11 @@ impl Installer {
             .tempdir()
             .map_err(InstallError::CreateTempDir)?;
 
-        let (manifest, version) = self
+        let preinstalled = self
             .preinstall(module.as_ref(), options, temp_dir.path())
             .await?;
 
-        self.finish_install(version.as_ref(), manifest, temp_dir.path())
-            .await?;
+        self.finish_install(preinstalled, temp_dir.path()).await?;
 
         Ok(())
     }
@@ -108,15 +114,14 @@ impl Installer {
         // check if currently enabled, have to re-enable after upgrade
         let was_enabled = self.registry.is_module_enabled(module_name).await?;
 
-        let (manifest, version) = self
+        let preinstalled = self
             .preinstall(module_name, options, temp_dir.path())
             .await?;
 
         // now ok to uninstall old version
         self.uninstall_module(module_name).await?;
 
-        self.finish_install(&version, manifest, temp_dir.path())
-            .await?;
+        self.finish_install(preinstalled, temp_dir.path()).await?;
 
         if was_enabled {
             self.registry.enable_module(module_name).await?;
@@ -140,7 +145,7 @@ impl Installer {
                 .map_err(|e| UninstallError::RemoveBinary(program.into(), e))?;
         }
 
-        self.registry.remove_manifest(&module_name).await?;
+        self.registry.remove_module(&module_name).await?;
 
         Ok(())
     }
@@ -150,7 +155,7 @@ impl Installer {
         module_name: &str,
         options: &InstallOptions,
         temp_dir: &Path,
-    ) -> Result<(ModuleManifest, String), PreinstallError> {
+    ) -> Result<Preinstalled, PreinstallError> {
         let platform = platform::detect_platform();
 
         let version = if let Some(ref want_version) = options.version {
@@ -253,15 +258,29 @@ impl Installer {
             asimov_huggingface::ensure_file(repo, filename)?;
         }
 
-        Ok((manifest, version))
+        let readme = match find_readme(&extract_dir).await {
+            Some(readme) => Some(readme),
+            None => github::fetch_readme(&self.client, module_name, &version).await,
+        };
+
+        Ok(Preinstalled {
+            manifest,
+            version,
+            readme,
+        })
     }
 
     async fn finish_install(
         &self,
-        version: &str,
-        manifest: ModuleManifest,
+        preinstalled: Preinstalled,
         temp_dir: &Path,
     ) -> Result<(), FinishInstallError> {
+        let Preinstalled {
+            manifest,
+            version,
+            readme,
+        } = preinstalled;
+
         let extract_dir = temp_dir.join("extract");
 
         for program in &manifest.provides.programs {
@@ -271,16 +290,70 @@ impl Installer {
             #[cfg(windows)]
             let src = src.with_extension("exe");
 
-            self.registry.add_binary(program, &src).await?;
+            self.registry
+                .add_binary(&manifest.name, program, &src)
+                .await?;
         }
 
+        let module_name = manifest.name.clone();
+
         let installed_manifest = InstalledModuleManifest {
-            version: Some(version.into()),
+            version: Some(version),
             manifest,
         };
 
         self.registry.add_manifest(installed_manifest).await?;
 
+        if let Some(readme) = readme {
+            self.registry.add_readme(&module_name, readme).await?;
+        }
+
         Ok(())
+    }
+}
+
+async fn find_readme(extract_dir: &Path) -> Option<String> {
+    let mut entries = tokio::fs::read_dir(extract_dir).await.ok()?;
+
+    while let Ok(Some(entry)) = entries.next_entry().await {
+        let file_name = entry.file_name();
+        let Some(file_name) = file_name.to_str() else {
+            continue;
+        };
+
+        if !file_name.to_ascii_uppercase().starts_with("README") {
+            continue;
+        }
+
+        if !entry
+            .file_type()
+            .await
+            .map(|file_type| file_type.is_file())
+            .unwrap_or(false)
+        {
+            continue;
+        }
+
+        return tokio::fs::read_to_string(entry.path()).await.ok();
+    }
+
+    None
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn find_readme_in_archive() {
+        let dir = tempfile::tempdir().unwrap();
+
+        assert_eq!(find_readme(dir.path()).await, None);
+
+        std::fs::create_dir(dir.path().join("README")).unwrap();
+        assert_eq!(find_readme(dir.path()).await, None);
+
+        std::fs::write(dir.path().join("readme.md"), "# Hello").unwrap();
+        assert_eq!(find_readme(dir.path()).await.as_deref(), Some("# Hello"));
     }
 }

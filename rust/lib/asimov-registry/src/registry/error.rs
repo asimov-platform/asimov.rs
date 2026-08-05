@@ -17,11 +17,25 @@ pub enum CreateFileTreeError {
 pub enum AddManifestError {
     #[error("module is already installed")]
     AlreadyInstalled,
+    #[error("failed to create directory for installed module `{0}`: {1}")]
+    CreateModuleDir(PathBuf, #[source] io::Error),
     #[error("failed to serialize module manifest: {0}")]
     SerializeManifest(#[from] SerializeError),
     #[error("failed to write module manifest to `{0}`: {1}")]
     WriteManifest(PathBuf, #[source] io::Error),
 }
+
+#[derive(Debug, Error)]
+pub enum AddReadmeError {
+    #[error("failed to create directory for module documentation `{0}`: {1}")]
+    CreateDocDir(PathBuf, #[source] io::Error),
+    #[error("failed to write module README to `{0}`: {1}")]
+    WriteReadme(PathBuf, #[source] io::Error),
+}
+
+#[derive(Debug, Error)]
+#[error("failed to read module README at `{0}`: {1}")]
+pub struct ReadReadmeError(pub PathBuf, #[source] pub io::Error);
 
 #[derive(Debug, Error)]
 pub enum ManifestError {
@@ -38,24 +52,28 @@ pub enum ManifestError {
 pub struct ModuleVersionError(#[from] ManifestError);
 
 #[derive(Debug, Error)]
-pub enum RemoveManifestError {
+pub enum RemoveModuleError {
     #[error("error while searching for manifest file: {0}")]
     FindManifest(#[from] FindManifestError),
     #[error("module is not installed")]
     NotInstalled,
+    #[error("failed to remove directory of installed module `{0}`: {1}")]
+    RemoveModuleDir(PathBuf, #[source] io::Error),
     #[error("failed to remove module manifest at `{0}`: {1}")]
     RemoveManifest(PathBuf, #[source] io::Error),
 }
 
 #[derive(Debug, Error)]
 pub enum AddBinaryError {
-    #[error("binary already exists")]
-    AlreadyExists,
+    #[error("failed to create directory for module binaries `{0}`: {1}")]
+    CreateBinDir(PathBuf, #[source] io::Error),
     #[error("failed to copy binary: {0}")]
     Copy(#[source] io::Error),
     #[cfg(unix)]
     #[error("failed to make binary executable: {0}")]
     MakeExecutable(#[source] io::Error),
+    #[error("failed to link binary: {0}")]
+    Symlink(#[source] io::Error),
 }
 
 #[derive(Debug, Error)]
