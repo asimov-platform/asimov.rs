@@ -193,6 +193,36 @@ pub async fn test_migrate_legacy_layout() {
 }
 
 #[tokio::test]
+pub async fn test_rejects_names_that_are_not_path_components() {
+    let base_dir = tempdir().unwrap();
+    let registry = Registry::new(base_dir.path(), Default::default());
+    registry.create_file_tree().await.unwrap();
+
+    // a sibling of the install directory, reachable as `../victim` from within it
+    let victim_dir = base_dir.path().join("modules/victim");
+    tokio::fs::create_dir(&victim_dir).await.unwrap();
+    tokio::fs::write(victim_dir.join("manifest.json"), SAMPLE_MANIFEST)
+        .await
+        .unwrap();
+
+    for name in ["../victim", "..", "sample/../../victim", "", "-sample"] {
+        assert!(registry.remove_module(name).await.is_err(), "{name}");
+        assert!(registry.enable_module(name).await.is_err(), "{name}");
+        assert!(registry.disable_module(name).await.is_err(), "{name}");
+        assert!(registry.remove_binary(name).await.is_err(), "{name}");
+        assert!(
+            registry
+                .add_module(name, base_dir.path().join("nonexistent"))
+                .await
+                .is_err(),
+            "{name}"
+        );
+    }
+
+    assert!(victim_dir.join("manifest.json").is_file());
+}
+
+#[tokio::test]
 pub async fn test_legacy_manifest_never_replaces_a_current_one() {
     let manifest_json = |version: &str| {
         let manifest = InstalledModuleManifest {

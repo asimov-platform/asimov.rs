@@ -15,6 +15,8 @@ pub enum CreateFileTreeError {
 
 #[derive(Debug, Error)]
 pub enum AddModuleError {
+    #[error("invalid module name `{0}`")]
+    InvalidName(String),
     #[error("module is already installed")]
     AlreadyInstalled,
     #[error("failed to install module from `{0}` to `{1}`: {2}")]
@@ -45,6 +47,8 @@ pub struct ModuleVersionError(#[from] ManifestError);
 
 #[derive(Debug, Error)]
 pub enum RemoveModuleError {
+    #[error("invalid module name `{0}`")]
+    InvalidName(String),
     #[error("error while searching for manifest file: {0}")]
     FindManifest(#[from] FindManifestError),
     #[error("module is not installed")]
@@ -54,8 +58,12 @@ pub enum RemoveModuleError {
 }
 
 #[derive(Debug, Error)]
-#[error("failed to remove binary: {0}")]
-pub struct RemoveBinaryError(#[from] pub io::Error);
+pub enum RemoveBinaryError {
+    #[error("invalid program name `{0}`")]
+    InvalidName(String),
+    #[error("failed to remove binary: {0}")]
+    Io(#[from] io::Error),
+}
 
 #[derive(Debug, Error)]
 pub enum InstalledModulesError {
@@ -83,6 +91,8 @@ pub struct IsModuleEnabledError(#[from] io::Error);
 
 #[derive(Debug, Error)]
 pub enum EnableError {
+    #[error("invalid module name `{0}`")]
+    InvalidName(String),
     #[error("module is not installed")]
     NotInstalled,
     #[error("failed to enable module: {0}")]
@@ -90,8 +100,12 @@ pub enum EnableError {
 }
 
 #[derive(Debug, Error)]
-#[error("failed to disable module: {0}")]
-pub struct DisableError(#[from] pub io::Error);
+pub enum DisableError {
+    #[error("invalid module name `{0}`")]
+    InvalidName(String),
+    #[error("failed to disable module: {0}")]
+    Io(#[from] io::Error),
+}
 
 mod common {
     use super::*;

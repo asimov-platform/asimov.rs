@@ -87,6 +87,10 @@ impl Registry {
     ) -> Result<(), AddModuleError> {
         let module_name = module_name.as_ref();
 
+        if !is_valid_name(module_name) {
+            return Err(AddModuleError::InvalidName(module_name.into()));
+        }
+
         if self.is_module_installed(module_name).await.unwrap_or(false) {
             return Err(AddModuleError::AlreadyInstalled);
         }
@@ -163,6 +167,10 @@ impl Registry {
         &self,
         module_name: impl AsRef<str>,
     ) -> Result<(), RemoveModuleError> {
+        if !is_valid_name(module_name.as_ref()) {
+            return Err(RemoveModuleError::InvalidName(module_name.as_ref().into()));
+        }
+
         self.migrate_legacy_manifest(module_name.as_ref()).await;
 
         if self.find_manifest_file(&module_name).await?.is_none() {
@@ -193,13 +201,19 @@ impl Registry {
     }
 
     pub async fn remove_binary(&self, name: impl AsRef<str>) -> Result<(), RemoveBinaryError> {
-        let binary_path = self.exec_dir.join(name.as_ref());
+        let name = name.as_ref();
+
+        if !is_valid_name(name) {
+            return Err(RemoveBinaryError::InvalidName(name.into()));
+        }
+
+        let binary_path = self.exec_dir.join(name);
 
         tokio::fs::remove_file(&binary_path).await.or_else(|e| {
             if e.kind() == io::ErrorKind::NotFound {
                 Ok(())
             } else {
-                Err(RemoveBinaryError(e))
+                Err(RemoveBinaryError::Io(e))
             }
         })
     }
@@ -344,6 +358,10 @@ impl Registry {
     pub async fn enable_module(&self, module_name: impl AsRef<str>) -> Result<(), EnableError> {
         let module_name = module_name.as_ref();
 
+        if !is_valid_name(module_name) {
+            return Err(EnableError::InvalidName(module_name.into()));
+        }
+
         self.migrate_legacy_manifest(module_name).await;
 
         let module_dir = self.module_dir(module_name);
@@ -368,12 +386,17 @@ impl Registry {
     }
 
     pub async fn disable_module(&self, module_name: impl AsRef<str>) -> Result<(), DisableError> {
-        let path = self.enable_dir.join(module_name.as_ref());
+        let module_name = module_name.as_ref();
+
+        if !is_valid_name(module_name) {
+            return Err(DisableError::InvalidName(module_name.into()));
+        }
+
+        let path = self.enable_dir.join(module_name);
 
         let result = match tokio::fs::remove_file(&path).await {
-            Err(err) if err.kind() != io::ErrorKind::NotFound => {
-                tokio::fs::remove_dir(&path).await.or(Err(err))
-            },
+            // on Windows a symlink to a directory has to be removed as a directory
+            Err(err) if err.kind() != io::ErrorKind::NotFound => tokio::fs::remove_dir(&path).await,
             result => result,
         };
 
@@ -507,6 +530,18 @@ async fn create_symlink(target: &Path, link: &Path, target_is_dir: bool) -> io::
     } else {
         tokio::fs::symlink_file(target, link).await
     }
+}
+
+/// Module and program names are joined onto the registry's directories, so a name that is not a
+/// plain path component could reach files outside of them. Mirrors the names that
+/// `asimov-module-kit` allows a module to be created with.
+fn is_valid_name(name: &str) -> bool {
+    !name.is_empty()
+        && name.as_bytes()[0].is_ascii_alphanumeric()
+        && !name.ends_with('-')
+        && name
+            .bytes()
+            .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-')
 }
 
 fn manifest_file_module_name(path: &Path) -> Option<&str> {
