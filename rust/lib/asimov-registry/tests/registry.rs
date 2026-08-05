@@ -23,7 +23,7 @@ const SAMPLE_MANIFEST: &str = r#"{
 }
 "#;
 
-/// Manifests were YAML back when they lived directly in the modules directory.
+/// Manifests were YAML back when they lived directly in the install directory.
 const LEGACY_SAMPLE_MANIFEST: &str = r#"# See: https://asimov-specs.github.io/module-manifest/
 ---
 name: ipfs
@@ -165,33 +165,31 @@ pub async fn test_custom_registry() {
 }
 
 #[tokio::test]
-pub async fn test_migrate_legacy_layouts() {
-    for legacy_dir in ["modules", "modules/installed"] {
-        let base_dir = tempdir().unwrap();
-        let registry = Registry::new(base_dir.path(), Default::default());
-        registry.create_file_tree().await.unwrap();
+pub async fn test_migrate_legacy_layout() {
+    let base_dir = tempdir().unwrap();
+    let registry = Registry::new(base_dir.path(), Default::default());
+    registry.create_file_tree().await.unwrap();
 
-        let legacy_path = base_dir.path().join(legacy_dir).join("sample.yaml");
-        tokio::fs::write(&legacy_path, LEGACY_SAMPLE_MANIFEST)
-            .await
-            .unwrap();
+    let legacy_path = base_dir.path().join("modules/installed/sample.yaml");
+    tokio::fs::write(&legacy_path, LEGACY_SAMPLE_MANIFEST)
+        .await
+        .unwrap();
 
-        assert!(registry.is_module_installed("sample").await.unwrap());
-        registry.enable_module("sample").await.unwrap();
+    assert!(registry.is_module_installed("sample").await.unwrap());
+    registry.enable_module("sample").await.unwrap();
 
-        let module_dir = base_dir.path().join("modules/installed/sample");
-        assert!(!legacy_path.exists());
-        assert!(module_dir.join("manifest.json").is_file());
-        assert_eq!(registry.installed_modules().await.unwrap().len(), 1);
-        assert_eq!(registry.enabled_modules().await.unwrap().len(), 1);
+    let module_dir = base_dir.path().join("modules/installed/sample");
+    assert!(!legacy_path.exists());
+    assert!(module_dir.join("manifest.json").is_file());
+    assert_eq!(registry.installed_modules().await.unwrap().len(), 1);
+    assert_eq!(registry.enabled_modules().await.unwrap().len(), 1);
 
-        let enabled_path = base_dir.path().join("modules/enabled/sample");
-        let link_path = std::fs::read_link(&enabled_path).unwrap();
-        assert_eq!(
-            std::fs::canonicalize(enabled_path.parent().unwrap().join(link_path)).unwrap(),
-            std::fs::canonicalize(&module_dir).unwrap()
-        );
-    }
+    let enabled_path = base_dir.path().join("modules/enabled/sample");
+    let link_path = std::fs::read_link(&enabled_path).unwrap();
+    assert_eq!(
+        std::fs::canonicalize(enabled_path.parent().unwrap().join(link_path)).unwrap(),
+        std::fs::canonicalize(&module_dir).unwrap()
+    );
 }
 
 #[tokio::test]

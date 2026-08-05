@@ -20,7 +20,6 @@ pub struct Registry {
     install_dir: PathBuf,
     enable_dir: PathBuf,
     exec_dir: PathBuf,
-    legacy_modules_dir: Option<PathBuf>,
 }
 
 impl Default for Registry {
@@ -36,7 +35,6 @@ impl Registry {
             install_dir: dir.join("modules").join("installed"),
             enable_dir: dir.join("modules").join("enabled"),
             exec_dir: dir.join("libexec"),
-            legacy_modules_dir: Some(dir.join("modules")),
         }
     }
 
@@ -55,7 +53,6 @@ impl Registry {
             install_dir: install_dir.into(),
             enable_dir: enable_dir.into(),
             exec_dir: exec_dir.into(),
-            legacy_modules_dir: None,
         }
     }
 
@@ -240,8 +237,6 @@ impl Registry {
             }
         }
 
-        module_names.extend(self.migrate_legacy_modules_dir().await);
-
         let mut modules = Vec::new();
 
         for module_name in module_names {
@@ -425,15 +420,8 @@ impl Registry {
         }
     }
 
-    /// The directories that manifests may reside in directly, from before manifests were installed
-    /// into a directory of their own: `~/.asimov/modules/installed/<name>.yaml`, and older still,
-    /// `~/.asimov/modules/<name>.yaml`.
-    fn legacy_dirs(&self) -> impl Iterator<Item = &Path> {
-        core::iter::once(self.install_dir.as_path()).chain(self.legacy_modules_dir.as_deref())
-    }
-
-    /// Moves the manifest of `module_name` into its own directory, if it is found in a legacy
-    /// location.
+    /// Moves the manifest of `module_name` into its own directory, if it is still a file directly
+    /// in the install directory: `~/.asimov/modules/installed/<name>.{json,yaml,yml}`.
     async fn migrate_legacy_manifest(&self, module_name: &str) {
         let files = [
             format!("{module_name}.json"),
@@ -441,52 +429,14 @@ impl Registry {
             format!("{module_name}.yml"),
         ];
 
-        for dir in self.legacy_dirs() {
-            for file in &files {
-                let path = dir.join(file);
-                if tokio::fs::try_exists(&path).await.unwrap_or(false) {
-                    tracing::debug!(?path, "found a legacy manifest file, migrating...");
-
-                    self.move_legacy_manifest(module_name, &path).await;
-                }
-            }
-        }
-    }
-
-    /// Like [`Self::migrate_legacy_manifest`], but for every manifest in [`Self::legacy_modules_dir`],
-    /// which is not otherwise iterated over. Returns the names of the modules found there.
-    async fn migrate_legacy_modules_dir(&self) -> Vec<String> {
-        let mut module_names = Vec::new();
-
-        let Some(dir) = self.legacy_modules_dir.as_deref() else {
-            return module_names;
-        };
-
-        let Ok(mut read_dir) = tokio::fs::read_dir(dir).await else {
-            return module_names;
-        };
-
-        while let Ok(Some(entry)) = read_dir.next_entry().await {
-            let path = entry.path();
-
-            let Some(module_name) = manifest_file_module_name(&path) else {
-                continue;
-            };
-
-            if tokio::fs::metadata(&path)
-                .await
-                .map(|md| md.is_file())
-                .unwrap_or(false)
-            {
+        for file in &files {
+            let path = self.install_dir.join(file);
+            if tokio::fs::try_exists(&path).await.unwrap_or(false) {
                 tracing::debug!(?path, "found a legacy manifest file, migrating...");
 
                 self.move_legacy_manifest(module_name, &path).await;
-
-                module_names.push(module_name.into());
             }
         }
-
-        module_names
     }
 
     async fn move_legacy_manifest(&self, module_name: &str, path: &Path) {
