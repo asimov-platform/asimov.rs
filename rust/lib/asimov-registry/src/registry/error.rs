@@ -14,23 +14,15 @@ pub enum CreateFileTreeError {
 }
 
 #[derive(Debug, Error)]
-pub enum AddManifestError {
+pub enum AddModuleError {
     #[error("module is already installed")]
     AlreadyInstalled,
-    #[error("failed to create directory for installed module `{0}`: {1}")]
-    CreateModuleDir(PathBuf, #[source] io::Error),
-    #[error("failed to serialize module manifest: {0}")]
-    SerializeManifest(#[from] SerializeError),
-    #[error("failed to write module manifest to `{0}`: {1}")]
-    WriteManifest(PathBuf, #[source] io::Error),
-}
-
-#[derive(Debug, Error)]
-pub enum AddReadmeError {
-    #[error("failed to create directory for module documentation `{0}`: {1}")]
-    CreateDocDir(PathBuf, #[source] io::Error),
-    #[error("failed to write module README to `{0}`: {1}")]
-    WriteReadme(PathBuf, #[source] io::Error),
+    #[error("failed to install module from `{0}` to `{1}`: {2}")]
+    Install(PathBuf, PathBuf, #[source] io::Error),
+    #[error("failed to read directory of module binaries `{0}`: {1}")]
+    ReadBinDir(PathBuf, #[source] io::Error),
+    #[error("failed to add module binary `{0}`: {1}")]
+    AddBinary(String, #[source] io::Error),
 }
 
 #[derive(Debug, Error)]
@@ -61,19 +53,6 @@ pub enum RemoveModuleError {
     RemoveModuleDir(PathBuf, #[source] io::Error),
     #[error("failed to remove module manifest at `{0}`: {1}")]
     RemoveManifest(PathBuf, #[source] io::Error),
-}
-
-#[derive(Debug, Error)]
-pub enum AddBinaryError {
-    #[error("failed to create directory for module binaries `{0}`: {1}")]
-    CreateBinDir(PathBuf, #[source] io::Error),
-    #[error("failed to copy binary: {0}")]
-    Copy(#[source] io::Error),
-    #[cfg(unix)]
-    #[error("failed to make binary executable: {0}")]
-    MakeExecutable(#[source] io::Error),
-    #[error("failed to link binary: {0}")]
-    Symlink(#[source] io::Error),
 }
 
 #[derive(Debug, Error)]

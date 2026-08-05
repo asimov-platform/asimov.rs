@@ -5,6 +5,7 @@ use asimov_registry::error as registry;
 use std::{
     boxed::Box,
     io,
+    path::PathBuf,
     string::{String, ToString as _},
 };
 use thiserror::Error;
@@ -156,12 +157,29 @@ mod common {
 
     #[derive(Debug, Error)]
     pub enum FinishInstallError {
-        #[error("failed to install binary: {0}")]
-        AddBinary(#[from] registry::AddBinaryError),
-        #[error("failed to add manifest: {0}")]
-        AddManifest(#[from] registry::AddManifestError),
-        #[error("failed to add README: {0}")]
-        AddReadme(#[from] registry::AddReadmeError),
+        #[error("failed to create the module file tree: {0}")]
+        CreateFileTree(#[source] registry::CreateFileTreeError),
+        #[error("failed to create directory for the module: {0}")]
+        CreateDir(io::Error),
+        #[error(transparent)]
+        WriteModule(#[from] WriteModuleError),
+        #[error("failed to install module: {0}")]
+        AddModule(#[from] registry::AddModuleError),
+    }
+
+    #[derive(Debug, Error)]
+    pub enum WriteModuleError {
+        #[error("failed to create directory `{0}`: {1}")]
+        CreateDir(PathBuf, #[source] io::Error),
+        #[error("failed to write `{0}`: {1}")]
+        WriteFile(PathBuf, #[source] io::Error),
+        #[error("failed to copy binary `{0}`: {1}")]
+        CopyBinary(String, #[source] io::Error),
+        #[cfg(unix)]
+        #[error("failed to set permissions: {0}")]
+        SetPermissions(#[source] io::Error),
+        #[error("failed to serialize module manifest: {0}")]
+        Serialize(#[source] serde_json::Error),
     }
 }
 pub use common::*;

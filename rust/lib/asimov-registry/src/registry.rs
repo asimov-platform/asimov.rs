@@ -17,16 +17,13 @@ const MANIFEST_FILE_NAMES: [&str; 3] = [MANIFEST_FILE_NAME, "manifest.yaml", "ma
 #[derive(Clone, Debug, bon::Builder)]
 pub struct Options {
     /// Controls whether to search for module manifests from a legacy location.
-    /// The legacy (previous) locations by default are `~/.asimov/modules/*.yaml`
-    /// and `~/.asimov/modules/installed/*.{yaml,json}`.
+    /// The legacy (previous) location by default is `~/.asimov/modules/*.yaml`.
     #[builder(default = true)]
     pub search_legacy_path: bool,
 
     /// Controls whether to automatically move module manifests from a legacy location.
-    /// The legacy (previous) locations by default are `~/.asimov/modules/*.yaml`
-    /// and `~/.asimov/modules/installed/*.{yaml,json}`.
-    /// The new and current location by default is
-    /// `~/.asimov/modules/installed/<name>/manifest.json`.
+    /// The legacy (previous) location by default is `~/.asimov/modules/*.yaml`.
+    /// The new and current location by default is `~/.asimov/modules/installed/<name>/manifest.json`.
     #[builder(default = true)]
     pub auto_migrate_legacy_path: bool,
 }
@@ -105,33 +102,55 @@ impl Registry {
         Ok(())
     }
 
+    pub fn install_dir(&self) -> &Path {
+        &self.install_dir
+    }
+
     pub fn module_dir(&self, module_name: impl AsRef<str>) -> PathBuf {
         self.install_dir.join(module_name.as_ref())
     }
 
-    pub async fn add_manifest(
+    pub async fn add_module(
         &self,
-        manifest: InstalledModuleManifest,
-    ) -> Result<(), AddManifestError> {
-        let module_name = &manifest.manifest.name;
+        module_name: impl AsRef<str>,
+        dir: impl AsRef<Path>,
+    ) -> Result<(), AddModuleError> {
+        let module_name = module_name.as_ref();
 
         if self.is_module_installed(module_name).await.unwrap_or(false) {
-            return Err(AddManifestError::AlreadyInstalled);
+            return Err(AddModuleError::AlreadyInstalled);
         }
 
         let module_dir = self.module_dir(module_name);
 
-        tokio::fs::create_dir_all(&module_dir)
+        tokio::fs::rename(dir.as_ref(), &module_dir)
             .await
-            .map_err(|e| AddManifestError::CreateModuleDir(module_dir.clone(), e))?;
+            .map_err(|e| AddModuleError::Install(dir.as_ref().into(), module_dir.clone(), e))?;
 
-        let manifest_path = module_dir.join(MANIFEST_FILE_NAME);
+        let bin_dir = module_dir.join(BIN_DIR_NAME);
 
-        let serialized = serde_json::to_vec_pretty(&manifest).map_err(SerializeError::Json)?;
+        let mut entries = match tokio::fs::read_dir(&bin_dir).await {
+            Ok(entries) => entries,
+            Err(err) if err.kind() == io::ErrorKind::NotFound => return Ok(()),
+            Err(err) => return Err(AddModuleError::ReadBinDir(bin_dir, err)),
+        };
 
-        tokio::fs::write(&manifest_path, serialized)
+        while let Some(entry) = entries
+            .next_entry()
             .await
-            .map_err(|e| AddManifestError::WriteManifest(manifest_path, e))
+            .map_err(|e| AddModuleError::ReadBinDir(bin_dir.clone(), e))?
+        {
+            let program_name = entry.file_name();
+            let Some(program_name) = program_name.to_str() else {
+                continue;
+            };
+
+            self.add_binary(program_name, &entry.path())
+                .await
+                .map_err(|e| AddModuleError::AddBinary(program_name.into(), e))?;
+        }
+
+        Ok(())
     }
 
     pub async fn read_manifest(
@@ -143,23 +162,6 @@ impl Registry {
             .await?
             .ok_or(ManifestError::NotInstalled)?;
         read_manifest(path).await.map_err(Into::into)
-    }
-
-    pub async fn add_readme(
-        &self,
-        module_name: impl AsRef<str>,
-        content: impl AsRef<[u8]>,
-    ) -> Result<(), AddReadmeError> {
-        let readme_path = self.module_dir(module_name).join(README_FILE_PATH);
-        let doc_dir = readme_path.parent().unwrap();
-
-        tokio::fs::create_dir_all(doc_dir)
-            .await
-            .map_err(|e| AddReadmeError::CreateDocDir(doc_dir.into(), e))?;
-
-        tokio::fs::write(&readme_path, content)
-            .await
-            .map_err(|e| AddReadmeError::WriteReadme(readme_path, e))
     }
 
     pub async fn read_readme(
@@ -185,7 +187,6 @@ impl Registry {
             .map_err(Into::into)
     }
 
-    /// Removes a module's entire installation directory.
     pub async fn remove_module(
         &self,
         module_name: impl AsRef<str>,
@@ -208,59 +209,22 @@ impl Registry {
         }
     }
 
-    /// Anything already occupying the symlink's place, such as a binary
-    /// installed in a previous layout, is replaced.
-    pub async fn add_binary(
-        &self,
-        module_name: impl AsRef<str>,
-        program_name: impl AsRef<str>,
-        path: impl AsRef<Path>,
-    ) -> Result<(), AddBinaryError> {
-        let program_name = program_name.as_ref();
-        let bin_dir = self.module_dir(module_name).join(BIN_DIR_NAME);
-
-        tokio::fs::create_dir_all(&bin_dir)
-            .await
-            .map_err(|e| AddBinaryError::CreateBinDir(bin_dir.clone(), e))?;
-
-        let binary_path = bin_dir.join(program_name);
-
-        tokio::fs::copy(path.as_ref(), &binary_path)
-            .await
-            .map_err(AddBinaryError::Copy)?;
-
-        // Make binary executable on Unix systems
-        #[cfg(unix)]
-        {
-            use std::fs::Permissions;
-            use std::os::unix::fs::PermissionsExt;
-
-            let permissions = Permissions::from_mode(0o755);
-            tokio::fs::set_permissions(&binary_path, permissions)
-                .await
-                .map_err(AddBinaryError::MakeExecutable)?;
-        }
-
-        // e.g. `../modules/installed/foo/bin/asimov-foo-fetcher`
+    async fn add_binary(&self, program_name: &str, binary_path: &Path) -> io::Result<()> {
         let target_path = match self
             .exec_dir
             .parent()
             .and_then(|parent| binary_path.strip_prefix(parent).ok())
         {
             Some(suffix) => PathBuf::from("..").join(suffix),
-            None => binary_path,
+            None => binary_path.into(),
         };
 
         let link_path = self.exec_dir.join(program_name);
         let _ = self.remove_binary(program_name).await;
 
-        create_symlink(&target_path, &link_path, false)
-            .await
-            .map_err(AddBinaryError::Symlink)
+        create_symlink(&target_path, &link_path, false).await
     }
 
-    /// Removes only the symlink; the program itself is removed with the module's
-    /// own directory.
     pub async fn remove_binary(&self, name: impl AsRef<str>) -> Result<(), RemoveBinaryError> {
         let binary_path = self.exec_dir.join(name.as_ref());
 
@@ -302,7 +266,6 @@ impl Registry {
                     if self.options.auto_migrate_legacy_path {
                         tracing::debug!(?path, "found a legacy manifest file, migrating...");
 
-                        // once migrated, the module is found by the scan below
                         self.migrate_legacy_manifest(module_name, &path).await.ok();
                     } else {
                         modules.push(manifest);
@@ -464,7 +427,6 @@ impl Registry {
         let path = self.enable_dir.join(module_name.as_ref());
 
         let result = match tokio::fs::remove_file(&path).await {
-            // on Windows a symlink to a directory has to be removed as a directory
             Err(err) if err.kind() != io::ErrorKind::NotFound => {
                 tokio::fs::remove_dir(&path).await.or(Err(err))
             },
@@ -485,7 +447,6 @@ impl Registry {
     async fn link_module(&self, module_name: &str, manifest_path: &Path) -> io::Result<()> {
         let module_dir = self.module_dir(module_name);
 
-        // a manifest in a legacy location has no directory to link to
         let target_path = if manifest_path.starts_with(&module_dir) {
             module_dir
         } else {
@@ -505,7 +466,7 @@ impl Registry {
             // This scope only runs if install_dir and enable_dir share the same parent directory.
 
             if target_path.starts_with(&self.install_dir) {
-                // module is in installed directory: ../installed/<name>
+                // manifest is in installed directory: ../installed/<name>
                 PathBuf::from("..")
                     .join(self.install_dir.file_name().unwrap())
                     .join(target_path.file_name().unwrap())
@@ -556,8 +517,6 @@ impl Registry {
             format!("{module_name}.yml"),
         ];
 
-        // the previous layout was `installed/<name>.json`, the one before that
-        // `modules/<name>.yaml`
         let mut legacy_dirs = vec![self.install_dir.clone()];
         if let Some(parent) = self.install_dir.parent() {
             legacy_dirs.push(parent.into());
@@ -608,7 +567,6 @@ impl Registry {
             )
         })?;
 
-        // an enabled module's symlink now points at the manifest's old location
         if self.is_module_enabled(module_name).await.unwrap_or(false) {
             let _ = self.disable_module(module_name).await;
             let _ = self.link_module(module_name, &dst).await;
@@ -645,7 +603,6 @@ async fn find_manifest_in_dir(module_dir: &Path) -> io::Result<Option<PathBuf>> 
     Ok(None)
 }
 
-/// e.g. `foo` for `installed/foo.json`.
 fn manifest_file_module_name(path: &Path) -> Option<&str> {
     match path.extension().and_then(|ext| ext.to_str()) {
         Some("json") | Some("yaml") | Some("yml") => {

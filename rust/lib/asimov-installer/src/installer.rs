@@ -1,5 +1,6 @@
 // This is free and unencumbered software released into the public domain.
 
+use alloc::format;
 use asimov_module::{InstalledModuleManifest, ModuleManifest, tracing};
 use std::{boxed::Box, path::Path, string::String};
 
@@ -281,35 +282,107 @@ impl Installer {
             readme,
         } = preinstalled;
 
-        let extract_dir = temp_dir.join("extract");
-
-        for program in &manifest.provides.programs {
-            let src = extract_dir.join(program);
-
-            // On Windows add the .exe extension to the binary name:
-            #[cfg(windows)]
-            let src = src.with_extension("exe");
-
-            self.registry
-                .add_binary(&manifest.name, program, &src)
-                .await?;
-        }
-
         let module_name = manifest.name.clone();
 
-        let installed_manifest = InstalledModuleManifest {
-            version: Some(version),
-            manifest,
-        };
+        self.registry
+            .create_file_tree()
+            .await
+            .map_err(FinishInstallError::CreateFileTree)?;
 
-        self.registry.add_manifest(installed_manifest).await?;
+        let install_dir = self.registry.install_dir();
 
-        if let Some(readme) = readme {
-            self.registry.add_readme(&module_name, readme).await?;
-        }
+        let module_dir = tempfile::Builder::new()
+            .prefix(&format!(".{module_name}-"))
+            .tempdir_in(install_dir.parent().unwrap_or(install_dir))
+            .map_err(FinishInstallError::CreateDir)?;
+
+        write_module(
+            module_dir.path(),
+            InstalledModuleManifest {
+                version: Some(version),
+                manifest,
+            },
+            readme,
+            &temp_dir.join("extract"),
+        )
+        .await?;
+
+        self.registry
+            .add_module(&module_name, module_dir.path())
+            .await?;
+
+        let _ = module_dir.keep();
 
         Ok(())
     }
+}
+
+async fn write_module(
+    dir: &Path,
+    manifest: InstalledModuleManifest,
+    readme: Option<String>,
+    extract_dir: &Path,
+) -> Result<(), WriteModuleError> {
+    #[cfg(unix)]
+    {
+        use std::fs::Permissions;
+        use std::os::unix::fs::PermissionsExt;
+
+        tokio::fs::set_permissions(dir, Permissions::from_mode(0o755))
+            .await
+            .map_err(WriteModuleError::SetPermissions)?;
+    }
+
+    let bin_dir = dir.join(asimov_registry::BIN_DIR_NAME);
+
+    tokio::fs::create_dir_all(&bin_dir)
+        .await
+        .map_err(|e| WriteModuleError::CreateDir(bin_dir.clone(), e))?;
+
+    for program in &manifest.manifest.provides.programs {
+        let src = extract_dir.join(program);
+
+        // On Windows add the .exe extension to the binary name:
+        #[cfg(windows)]
+        let src = src.with_extension("exe");
+
+        let dst = bin_dir.join(program);
+
+        tokio::fs::copy(&src, &dst)
+            .await
+            .map_err(|e| WriteModuleError::CopyBinary(program.clone(), e))?;
+
+        #[cfg(unix)]
+        {
+            use std::fs::Permissions;
+            use std::os::unix::fs::PermissionsExt;
+
+            tokio::fs::set_permissions(&dst, Permissions::from_mode(0o755))
+                .await
+                .map_err(WriteModuleError::SetPermissions)?;
+        }
+    }
+
+    if let Some(readme) = readme {
+        let readme_path = dir.join(asimov_registry::README_FILE_PATH);
+        let doc_dir = readme_path.parent().unwrap();
+
+        tokio::fs::create_dir_all(doc_dir)
+            .await
+            .map_err(|e| WriteModuleError::CreateDir(doc_dir.into(), e))?;
+
+        tokio::fs::write(&readme_path, readme)
+            .await
+            .map_err(|e| WriteModuleError::WriteFile(readme_path, e))?;
+    }
+
+    let manifest_path = dir.join(asimov_registry::MANIFEST_FILE_NAME);
+
+    let serialized = serde_json::to_vec_pretty(&manifest).map_err(WriteModuleError::Serialize)?;
+
+    tokio::fs::write(&manifest_path, serialized)
+        .await
+        .map_err(|e| WriteModuleError::WriteFile(manifest_path, e))
 }
 
 async fn find_readme(extract_dir: &Path) -> Option<String> {

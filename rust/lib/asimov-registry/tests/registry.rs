@@ -101,12 +101,16 @@ pub async fn test_registry(
     );
 
     assert_eq!(registry.read_readme("sample").await.unwrap(), None);
-    registry.add_readme("sample", "# Sample\n").await.unwrap();
+    tokio::fs::create_dir_all(module_dir.join("doc"))
+        .await
+        .unwrap();
+    tokio::fs::write(module_dir.join("doc/README.md"), "# Sample\n")
+        .await
+        .unwrap();
     assert_eq!(
         registry.read_readme("sample").await.unwrap().as_deref(),
         Some("# Sample\n")
     );
-    assert!(module_dir.join("doc/README.md").is_file());
 
     registry.remove_module("sample").await.unwrap();
     assert!(!module_dir.exists());
@@ -138,78 +142,6 @@ pub async fn test_custom_registry() {
         Default::default(),
     );
     test_registry(registry, module_dir, enabled_path, false).await;
-}
-
-#[tokio::test]
-pub async fn test_add_manifest() {
-    let base_dir = tempdir().unwrap();
-    let registry = Registry::new(base_dir.path(), Default::default());
-    registry.create_file_tree().await.unwrap();
-
-    let manifest = InstalledModuleManifest {
-        version: Some("1.2.3".into()),
-        manifest: serde_yaml_ng::from_str(SAMPLE_MANIFEST).unwrap(),
-    };
-    registry.add_manifest(manifest).await.unwrap();
-
-    let module_dir = base_dir.path().join("modules/installed/ipfs");
-    assert!(module_dir.join("manifest.json").is_file());
-
-    let module = registry.read_manifest("ipfs").await.unwrap();
-    assert_eq!(module.manifest.name, "ipfs");
-    assert_eq!(module.version.as_deref(), Some("1.2.3"));
-}
-
-#[tokio::test]
-pub async fn test_add_binary() {
-    let base_dir = tempdir().unwrap();
-    let registry = Registry::new(base_dir.path(), Default::default());
-    registry.create_file_tree().await.unwrap();
-
-    let source_path = base_dir.path().join("asimov-ipfs-fetcher");
-    tokio::fs::write(&source_path, "#!/bin/sh\n").await.unwrap();
-
-    let libexec_path = base_dir.path().join("libexec/asimov-ipfs-fetcher");
-
-    tokio::fs::write(&libexec_path, "stale").await.unwrap();
-
-    registry
-        .add_binary("ipfs", "asimov-ipfs-fetcher", &source_path)
-        .await
-        .unwrap();
-
-    let binary_path = base_dir
-        .path()
-        .join("modules/installed/ipfs/bin/asimov-ipfs-fetcher");
-    assert!(binary_path.is_file());
-
-    assert!(
-        std::fs::symlink_metadata(&libexec_path)
-            .unwrap()
-            .is_symlink()
-    );
-    assert_eq!(
-        std::fs::read_link(&libexec_path).unwrap(),
-        PathBuf::from("../modules/installed/ipfs/bin/asimov-ipfs-fetcher")
-    );
-    assert_eq!(
-        std::fs::canonicalize(&libexec_path).unwrap(),
-        std::fs::canonicalize(&binary_path).unwrap()
-    );
-
-    #[cfg(unix)]
-    {
-        use std::os::unix::fs::PermissionsExt;
-        let mode = std::fs::metadata(&binary_path)
-            .unwrap()
-            .permissions()
-            .mode();
-        assert_eq!(mode & 0o777, 0o755);
-    }
-
-    registry.remove_binary("asimov-ipfs-fetcher").await.unwrap();
-    assert!(!libexec_path.exists());
-    assert!(binary_path.is_file());
 }
 
 #[tokio::test]
