@@ -193,6 +193,39 @@ pub async fn test_migrate_legacy_layout() {
 }
 
 #[tokio::test]
+pub async fn test_legacy_manifest_never_replaces_a_current_one() {
+    let manifest_json = |version: &str| {
+        let manifest = InstalledModuleManifest {
+            version: Some(version.into()),
+            manifest: serde_json::from_str(SAMPLE_MANIFEST).unwrap(),
+        };
+        serde_json::to_vec(&manifest).unwrap()
+    };
+
+    let base_dir = tempdir().unwrap();
+    let registry = Registry::new(base_dir.path(), Default::default());
+    registry.create_file_tree().await.unwrap();
+
+    let module_dir = base_dir.path().join("modules/installed/sample");
+    tokio::fs::create_dir(&module_dir).await.unwrap();
+    tokio::fs::write(module_dir.join("manifest.json"), manifest_json("2.0.0"))
+        .await
+        .unwrap();
+
+    let legacy_path = base_dir.path().join("modules/installed/sample.json");
+    tokio::fs::write(&legacy_path, manifest_json("0.1.7"))
+        .await
+        .unwrap();
+
+    assert_eq!(
+        registry.module_version("sample").await.unwrap().as_deref(),
+        Some("2.0.0")
+    );
+    assert!(!legacy_path.exists());
+    assert_eq!(registry.installed_modules().await.unwrap().len(), 1);
+}
+
+#[tokio::test]
 pub async fn test_migrate_legacy_version() {
     let base_dir = tempdir().unwrap();
     let registry = Registry::new(base_dir.path(), Default::default());

@@ -443,6 +443,20 @@ impl Registry {
         let module_dir = self.module_dir(module_name);
         let dst = module_dir.join(MANIFEST_FILE_NAME);
 
+        if tokio::fs::try_exists(&dst).await.unwrap_or(false) {
+            tracing::debug!(
+                legacy = ?path,
+                current = ?dst,
+                "module has both a legacy and a current manifest, removing the legacy one"
+            );
+
+            if let Err(err) = tokio::fs::remove_file(path).await {
+                tracing::warn!(?path, ?err, "failed to remove the legacy manifest file");
+            }
+
+            return;
+        }
+
         let result = async {
             let content = tokio::fs::read(path).await?;
 
