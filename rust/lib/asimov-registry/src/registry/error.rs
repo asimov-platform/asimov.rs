@@ -69,8 +69,6 @@ pub enum InstalledModulesError {
 pub enum EnabledModulesError {
     #[error("failed to read directory for enabled modules `{0}`: {1}")]
     DirIo(PathBuf, #[source] io::Error),
-    #[error("failed to read symlink for enabled module at `{0}`: {1}")]
-    LinkIo(PathBuf, #[source] io::Error),
     #[error("failed to read manifest at `{0}`: {1}")]
     ReadManifestError(PathBuf, #[source] ReadManifestError),
 }
@@ -104,8 +102,6 @@ mod common {
         InstalledManifestIo(#[from] io::Error),
         #[error("failed to deserialize module manifest: {0}")]
         ManifestDeserialize(#[from] DeserializeError),
-        #[error("unknown manifest format: {}", .0.as_deref().unwrap_or("no file extension"))]
-        UnknownManifestFormat(Option<String>),
     }
 
     impl From<serde_json::Error> for ReadManifestError {

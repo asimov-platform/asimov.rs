@@ -27,13 +27,9 @@ impl crate::ModuleNameIterator for ModuleNameIterator {
                 && let Some(entry_name) = entry.file_name().to_str()
                 && !entry_name.starts_with(".")
                 && let Ok(entry_type) = entry.file_type().await
-                && (entry_type.is_dir() || entry_type.is_file() || entry_type.is_symlink())
+                && (entry_type.is_dir() || entry_type.is_symlink())
             {
-                let entry_stem = [".json", ".yaml"]
-                    .iter()
-                    .find_map(|&ext| entry_name.strip_suffix(ext))
-                    .unwrap_or(entry_name);
-                return Some(entry_stem.into());
+                return Some(entry_name.into());
             }
         }
         None
@@ -61,38 +57,13 @@ impl crate::ModuleManifestIterator for ModuleManifestIterator {
                 && let Some(entry_name) = entry.file_name().to_str()
                 && !entry_name.starts_with(".")
                 && let Ok(entry_type) = entry.file_type().await
+                && (entry_type.is_dir() || entry_type.is_symlink())
+                && let Ok(content) = tokio::fs::read(entry.path().join("manifest.json")).await
+                && let Ok(manifest) = serde_json::from_slice(&content)
             {
-                let manifest = if entry_type.is_dir() {
-                    let dir = entry.path();
-                    let mut manifest = None;
-                    for file in ["manifest.json", "manifest.yaml", "manifest.yml"] {
-                        manifest = read_manifest(&dir.join(file)).await;
-                        if manifest.is_some() {
-                            break;
-                        }
-                    }
-                    manifest
-                } else if entry_type.is_file() || entry_type.is_symlink() {
-                    read_manifest(&entry.path()).await
-                } else {
-                    None
-                };
-
-                if let Some(manifest) = manifest {
-                    return Some(manifest);
-                }
+                return Some(manifest);
             }
         }
         None
-    }
-}
-
-async fn read_manifest(path: &std::path::Path) -> Option<InstalledModuleManifest> {
-    let content = tokio::fs::read(path).await.ok()?;
-
-    match path.extension().and_then(|ext| ext.to_str())? {
-        "json" => serde_json::from_slice(&content).ok(),
-        "yaml" | "yml" => serde_yaml_ng::from_slice(&content).ok(),
-        _ => None,
     }
 }

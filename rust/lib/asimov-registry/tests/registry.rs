@@ -4,7 +4,27 @@ use asimov_module::InstalledModuleManifest;
 use asimov_registry::Registry;
 use tempfile::tempdir;
 
-const SAMPLE_MANIFEST: &str = r#"# See: https://asimov-specs.github.io/module-manifest/
+// See: https://asimov-specs.github.io/module-manifest/
+const SAMPLE_MANIFEST: &str = r#"{
+  "name": "ipfs",
+  "label": "IPFS",
+  "title": "ASIMOV IPFS Module",
+  "summary": "IPFS protocol support.",
+  "links": [
+    "https://github.com/asimov-modules/asimov-ipfs-module",
+    "https://crates.io/crates/asimov-ipfs-module"
+  ],
+  "provides": {
+    "programs": ["asimov-ipfs-fetcher"]
+  },
+  "handles": {
+    "url_protocols": ["ipfs"]
+  }
+}
+"#;
+
+/// Manifests were YAML back when they lived directly in the modules directory.
+const LEGACY_SAMPLE_MANIFEST: &str = r#"# See: https://asimov-specs.github.io/module-manifest/
 ---
 name: ipfs
 label: IPFS
@@ -65,7 +85,7 @@ pub async fn test_registry(
     assert_eq!(registry.installed_modules().await.unwrap().len(), 0);
 
     tokio::fs::create_dir_all(&module_dir).await.unwrap();
-    tokio::fs::write(module_dir.join("manifest.yaml"), SAMPLE_MANIFEST)
+    tokio::fs::write(module_dir.join("manifest.json"), SAMPLE_MANIFEST)
         .await
         .unwrap();
 
@@ -152,7 +172,7 @@ pub async fn test_migrate_legacy_layouts() {
         registry.create_file_tree().await.unwrap();
 
         let legacy_path = base_dir.path().join(legacy_dir).join("sample.yaml");
-        tokio::fs::write(&legacy_path, SAMPLE_MANIFEST)
+        tokio::fs::write(&legacy_path, LEGACY_SAMPLE_MANIFEST)
             .await
             .unwrap();
 
@@ -161,7 +181,7 @@ pub async fn test_migrate_legacy_layouts() {
 
         let module_dir = base_dir.path().join("modules/installed/sample");
         assert!(!legacy_path.exists());
-        assert!(module_dir.join("manifest.yaml").is_file());
+        assert!(module_dir.join("manifest.json").is_file());
         assert_eq!(registry.installed_modules().await.unwrap().len(), 1);
         assert_eq!(registry.enabled_modules().await.unwrap().len(), 1);
 
@@ -183,7 +203,7 @@ pub async fn test_migrate_legacy_version() {
     let legacy_path = base_dir.path().join("modules/installed/sample.json");
     let manifest = InstalledModuleManifest {
         version: Some("0.1.7".into()),
-        manifest: serde_yaml_ng::from_str(SAMPLE_MANIFEST).unwrap(),
+        manifest: serde_json::from_str(SAMPLE_MANIFEST).unwrap(),
     };
     tokio::fs::write(&legacy_path, serde_json::to_vec(&manifest).unwrap())
         .await

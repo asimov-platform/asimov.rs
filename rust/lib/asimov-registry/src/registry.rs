@@ -1,6 +1,6 @@
 // This is free and unencumbered software released into the public domain.
 
-use alloc::{format, string::String, vec::Vec};
+use alloc::{collections::BTreeSet, format, string::String, vec::Vec};
 use asimov_module::InstalledModuleManifest;
 use std::path::{Path, PathBuf};
 use tokio::io;
@@ -11,8 +11,6 @@ use error::*;
 pub const MANIFEST_FILE_NAME: &str = "manifest.json";
 pub const README_FILE_PATH: &str = "doc/README.md";
 pub const BIN_DIR_NAME: &str = "bin";
-
-const MANIFEST_FILE_NAMES: [&str; 3] = [MANIFEST_FILE_NAME, "manifest.yaml", "manifest.yml"];
 
 #[derive(Clone, Debug, Default, bon::Builder)]
 pub struct Options {}
@@ -212,11 +210,9 @@ impl Registry {
     pub async fn installed_modules(
         &self,
     ) -> Result<Vec<InstalledModuleManifest>, InstalledModulesError> {
-        self.migrate_legacy_manifests().await;
-
         let installed_dir = &self.install_dir;
 
-        let mut modules = Vec::new();
+        let mut module_names = BTreeSet::new();
 
         let mut read_dir = tokio::fs::read_dir(&installed_dir)
             .await
@@ -227,22 +223,36 @@ impl Registry {
             .await
             .map_err(|e| InstalledModulesError::DirIo(installed_dir.clone(), e))?
         {
-            let path = entry.path();
+            let Ok(name) = entry.file_name().into_string() else {
+                continue;
+            };
 
-            if !tokio::fs::metadata(&path)
+            if tokio::fs::metadata(entry.path())
                 .await
                 .map(|md| md.is_dir())
                 .unwrap_or(false)
             {
+                module_names.insert(name);
+            } else if let Some(module_name) = manifest_file_module_name(Path::new(&name)) {
+                self.migrate_legacy_manifest(module_name).await;
+
+                module_names.insert(module_name.into());
+            }
+        }
+
+        module_names.extend(self.migrate_legacy_modules_dir().await);
+
+        let mut modules = Vec::new();
+
+        for module_name in module_names {
+            let manifest_path = self.module_dir(module_name).join(MANIFEST_FILE_NAME);
+
+            if !tokio::fs::try_exists(&manifest_path)
+                .await
+                .map_err(|e| InstalledModulesError::DirIo(manifest_path.clone(), e))?
+            {
                 continue;
             }
-
-            let Some(manifest_path) = find_manifest_in_dir(&path)
-                .await
-                .map_err(|e| InstalledModulesError::DirIo(path.clone(), e))?
-            else {
-                continue;
-            };
 
             let manifest = read_manifest(&manifest_path)
                 .await
@@ -270,9 +280,11 @@ impl Registry {
             .await
             .map_err(|e| EnabledModulesError::DirIo(enabled_dir.clone(), e))?
         {
-            let path = entry.path();
+            let Ok(module_name) = entry.file_name().into_string() else {
+                continue;
+            };
 
-            if !tokio::fs::symlink_metadata(&path)
+            if !tokio::fs::symlink_metadata(entry.path())
                 .await
                 .map(|md| md.is_symlink())
                 .unwrap_or(false)
@@ -280,33 +292,23 @@ impl Registry {
                 continue;
             }
 
-            let manifest_path = tokio::fs::read_link(&path)
-                .await
-                .map_err(|e| EnabledModulesError::LinkIo(path.clone(), e))?;
+            let manifest_path = self.module_dir(&module_name).join(MANIFEST_FILE_NAME);
 
-            let manifest_path = if manifest_path.is_absolute() {
-                manifest_path
-            } else {
-                enabled_dir.join(&manifest_path)
-            };
+            // the entry may still point at a manifest file rather than a module directory
+            if !tokio::fs::try_exists(&manifest_path).await.unwrap_or(false) {
+                self.migrate_legacy_manifest(&module_name).await;
+            }
 
-            let manifest_path = if tokio::fs::metadata(&manifest_path)
+            if !tokio::fs::try_exists(&manifest_path)
                 .await
-                .map(|md| md.is_dir())
-                .unwrap_or(false)
+                .map_err(|e| EnabledModulesError::DirIo(manifest_path.clone(), e))?
             {
-                match find_manifest_in_dir(&manifest_path).await {
-                    Ok(Some(manifest_path)) => manifest_path,
-                    Ok(None) => continue,
-                    Err(e) => return Err(EnabledModulesError::DirIo(manifest_path, e)),
-                }
-            } else {
-                manifest_path
-            };
+                continue;
+            }
 
             let manifest = read_manifest(&manifest_path)
                 .await
-                .map_err(|e| EnabledModulesError::ReadManifestError(path, e))?;
+                .map_err(|e| EnabledModulesError::ReadManifestError(manifest_path, e))?;
 
             modules.push(manifest)
         }
@@ -412,11 +414,15 @@ impl Registry {
         &self,
         module_name: impl AsRef<str>,
     ) -> Result<Option<PathBuf>, FindManifestError> {
-        let module_dir = self.module_dir(module_name.as_ref());
+        let path = self
+            .module_dir(module_name.as_ref())
+            .join(MANIFEST_FILE_NAME);
 
-        find_manifest_in_dir(&module_dir)
-            .await
-            .map_err(|err| FindManifestError(module_dir, err))
+        match tokio::fs::try_exists(&path).await {
+            Ok(true) => Ok(Some(path)),
+            Ok(false) => Ok(None),
+            Err(err) => Err(FindManifestError(path, err)),
+        }
     }
 
     /// The directories that manifests may reside in directly, from before manifests were installed
@@ -447,42 +453,61 @@ impl Registry {
         }
     }
 
-    /// Like [`Self::migrate_legacy_manifest`], but for every module found in a legacy location.
-    async fn migrate_legacy_manifests(&self) {
-        for dir in self.legacy_dirs() {
-            let Ok(mut read_dir) = tokio::fs::read_dir(dir).await else {
+    /// Like [`Self::migrate_legacy_manifest`], but for every manifest in [`Self::legacy_modules_dir`],
+    /// which is not otherwise iterated over. Returns the names of the modules found there.
+    async fn migrate_legacy_modules_dir(&self) -> Vec<String> {
+        let mut module_names = Vec::new();
+
+        let Some(dir) = self.legacy_modules_dir.as_deref() else {
+            return module_names;
+        };
+
+        let Ok(mut read_dir) = tokio::fs::read_dir(dir).await else {
+            return module_names;
+        };
+
+        while let Ok(Some(entry)) = read_dir.next_entry().await {
+            let path = entry.path();
+
+            let Some(module_name) = manifest_file_module_name(&path) else {
                 continue;
             };
 
-            while let Ok(Some(entry)) = read_dir.next_entry().await {
-                let path = entry.path();
+            if tokio::fs::metadata(&path)
+                .await
+                .map(|md| md.is_file())
+                .unwrap_or(false)
+            {
+                tracing::debug!(?path, "found a legacy manifest file, migrating...");
 
-                let Some(module_name) = manifest_file_module_name(&path) else {
-                    continue;
-                };
+                self.move_legacy_manifest(module_name, &path).await;
 
-                if tokio::fs::metadata(&path)
-                    .await
-                    .map(|md| md.is_file())
-                    .unwrap_or(false)
-                {
-                    tracing::debug!(?path, "found a legacy manifest file, migrating...");
-
-                    self.move_legacy_manifest(module_name, &path).await;
-                }
+                module_names.push(module_name.into());
             }
         }
+
+        module_names
     }
 
     async fn move_legacy_manifest(&self, module_name: &str, path: &Path) {
         let module_dir = self.module_dir(module_name);
-
-        let extension = path.extension().unwrap_or_else(|| "json".as_ref());
-        let dst = module_dir.join("manifest").with_extension(extension);
+        let dst = module_dir.join(MANIFEST_FILE_NAME);
 
         let result = async {
+            let content = tokio::fs::read(path).await?;
+
+            let manifest: InstalledModuleManifest =
+                match path.extension().and_then(|ext| ext.to_str()) {
+                    Some("yaml") | Some("yml") => {
+                        serde_yaml_ng::from_slice(&content).map_err(io::Error::other)?
+                    },
+                    _ => serde_json::from_slice(&content).map_err(io::Error::other)?,
+                };
+            let content = serde_json::to_vec(&manifest).map_err(io::Error::other)?;
+
             tokio::fs::create_dir_all(&module_dir).await?;
-            tokio::fs::rename(path, &dst).await
+            tokio::fs::write(&dst, content).await?;
+            tokio::fs::remove_file(path).await
         }
         .await;
 
@@ -520,19 +545,6 @@ async fn create_symlink(target: &Path, link: &Path, target_is_dir: bool) -> io::
     }
 }
 
-async fn find_manifest_in_dir(module_dir: &Path) -> io::Result<Option<PathBuf>> {
-    for file in MANIFEST_FILE_NAMES {
-        let path = module_dir.join(file);
-        match tokio::fs::try_exists(&path).await {
-            Ok(exists) if exists => return Ok(Some(path)),
-            Err(err) if err.kind() != io::ErrorKind::NotFound => return Err(err),
-            _ => continue,
-        }
-    }
-
-    Ok(None)
-}
-
 fn manifest_file_module_name(path: &Path) -> Option<&str> {
     match path.extension().and_then(|ext| ext.to_str()) {
         Some("json") | Some("yaml") | Some("yml") => {
@@ -545,24 +557,11 @@ fn manifest_file_module_name(path: &Path) -> Option<&str> {
 async fn read_manifest(
     path: impl AsRef<Path>,
 ) -> Result<InstalledModuleManifest, ReadManifestError> {
-    let manifest = match path.as_ref().extension().and_then(|ext| ext.to_str()) {
-        Some("yaml") | Some("yml") => {
-            let content = tokio::fs::read(&path)
-                .await
-                .map_err(ReadManifestError::InstalledManifestIo)?;
+    let content = tokio::fs::read(&path)
+        .await
+        .map_err(ReadManifestError::InstalledManifestIo)?;
 
-            serde_yaml_ng::from_slice::<'_, InstalledModuleManifest>(&content)?
-        },
-        Some("json") => {
-            let content = tokio::fs::read(&path)
-                .await
-                .map_err(ReadManifestError::InstalledManifestIo)?;
-
-            serde_json::from_slice::<'_, InstalledModuleManifest>(&content)?
-        },
-        ext => Err(ReadManifestError::UnknownManifestFormat(
-            ext.map(Into::into),
-        ))?,
-    };
-    Ok(manifest)
+    Ok(serde_json::from_slice::<'_, InstalledModuleManifest>(
+        &content,
+    )?)
 }
