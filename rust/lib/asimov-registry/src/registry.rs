@@ -1,6 +1,6 @@
 // This is free and unencumbered software released into the public domain.
 
-use alloc::{string::String, vec::Vec};
+use alloc::{format, string::String, vec::Vec};
 use asimov_module::InstalledModuleManifest;
 use std::path::{Path, PathBuf};
 use tokio::io;
@@ -16,11 +16,6 @@ const MANIFEST_FILE_NAMES: [&str; 3] = [MANIFEST_FILE_NAME, "manifest.yaml", "ma
 
 #[derive(Clone, Debug, bon::Builder)]
 pub struct Options {
-    /// Controls whether to search for module manifests from a legacy location.
-    /// The legacy (previous) location by default is `~/.asimov/modules/*.yaml`.
-    #[builder(default = true)]
-    pub search_legacy_path: bool,
-
     /// Controls whether to automatically move module manifests from a legacy location.
     /// The legacy (previous) location by default is `~/.asimov/modules/*.yaml`.
     /// The new and current location by default is `~/.asimov/modules/installed/<name>/manifest.json`.
@@ -31,7 +26,6 @@ pub struct Options {
 impl Default for Options {
     fn default() -> Self {
         Self {
-            search_legacy_path: true,
             auto_migrate_legacy_path: true,
         }
     }
@@ -157,6 +151,8 @@ impl Registry {
         &self,
         module_name: impl AsRef<str>,
     ) -> Result<InstalledModuleManifest, ManifestError> {
+        self.migrate_legacy_manifest(module_name.as_ref()).await;
+
         let path = self
             .find_manifest_file(module_name)
             .await?
@@ -191,22 +187,17 @@ impl Registry {
         &self,
         module_name: impl AsRef<str>,
     ) -> Result<(), RemoveModuleError> {
-        let manifest_path = self
-            .find_manifest_file(&module_name)
-            .await?
-            .ok_or(RemoveModuleError::NotInstalled)?;
+        self.migrate_legacy_manifest(module_name.as_ref()).await;
+
+        if self.find_manifest_file(&module_name).await?.is_none() {
+            return Err(RemoveModuleError::NotInstalled);
+        }
 
         let module_dir = self.module_dir(&module_name);
 
-        if manifest_path.starts_with(&module_dir) {
-            tokio::fs::remove_dir_all(&module_dir)
-                .await
-                .map_err(|e| RemoveModuleError::RemoveModuleDir(module_dir, e))
-        } else {
-            tokio::fs::remove_file(&manifest_path)
-                .await
-                .map_err(|e| RemoveModuleError::RemoveManifest(manifest_path, e))
-        }
+        tokio::fs::remove_dir_all(&module_dir)
+            .await
+            .map_err(|e| RemoveModuleError::RemoveModuleDir(module_dir, e))
     }
 
     async fn add_binary(&self, program_name: &str, binary_path: &Path) -> io::Result<()> {
@@ -240,39 +231,11 @@ impl Registry {
     pub async fn installed_modules(
         &self,
     ) -> Result<Vec<InstalledModuleManifest>, InstalledModulesError> {
+        self.migrate_legacy_manifests().await;
+
         let installed_dir = &self.install_dir;
 
         let mut modules = Vec::new();
-
-        if (self.options.search_legacy_path || self.options.auto_migrate_legacy_path)
-            && let Some(modules_dir) = &self.legacy_modules_dir
-            && let Ok(mut read_dir) = tokio::fs::read_dir(modules_dir).await
-        {
-            while let Ok(Some(entry)) = read_dir.next_entry().await {
-                let path = entry.path();
-                if !tokio::fs::metadata(&path)
-                    .await
-                    .map(|md| md.is_file())
-                    .unwrap_or(false)
-                {
-                    continue;
-                }
-
-                let Some(module_name) = manifest_file_module_name(&path) else {
-                    continue;
-                };
-
-                if let Ok(manifest) = read_manifest(&path).await {
-                    if self.options.auto_migrate_legacy_path {
-                        tracing::debug!(?path, "found a legacy manifest file, migrating...");
-
-                        self.migrate_legacy_manifest(module_name, &path).await.ok();
-                    } else {
-                        modules.push(manifest);
-                    }
-                }
-            }
-        }
 
         let mut read_dir = tokio::fs::read_dir(&installed_dir)
             .await
@@ -285,40 +248,26 @@ impl Registry {
         {
             let path = entry.path();
 
-            let Ok(metadata) = tokio::fs::metadata(&path).await else {
+            if !tokio::fs::metadata(&path)
+                .await
+                .map(|md| md.is_dir())
+                .unwrap_or(false)
+            {
+                continue;
+            }
+
+            let Some(manifest_path) = find_manifest_in_dir(&path)
+                .await
+                .map_err(|e| InstalledModulesError::DirIo(path.clone(), e))?
+            else {
                 continue;
             };
 
-            if metadata.is_dir() {
-                let Some(manifest_path) = find_manifest_in_dir(&path)
-                    .await
-                    .map_err(|e| InstalledModulesError::DirIo(path.clone(), e))?
-                else {
-                    continue;
-                };
+            let manifest = read_manifest(&manifest_path)
+                .await
+                .map_err(|e| InstalledModulesError::ReadManifestError(manifest_path, e))?;
 
-                let manifest = read_manifest(&manifest_path)
-                    .await
-                    .map_err(|e| InstalledModulesError::ReadManifestError(manifest_path, e))?;
-
-                modules.push(manifest)
-            } else if metadata.is_file() {
-                let Some(module_name) = manifest_file_module_name(&path) else {
-                    continue;
-                };
-
-                let manifest = read_manifest(&path)
-                    .await
-                    .map_err(|e| InstalledModulesError::ReadManifestError(path.clone(), e))?;
-
-                if self.options.auto_migrate_legacy_path {
-                    tracing::debug!(?path, "found a legacy manifest file, migrating...");
-
-                    self.migrate_legacy_manifest(module_name, &path).await.ok();
-                }
-
-                modules.push(manifest)
-            }
+            modules.push(manifest)
         }
 
         Ok(modules)
@@ -388,6 +337,8 @@ impl Registry {
         &self,
         module_name: impl AsRef<str>,
     ) -> Result<bool, IsModuleInstalledError> {
+        self.migrate_legacy_manifest(module_name.as_ref()).await;
+
         self.find_manifest_file(module_name)
             .await
             .map(|path| path.is_some())
@@ -413,12 +364,13 @@ impl Registry {
     }
 
     pub async fn enable_module(&self, module_name: impl AsRef<str>) -> Result<(), EnableError> {
-        let manifest_path = self
-            .find_manifest_file(&module_name)
-            .await?
-            .ok_or(EnableError::NotInstalled)?;
+        self.migrate_legacy_manifest(module_name.as_ref()).await;
 
-        self.link_module(module_name.as_ref(), &manifest_path)
+        if self.find_manifest_file(&module_name).await?.is_none() {
+            return Err(EnableError::NotInstalled);
+        }
+
+        self.link_module(module_name.as_ref())
             .await
             .map_err(EnableError::Io)
     }
@@ -444,18 +396,8 @@ impl Registry {
             .map_err(Into::into)
     }
 
-    async fn link_module(&self, module_name: &str, manifest_path: &Path) -> io::Result<()> {
+    async fn link_module(&self, module_name: &str) -> io::Result<()> {
         let module_dir = self.module_dir(module_name);
-
-        let target_path = if manifest_path.starts_with(&module_dir) {
-            module_dir
-        } else {
-            manifest_path.into()
-        };
-        let target_is_dir = tokio::fs::metadata(&target_path)
-            .await
-            .map(|md| md.is_dir())
-            .unwrap_or(false);
 
         let target_path = if self
             .install_dir
@@ -463,29 +405,22 @@ impl Registry {
             .zip(self.enable_dir.parent())
             .is_some_and(|(a, b)| a == b)
         {
-            // This scope only runs if install_dir and enable_dir share the same parent directory.
-
-            if target_path.starts_with(&self.install_dir) {
-                // manifest is in installed directory: ../installed/<name>
-                PathBuf::from("..")
-                    .join(self.install_dir.file_name().unwrap())
-                    .join(target_path.file_name().unwrap())
-            } else {
-                // manifest is in legacy location: ../<name>.yaml
-                PathBuf::from("..").join(target_path.file_name().unwrap())
-            }
+            // install_dir and enable_dir share a parent, so link relatively: ../installed/<name>
+            PathBuf::from("..")
+                .join(self.install_dir.file_name().unwrap())
+                .join(module_name)
         } else {
-            target_path
+            module_dir
         };
 
         let src_path = self.enable_dir.join(module_name);
 
-        match create_symlink(&target_path, &src_path, target_is_dir).await {
+        match create_symlink(&target_path, &src_path, true).await {
             Err(err) if err.kind() == io::ErrorKind::AlreadyExists => {
                 // disable and retry enabling one more time
                 let _ = self.disable_module(module_name).await;
 
-                create_symlink(&target_path, &src_path, target_is_dir).await
+                create_symlink(&target_path, &src_path, true).await
             },
             result => result,
         }
@@ -495,20 +430,25 @@ impl Registry {
         &self,
         module_name: impl AsRef<str>,
     ) -> Result<Option<PathBuf>, FindManifestError> {
-        use alloc::{format, vec};
+        let module_dir = self.module_dir(module_name.as_ref());
 
-        let module_name = module_name.as_ref();
-        let module_dir = self.module_dir(module_name);
-
-        if let Some(path) = find_manifest_in_dir(&module_dir)
+        find_manifest_in_dir(&module_dir)
             .await
-            .map_err(|err| FindManifestError(module_dir, err))?
-        {
-            return Ok(Some(path));
-        }
+            .map_err(|err| FindManifestError(module_dir, err))
+    }
 
-        if !self.options.search_legacy_path {
-            return Ok(None);
+    /// The directories that manifests may reside in directly, from before manifests were installed
+    /// into a directory of their own: `~/.asimov/modules/installed/<name>.yaml`, and older still,
+    /// `~/.asimov/modules/<name>.yaml`.
+    fn legacy_dirs(&self) -> impl Iterator<Item = &Path> {
+        core::iter::once(self.install_dir.as_path()).chain(self.legacy_modules_dir.as_deref())
+    }
+
+    /// Moves the manifest of `module_name` into its own directory, if it is found in a legacy
+    /// location. Does nothing unless [`Options::auto_migrate_legacy_path`] is set.
+    async fn migrate_legacy_manifest(&self, module_name: &str) {
+        if !self.options.auto_migrate_legacy_path {
+            return;
         }
 
         let files = [
@@ -517,62 +457,75 @@ impl Registry {
             format!("{module_name}.yml"),
         ];
 
-        let mut legacy_dirs = vec![self.install_dir.clone()];
-        if let Some(parent) = self.install_dir.parent() {
-            legacy_dirs.push(parent.into());
-        }
-
-        for dir in &legacy_dirs {
+        for dir in self.legacy_dirs() {
             for file in &files {
                 let path = dir.join(file);
-                match tokio::fs::try_exists(&path).await {
-                    Ok(exists) if exists => {
-                        if !self.options.auto_migrate_legacy_path {
-                            return Ok(Some(path));
-                        }
+                if tokio::fs::try_exists(&path).await.unwrap_or(false) {
+                    tracing::debug!(?path, "found a legacy manifest file, migrating...");
 
-                        tracing::debug!(?path, "found a legacy manifest file, migrating...");
-
-                        return Ok(Some(
-                            self.migrate_legacy_manifest(module_name, &path)
-                                .await
-                                .unwrap_or(path),
-                        ));
-                    },
-                    Err(err) if err.kind() != io::ErrorKind::NotFound => {
-                        return Err(FindManifestError(path, err));
-                    },
-                    _ => continue,
+                    self.move_legacy_manifest(module_name, &path).await;
                 }
             }
         }
-
-        Ok(None)
     }
 
-    async fn migrate_legacy_manifest(&self, module_name: &str, path: &Path) -> io::Result<PathBuf> {
-        let module_dir = self.module_dir(module_name);
+    /// Like [`Self::migrate_legacy_manifest`], but for every module found in a legacy location.
+    async fn migrate_legacy_manifests(&self) {
+        if !self.options.auto_migrate_legacy_path {
+            return;
+        }
 
-        tokio::fs::create_dir_all(&module_dir).await?;
+        for dir in self.legacy_dirs() {
+            let Ok(mut read_dir) = tokio::fs::read_dir(dir).await else {
+                continue;
+            };
+
+            while let Ok(Some(entry)) = read_dir.next_entry().await {
+                let path = entry.path();
+
+                let Some(module_name) = manifest_file_module_name(&path) else {
+                    continue;
+                };
+
+                if tokio::fs::metadata(&path)
+                    .await
+                    .map(|md| md.is_file())
+                    .unwrap_or(false)
+                {
+                    tracing::debug!(?path, "found a legacy manifest file, migrating...");
+
+                    self.move_legacy_manifest(module_name, &path).await;
+                }
+            }
+        }
+    }
+
+    async fn move_legacy_manifest(&self, module_name: &str, path: &Path) {
+        let module_dir = self.module_dir(module_name);
 
         let extension = path.extension().unwrap_or_else(|| "json".as_ref());
         let dst = module_dir.join("manifest").with_extension(extension);
 
-        tokio::fs::rename(path, &dst).await.inspect_err(|err| {
+        let result = async {
+            tokio::fs::create_dir_all(&module_dir).await?;
+            tokio::fs::rename(path, &dst).await
+        }
+        .await;
+
+        if let Err(err) = result {
             tracing::debug!(
                 from = ?path,
                 to = ?dst,
                 ?err,
                 "tried to move module manifest from legacy path but failed"
-            )
-        })?;
+            );
+            return;
+        }
 
         if self.is_module_enabled(module_name).await.unwrap_or(false) {
             let _ = self.disable_module(module_name).await;
-            let _ = self.link_module(module_name, &dst).await;
+            let _ = self.link_module(module_name).await;
         }
-
-        Ok(dst)
     }
 }
 

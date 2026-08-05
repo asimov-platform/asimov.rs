@@ -51,8 +51,6 @@ pub enum RemoveModuleError {
     NotInstalled,
     #[error("failed to remove directory of installed module `{0}`: {1}")]
     RemoveModuleDir(PathBuf, #[source] io::Error),
-    #[error("failed to remove module manifest at `{0}`: {1}")]
-    RemoveManifest(PathBuf, #[source] io::Error),
 }
 
 #[derive(Debug, Error)]
