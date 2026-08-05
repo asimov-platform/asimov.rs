@@ -2,6 +2,7 @@
 
 use alloc::{collections::BTreeSet, format, string::String, vec::Vec};
 use asimov_module::InstalledModuleManifest;
+pub use asimov_module::ModuleName;
 use std::path::{Path, PathBuf};
 use tokio::io;
 
@@ -76,21 +77,15 @@ impl Registry {
         &self.install_dir
     }
 
-    pub fn module_dir(&self, module_name: impl AsRef<str>) -> PathBuf {
-        self.install_dir.join(module_name.as_ref())
+    pub fn module_dir(&self, module_name: &ModuleName) -> PathBuf {
+        self.install_dir.join(module_name.as_str())
     }
 
     pub async fn add_module(
         &self,
-        module_name: impl AsRef<str>,
+        module_name: &ModuleName,
         dir: impl AsRef<Path>,
     ) -> Result<(), AddModuleError> {
-        let module_name = module_name.as_ref();
-
-        if !is_valid_name(module_name) {
-            return Err(AddModuleError::InvalidName(module_name.into()));
-        }
-
         if self.is_module_installed(module_name).await.unwrap_or(false) {
             return Err(AddModuleError::AlreadyInstalled);
         }
@@ -129,9 +124,9 @@ impl Registry {
 
     pub async fn read_manifest(
         &self,
-        module_name: impl AsRef<str>,
+        module_name: &ModuleName,
     ) -> Result<InstalledModuleManifest, ManifestError> {
-        self.migrate_legacy_manifest(module_name.as_ref()).await;
+        self.migrate_legacy_manifest(module_name).await;
 
         let path = self
             .find_manifest_file(module_name)
@@ -142,7 +137,7 @@ impl Registry {
 
     pub async fn read_readme(
         &self,
-        module_name: impl AsRef<str>,
+        module_name: &ModuleName,
     ) -> Result<Option<String>, ReadReadmeError> {
         let readme_path = self.module_dir(module_name).join(README_FILE_PATH);
 
@@ -155,7 +150,7 @@ impl Registry {
 
     pub async fn module_version(
         &self,
-        module_name: impl AsRef<str>,
+        module_name: &ModuleName,
     ) -> Result<Option<String>, ModuleVersionError> {
         self.read_manifest(module_name)
             .await
@@ -163,21 +158,14 @@ impl Registry {
             .map_err(Into::into)
     }
 
-    pub async fn remove_module(
-        &self,
-        module_name: impl AsRef<str>,
-    ) -> Result<(), RemoveModuleError> {
-        if !is_valid_name(module_name.as_ref()) {
-            return Err(RemoveModuleError::InvalidName(module_name.as_ref().into()));
-        }
+    pub async fn remove_module(&self, module_name: &ModuleName) -> Result<(), RemoveModuleError> {
+        self.migrate_legacy_manifest(module_name).await;
 
-        self.migrate_legacy_manifest(module_name.as_ref()).await;
-
-        if self.find_manifest_file(&module_name).await?.is_none() {
+        if self.find_manifest_file(module_name).await?.is_none() {
             return Err(RemoveModuleError::NotInstalled);
         }
 
-        let module_dir = self.module_dir(&module_name);
+        let module_dir = self.module_dir(module_name);
 
         tokio::fs::remove_dir_all(&module_dir)
             .await
@@ -203,7 +191,7 @@ impl Registry {
     pub async fn remove_binary(&self, name: impl AsRef<str>) -> Result<(), RemoveBinaryError> {
         let name = name.as_ref();
 
-        if !is_valid_name(name) {
+        if !is_valid_program_name(name) {
             return Err(RemoveBinaryError::InvalidName(name.into()));
         }
 
@@ -243,18 +231,26 @@ impl Registry {
                 .map(|md| md.is_dir())
                 .unwrap_or(false)
             {
-                module_names.insert(name);
-            } else if let Some(module_name) = manifest_file_module_name(Path::new(&name)) {
-                self.migrate_legacy_manifest(module_name).await;
+                let Ok(module_name) = ModuleName::try_from(name) else {
+                    continue;
+                };
 
-                module_names.insert(module_name.into());
+                module_names.insert(module_name);
+            } else if let Some(name) = manifest_file_module_name(Path::new(&name)) {
+                let Ok(module_name) = ModuleName::try_from(name) else {
+                    continue;
+                };
+
+                self.migrate_legacy_manifest(&module_name).await;
+
+                module_names.insert(module_name);
             }
         }
 
         let mut modules = Vec::new();
 
         for module_name in module_names {
-            let manifest_path = self.module_dir(module_name).join(MANIFEST_FILE_NAME);
+            let manifest_path = self.module_dir(&module_name).join(MANIFEST_FILE_NAME);
 
             if !tokio::fs::try_exists(&manifest_path)
                 .await
@@ -293,6 +289,10 @@ impl Registry {
                 continue;
             };
 
+            let Ok(module_name) = ModuleName::try_from(module_name) else {
+                continue;
+            };
+
             if !tokio::fs::symlink_metadata(entry.path())
                 .await
                 .map(|md| md.is_symlink())
@@ -327,9 +327,9 @@ impl Registry {
 
     pub async fn is_module_installed(
         &self,
-        module_name: impl AsRef<str>,
+        module_name: &ModuleName,
     ) -> Result<bool, IsModuleInstalledError> {
-        self.migrate_legacy_manifest(module_name.as_ref()).await;
+        self.migrate_legacy_manifest(module_name).await;
 
         self.find_manifest_file(module_name)
             .await
@@ -339,9 +339,9 @@ impl Registry {
 
     pub async fn is_module_enabled(
         &self,
-        module_name: impl AsRef<str>,
+        module_name: &ModuleName,
     ) -> Result<bool, IsModuleEnabledError> {
-        let path = self.enable_dir.join(module_name.as_ref());
+        let path = self.enable_dir.join(module_name.as_str());
 
         tokio::fs::symlink_metadata(&path)
             .await
@@ -355,13 +355,7 @@ impl Registry {
             })
     }
 
-    pub async fn enable_module(&self, module_name: impl AsRef<str>) -> Result<(), EnableError> {
-        let module_name = module_name.as_ref();
-
-        if !is_valid_name(module_name) {
-            return Err(EnableError::InvalidName(module_name.into()));
-        }
-
+    pub async fn enable_module(&self, module_name: &ModuleName) -> Result<(), EnableError> {
         self.migrate_legacy_manifest(module_name).await;
 
         let module_dir = self.module_dir(module_name);
@@ -371,7 +365,7 @@ impl Registry {
         }
 
         let target_path = self.enable_target(module_name);
-        let src_path = self.enable_dir.join(module_name);
+        let src_path = self.enable_dir.join(module_name.as_str());
 
         match create_symlink(&target_path, &src_path, true).await {
             Err(err) if err.kind() == io::ErrorKind::AlreadyExists => {
@@ -385,14 +379,8 @@ impl Registry {
         .map_err(Into::into)
     }
 
-    pub async fn disable_module(&self, module_name: impl AsRef<str>) -> Result<(), DisableError> {
-        let module_name = module_name.as_ref();
-
-        if !is_valid_name(module_name) {
-            return Err(DisableError::InvalidName(module_name.into()));
-        }
-
-        let path = self.enable_dir.join(module_name);
+    pub async fn disable_module(&self, module_name: &ModuleName) -> Result<(), DisableError> {
+        let path = self.enable_dir.join(module_name.as_str());
 
         let result = match tokio::fs::remove_file(&path).await {
             // on Windows a symlink to a directory has to be removed as a directory
@@ -412,7 +400,7 @@ impl Registry {
     }
 
     /// The path that the entry in [`Self::enable_dir`] points to for `module_name`.
-    fn enable_target(&self, module_name: &str) -> PathBuf {
+    fn enable_target(&self, module_name: &ModuleName) -> PathBuf {
         if self
             .install_dir
             .parent()
@@ -422,7 +410,7 @@ impl Registry {
             // install_dir and enable_dir share a parent, so point relatively: ../installed/<name>
             PathBuf::from("..")
                 .join(self.install_dir.file_name().unwrap())
-                .join(module_name)
+                .join(module_name.as_str())
         } else {
             self.module_dir(module_name)
         }
@@ -430,11 +418,9 @@ impl Registry {
 
     async fn find_manifest_file(
         &self,
-        module_name: impl AsRef<str>,
+        module_name: &ModuleName,
     ) -> Result<Option<PathBuf>, FindManifestError> {
-        let path = self
-            .module_dir(module_name.as_ref())
-            .join(MANIFEST_FILE_NAME);
+        let path = self.module_dir(module_name).join(MANIFEST_FILE_NAME);
 
         match tokio::fs::try_exists(&path).await {
             Ok(true) => Ok(Some(path)),
@@ -445,7 +431,7 @@ impl Registry {
 
     /// Moves the manifest of `module_name` into its own directory, if it is still a file directly
     /// in the install directory: `~/.asimov/modules/installed/<name>.{json,yaml,yml}`.
-    async fn migrate_legacy_manifest(&self, module_name: &str) {
+    async fn migrate_legacy_manifest(&self, module_name: &ModuleName) {
         let files = [
             format!("{module_name}.json"),
             format!("{module_name}.yaml"),
@@ -462,7 +448,7 @@ impl Registry {
         }
     }
 
-    async fn move_legacy_manifest(&self, module_name: &str, path: &Path) {
+    async fn move_legacy_manifest(&self, module_name: &ModuleName, path: &Path) {
         let module_dir = self.module_dir(module_name);
         let dst = module_dir.join(MANIFEST_FILE_NAME);
 
@@ -510,7 +496,7 @@ impl Registry {
 
         // the entry in `enable_dir` still points at the manifest file that just moved
         if self.is_module_enabled(module_name).await.unwrap_or(false) {
-            let path = self.enable_dir.join(module_name);
+            let path = self.enable_dir.join(module_name.as_str());
 
             let _ = tokio::fs::remove_file(&path).await;
             let _ = create_symlink(&self.enable_target(module_name), &path, true).await;
@@ -532,10 +518,9 @@ async fn create_symlink(target: &Path, link: &Path, target_is_dir: bool) -> io::
     }
 }
 
-/// Module and program names are joined onto the registry's directories, so a name that is not a
-/// plain path component could reach files outside of them. Mirrors the names that
-/// `asimov-module-kit` allows a module to be created with.
-fn is_valid_name(name: &str) -> bool {
+/// Program names are joined onto [`Registry::exec_dir`], so a name that is not a plain path
+/// component could reach files outside of it. Module names carry the same guarantee in their type.
+fn is_valid_program_name(name: &str) -> bool {
     !name.is_empty()
         && name.as_bytes()[0].is_ascii_alphanumeric()
         && !name.ends_with('-')

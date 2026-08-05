@@ -28,8 +28,9 @@ impl crate::ModuleNameIterator for ModuleNameIterator {
                 && !entry_name.starts_with(".")
                 && let Ok(entry_type) = entry.file_type().await
                 && (entry_type.is_dir() || entry_type.is_symlink())
+                && let Ok(module_name) = ModuleName::try_from(entry_name)
             {
-                return Some(entry_name.into());
+                return Some(module_name);
             }
         }
         None

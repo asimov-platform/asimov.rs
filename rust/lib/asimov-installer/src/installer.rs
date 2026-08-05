@@ -1,7 +1,7 @@
 // This is free and unencumbered software released into the public domain.
 
 use alloc::format;
-use asimov_module::{InstalledModuleManifest, ModuleManifest, tracing};
+use asimov_module::{InstalledModuleManifest, ModuleManifest, ModuleName, tracing};
 use std::{
     boxed::Box,
     path::{Path, PathBuf},
@@ -45,6 +45,7 @@ pub struct InstallOptions {
 
 #[derive(Clone, Debug)]
 struct Preinstalled {
+    module_name: ModuleName,
     manifest: ModuleManifest,
     version: String,
     readme: Option<String>,
@@ -59,17 +60,18 @@ impl Installer {
     /// ```rust,no_run
     /// # use asimov_installer::{Installer, InstallOptions};
     /// let i = Installer::default();
-    /// i.install_module("foobar", &InstallOptions::default());
+    /// let module = "foobar".parse().unwrap();
+    /// i.install_module(&module, &InstallOptions::default());
     /// ```
     pub async fn install_module(
         &self,
-        module: impl AsRef<str> + 'static,
+        module_name: &ModuleName,
         options: &InstallOptions,
     ) -> Result<(), InstallError> {
-        let work_dir = self.work_dir(module.as_ref()).await?;
+        let work_dir = self.work_dir(module_name).await?;
 
         let preinstalled = self
-            .preinstall(module.as_ref(), options, work_dir.path())
+            .preinstall(module_name, options, work_dir.path())
             .await?;
 
         self.finish_install(preinstalled, work_dir.path()).await?;
@@ -79,7 +81,7 @@ impl Installer {
 
     pub async fn fetch_latest_release(
         &self,
-        module_name: impl AsRef<str>,
+        module_name: &ModuleName,
     ) -> Result<String, FetchError> {
         github::fetch_latest_release(&self.client, module_name).await
     }
@@ -87,15 +89,14 @@ impl Installer {
     /// ```rust,no_run
     /// # use asimov_installer::{Installer, InstallOptions};
     /// let i = Installer::default();
-    /// i.upgrade_module("foobar", &InstallOptions::default());
+    /// let module = "foobar".parse().unwrap();
+    /// i.upgrade_module(&module, &InstallOptions::default());
     /// ```
     pub async fn upgrade_module(
         &self,
-        module: impl AsRef<str> + 'static,
+        module_name: &ModuleName,
         options: &InstallOptions,
     ) -> Result<(), UpgradeError> {
-        let module_name = module.as_ref();
-
         let version = if let Some(ref want_version) = options.version {
             want_version.clone()
         } else {
@@ -106,7 +107,7 @@ impl Installer {
         match current_version {
             Some(current) if current == version => return Ok(()),
             Some(_) => (),
-            None => tracing::debug!(module_name, "installed module does not define a version"),
+            None => tracing::debug!(%module_name, "installed module does not define a version"),
         };
 
         let work_dir = self.work_dir(module_name).await?;
@@ -130,13 +131,10 @@ impl Installer {
         Ok(())
     }
 
-    pub async fn uninstall_module(
-        &self,
-        module_name: impl AsRef<str>,
-    ) -> Result<(), UninstallError> {
-        let manifest = self.registry.read_manifest(&module_name).await?;
+    pub async fn uninstall_module(&self, module_name: &ModuleName) -> Result<(), UninstallError> {
+        let manifest = self.registry.read_manifest(module_name).await?;
 
-        self.registry.disable_module(&module_name).await?;
+        self.registry.disable_module(module_name).await?;
 
         for program in &manifest.manifest.provides.programs {
             self.registry
@@ -145,12 +143,12 @@ impl Installer {
                 .map_err(|e| UninstallError::RemoveBinary(program.into(), e))?;
         }
 
-        self.registry.remove_module(&module_name).await?;
+        self.registry.remove_module(module_name).await?;
 
         Ok(())
     }
 
-    async fn work_dir(&self, module_name: &str) -> Result<tempfile::TempDir, WorkDirError> {
+    async fn work_dir(&self, module_name: &ModuleName) -> Result<tempfile::TempDir, WorkDirError> {
         self.registry
             .create_file_tree()
             .await
@@ -166,7 +164,7 @@ impl Installer {
 
     async fn preinstall(
         &self,
-        module_name: &str,
+        module_name: &ModuleName,
         options: &InstallOptions,
         temp_dir: &Path,
     ) -> Result<Preinstalled, PreinstallError> {
@@ -199,6 +197,9 @@ impl Installer {
             .build();
         let subdeps = &manifest.requires.modules;
         for module in subdeps {
+            let module = ModuleName::try_from(module.clone())
+                .map_err(PreinstallError::InvalidDependencyName)?;
+
             if self
                 .registry
                 .is_module_installed(&module)
@@ -207,9 +208,9 @@ impl Installer {
             {
                 continue;
             }
-            Box::pin(self.install_module(module.clone(), &options))
+            Box::pin(self.install_module(&module, &options))
                 .await
-                .map_err(|e| PreinstallError::Dependency(module.clone(), Box::new(e)))?;
+                .map_err(|e| PreinstallError::Dependency(module.into_string(), Box::new(e)))?;
         }
 
         match github::fetch_checksum(&self.client, &asset_url).await {
@@ -278,6 +279,8 @@ impl Installer {
         };
 
         Ok(Preinstalled {
+            module_name: ModuleName::try_from(manifest.name.clone())
+                .map_err(PreinstallError::InvalidModuleName)?,
             manifest,
             version,
             readme,
@@ -291,13 +294,13 @@ impl Installer {
         work_dir: &Path,
     ) -> Result<(), FinishInstallError> {
         let Preinstalled {
+            module_name,
             manifest,
             version,
             readme,
             extract_dir,
         } = preinstalled;
 
-        let module_name = manifest.name.clone();
         let module_dir = work_dir.join("module");
 
         tokio::fs::create_dir(&module_dir)

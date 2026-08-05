@@ -123,6 +123,11 @@ mod common {
 
     #[derive(Debug, Error)]
     pub enum PreinstallError {
+        #[error(transparent)]
+        InvalidModuleName(asimov_module::InvalidModuleName),
+        #[error("invalid name for a required module: {0}")]
+        InvalidDependencyName(asimov_module::InvalidModuleName),
+
         #[error("failed fetch release: {0}")]
         FetchRelease(FetchError),
 

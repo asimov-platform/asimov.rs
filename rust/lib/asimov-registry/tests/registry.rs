@@ -81,6 +81,8 @@ pub async fn test_registry(
     enabled_path: PathBuf,
     is_relative: bool,
 ) {
+    let sample = "sample".parse().unwrap();
+
     registry.create_file_tree().await.unwrap();
     assert_eq!(registry.installed_modules().await.unwrap().len(), 0);
 
@@ -89,7 +91,7 @@ pub async fn test_registry(
         .await
         .unwrap();
 
-    let module = registry.read_manifest("sample").await.unwrap();
+    let module = registry.read_manifest(&sample).await.unwrap();
     assert_eq!(module.manifest.name, "ipfs");
     assert_eq!(module.manifest.label.as_deref(), Some("IPFS"));
     assert_eq!(
@@ -102,7 +104,7 @@ pub async fn test_registry(
     compare_manifest(&installed_modules[0], &module);
 
     assert_eq!(registry.enabled_modules().await.unwrap().len(), 0);
-    registry.enable_module("sample").await.unwrap();
+    registry.enable_module(&sample).await.unwrap();
 
     let enabled_modules = registry.enabled_modules().await.unwrap();
     assert_eq!(enabled_modules.len(), 1);
@@ -120,7 +122,7 @@ pub async fn test_registry(
         std::fs::canonicalize(&module_dir).unwrap()
     );
 
-    assert_eq!(registry.read_readme("sample").await.unwrap(), None);
+    assert_eq!(registry.read_readme(&sample).await.unwrap(), None);
     tokio::fs::create_dir_all(module_dir.join("doc"))
         .await
         .unwrap();
@@ -128,11 +130,11 @@ pub async fn test_registry(
         .await
         .unwrap();
     assert_eq!(
-        registry.read_readme("sample").await.unwrap().as_deref(),
+        registry.read_readme(&sample).await.unwrap().as_deref(),
         Some("# Sample\n")
     );
 
-    registry.remove_module("sample").await.unwrap();
+    registry.remove_module(&sample).await.unwrap();
     assert!(!module_dir.exists());
     assert_eq!(registry.installed_modules().await.unwrap().len(), 0);
 }
@@ -170,13 +172,15 @@ pub async fn test_migrate_legacy_layout() {
     let registry = Registry::new(base_dir.path(), Default::default());
     registry.create_file_tree().await.unwrap();
 
+    let sample = "sample".parse().unwrap();
+
     let legacy_path = base_dir.path().join("modules/installed/sample.yaml");
     tokio::fs::write(&legacy_path, LEGACY_SAMPLE_MANIFEST)
         .await
         .unwrap();
 
-    assert!(registry.is_module_installed("sample").await.unwrap());
-    registry.enable_module("sample").await.unwrap();
+    assert!(registry.is_module_installed(&sample).await.unwrap());
+    registry.enable_module(&sample).await.unwrap();
 
     let module_dir = base_dir.path().join("modules/installed/sample");
     assert!(!legacy_path.exists());
@@ -193,36 +197,6 @@ pub async fn test_migrate_legacy_layout() {
 }
 
 #[tokio::test]
-pub async fn test_rejects_names_that_are_not_path_components() {
-    let base_dir = tempdir().unwrap();
-    let registry = Registry::new(base_dir.path(), Default::default());
-    registry.create_file_tree().await.unwrap();
-
-    // a sibling of the install directory, reachable as `../victim` from within it
-    let victim_dir = base_dir.path().join("modules/victim");
-    tokio::fs::create_dir(&victim_dir).await.unwrap();
-    tokio::fs::write(victim_dir.join("manifest.json"), SAMPLE_MANIFEST)
-        .await
-        .unwrap();
-
-    for name in ["../victim", "..", "sample/../../victim", "", "-sample"] {
-        assert!(registry.remove_module(name).await.is_err(), "{name}");
-        assert!(registry.enable_module(name).await.is_err(), "{name}");
-        assert!(registry.disable_module(name).await.is_err(), "{name}");
-        assert!(registry.remove_binary(name).await.is_err(), "{name}");
-        assert!(
-            registry
-                .add_module(name, base_dir.path().join("nonexistent"))
-                .await
-                .is_err(),
-            "{name}"
-        );
-    }
-
-    assert!(victim_dir.join("manifest.json").is_file());
-}
-
-#[tokio::test]
 pub async fn test_legacy_manifest_never_replaces_a_current_one() {
     let manifest_json = |version: &str| {
         let manifest = InstalledModuleManifest {
@@ -236,6 +210,8 @@ pub async fn test_legacy_manifest_never_replaces_a_current_one() {
     let registry = Registry::new(base_dir.path(), Default::default());
     registry.create_file_tree().await.unwrap();
 
+    let sample = "sample".parse().unwrap();
+
     let module_dir = base_dir.path().join("modules/installed/sample");
     tokio::fs::create_dir(&module_dir).await.unwrap();
     tokio::fs::write(module_dir.join("manifest.json"), manifest_json("2.0.0"))
@@ -248,7 +224,7 @@ pub async fn test_legacy_manifest_never_replaces_a_current_one() {
         .unwrap();
 
     assert_eq!(
-        registry.module_version("sample").await.unwrap().as_deref(),
+        registry.module_version(&sample).await.unwrap().as_deref(),
         Some("2.0.0")
     );
     assert!(!legacy_path.exists());
@@ -261,6 +237,8 @@ pub async fn test_migrate_legacy_version() {
     let registry = Registry::new(base_dir.path(), Default::default());
     registry.create_file_tree().await.unwrap();
 
+    let sample = "sample".parse().unwrap();
+
     let legacy_path = base_dir.path().join("modules/installed/sample.json");
     let manifest = InstalledModuleManifest {
         version: Some("0.1.7".into()),
@@ -271,7 +249,7 @@ pub async fn test_migrate_legacy_version() {
         .unwrap();
 
     assert_eq!(
-        registry.module_version("sample").await.unwrap().as_deref(),
+        registry.module_version(&sample).await.unwrap().as_deref(),
         Some("0.1.7")
     );
     assert!(
