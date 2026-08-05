@@ -85,8 +85,6 @@ pub struct IsModuleEnabledError(#[from] io::Error);
 
 #[derive(Debug, Error)]
 pub enum EnableError {
-    #[error("error while searching for manifest file: {0}")]
-    FindManifest(#[from] FindManifestError),
     #[error("module is not installed")]
     NotInstalled,
     #[error("failed to enable module: {0}")]

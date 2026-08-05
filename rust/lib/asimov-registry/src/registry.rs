@@ -14,22 +14,8 @@ pub const BIN_DIR_NAME: &str = "bin";
 
 const MANIFEST_FILE_NAMES: [&str; 3] = [MANIFEST_FILE_NAME, "manifest.yaml", "manifest.yml"];
 
-#[derive(Clone, Debug, bon::Builder)]
-pub struct Options {
-    /// Controls whether to automatically move module manifests from a legacy location.
-    /// The legacy (previous) location by default is `~/.asimov/modules/*.yaml`.
-    /// The new and current location by default is `~/.asimov/modules/installed/<name>/manifest.json`.
-    #[builder(default = true)]
-    pub auto_migrate_legacy_path: bool,
-}
-
-impl Default for Options {
-    fn default() -> Self {
-        Self {
-            auto_migrate_legacy_path: true,
-        }
-    }
-}
+#[derive(Clone, Debug, Default, bon::Builder)]
+pub struct Options {}
 
 #[derive(Clone, Debug)]
 pub struct Registry {
@@ -37,26 +23,22 @@ pub struct Registry {
     enable_dir: PathBuf,
     exec_dir: PathBuf,
     legacy_modules_dir: Option<PathBuf>,
-    options: Options,
 }
 
 impl Default for Registry {
     fn default() -> Self {
-        let dir = asimov_env::paths::asimov_root();
-        let options = Options::default();
-        Self::new(dir, options)
+        Self::new(asimov_env::paths::asimov_root(), Options::default())
     }
 }
 
 impl Registry {
-    pub fn new(asimov_dir: impl Into<PathBuf>, options: Options) -> Self {
+    pub fn new(asimov_dir: impl Into<PathBuf>, _options: Options) -> Self {
         let dir = asimov_dir.into();
         Self {
             install_dir: dir.join("modules").join("installed"),
             enable_dir: dir.join("modules").join("enabled"),
             exec_dir: dir.join("libexec"),
             legacy_modules_dir: Some(dir.join("modules")),
-            options,
         }
     }
 
@@ -64,7 +46,7 @@ impl Registry {
         install_dir: S1,
         enable_dir: S2,
         exec_dir: S3,
-        options: Options,
+        _options: Options,
     ) -> Self
     where
         S1: Into<PathBuf>,
@@ -76,7 +58,6 @@ impl Registry {
             enable_dir: enable_dir.into(),
             exec_dir: exec_dir.into(),
             legacy_modules_dir: None,
-            options,
         }
     }
 
@@ -364,15 +345,29 @@ impl Registry {
     }
 
     pub async fn enable_module(&self, module_name: impl AsRef<str>) -> Result<(), EnableError> {
-        self.migrate_legacy_manifest(module_name.as_ref()).await;
+        let module_name = module_name.as_ref();
 
-        if self.find_manifest_file(&module_name).await?.is_none() {
+        self.migrate_legacy_manifest(module_name).await;
+
+        let module_dir = self.module_dir(module_name);
+
+        if !tokio::fs::try_exists(&module_dir).await? {
             return Err(EnableError::NotInstalled);
         }
 
-        self.link_module(module_name.as_ref())
-            .await
-            .map_err(EnableError::Io)
+        let target_path = self.enable_target(module_name);
+        let src_path = self.enable_dir.join(module_name);
+
+        match create_symlink(&target_path, &src_path, true).await {
+            Err(err) if err.kind() == io::ErrorKind::AlreadyExists => {
+                // disable and retry enabling one more time
+                let _ = self.disable_module(module_name).await;
+
+                create_symlink(&target_path, &src_path, true).await
+            },
+            result => result,
+        }
+        .map_err(Into::into)
     }
 
     pub async fn disable_module(&self, module_name: impl AsRef<str>) -> Result<(), DisableError> {
@@ -396,33 +391,20 @@ impl Registry {
             .map_err(Into::into)
     }
 
-    async fn link_module(&self, module_name: &str) -> io::Result<()> {
-        let module_dir = self.module_dir(module_name);
-
-        let target_path = if self
+    /// The path that the entry in [`Self::enable_dir`] points to for `module_name`.
+    fn enable_target(&self, module_name: &str) -> PathBuf {
+        if self
             .install_dir
             .parent()
             .zip(self.enable_dir.parent())
             .is_some_and(|(a, b)| a == b)
         {
-            // install_dir and enable_dir share a parent, so link relatively: ../installed/<name>
+            // install_dir and enable_dir share a parent, so point relatively: ../installed/<name>
             PathBuf::from("..")
                 .join(self.install_dir.file_name().unwrap())
                 .join(module_name)
         } else {
-            module_dir
-        };
-
-        let src_path = self.enable_dir.join(module_name);
-
-        match create_symlink(&target_path, &src_path, true).await {
-            Err(err) if err.kind() == io::ErrorKind::AlreadyExists => {
-                // disable and retry enabling one more time
-                let _ = self.disable_module(module_name).await;
-
-                create_symlink(&target_path, &src_path, true).await
-            },
-            result => result,
+            self.module_dir(module_name)
         }
     }
 
@@ -445,12 +427,8 @@ impl Registry {
     }
 
     /// Moves the manifest of `module_name` into its own directory, if it is found in a legacy
-    /// location. Does nothing unless [`Options::auto_migrate_legacy_path`] is set.
+    /// location.
     async fn migrate_legacy_manifest(&self, module_name: &str) {
-        if !self.options.auto_migrate_legacy_path {
-            return;
-        }
-
         let files = [
             format!("{module_name}.json"),
             format!("{module_name}.yaml"),
@@ -471,10 +449,6 @@ impl Registry {
 
     /// Like [`Self::migrate_legacy_manifest`], but for every module found in a legacy location.
     async fn migrate_legacy_manifests(&self) {
-        if !self.options.auto_migrate_legacy_path {
-            return;
-        }
-
         for dir in self.legacy_dirs() {
             let Ok(mut read_dir) = tokio::fs::read_dir(dir).await else {
                 continue;
@@ -522,9 +496,12 @@ impl Registry {
             return;
         }
 
+        // the entry in `enable_dir` still points at the manifest file that just moved
         if self.is_module_enabled(module_name).await.unwrap_or(false) {
-            let _ = self.disable_module(module_name).await;
-            let _ = self.link_module(module_name).await;
+            let path = self.enable_dir.join(module_name);
+
+            let _ = tokio::fs::remove_file(&path).await;
+            let _ = create_symlink(&self.enable_target(module_name), &path, true).await;
         }
     }
 }
