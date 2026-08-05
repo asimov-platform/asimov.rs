@@ -2,7 +2,11 @@
 
 use alloc::format;
 use asimov_module::{InstalledModuleManifest, ModuleManifest, tracing};
-use std::{boxed::Box, path::Path, string::String};
+use std::{
+    boxed::Box,
+    path::{Path, PathBuf},
+    string::String,
+};
 
 pub mod error;
 use error::*;
@@ -44,6 +48,7 @@ struct Preinstalled {
     manifest: ModuleManifest,
     version: String,
     readme: Option<String>,
+    extract_dir: PathBuf,
 }
 
 impl Installer {
@@ -61,16 +66,13 @@ impl Installer {
         module: impl AsRef<str> + 'static,
         options: &InstallOptions,
     ) -> Result<(), InstallError> {
-        let temp_dir = tempfile::Builder::new()
-            .prefix("asimov-module-installer")
-            .tempdir()
-            .map_err(InstallError::CreateTempDir)?;
+        let work_dir = self.work_dir(module.as_ref()).await?;
 
         let preinstalled = self
-            .preinstall(module.as_ref(), options, temp_dir.path())
+            .preinstall(module.as_ref(), options, work_dir.path())
             .await?;
 
-        self.finish_install(preinstalled, temp_dir.path()).await?;
+        self.finish_install(preinstalled, work_dir.path()).await?;
 
         Ok(())
     }
@@ -107,22 +109,19 @@ impl Installer {
             None => tracing::debug!(module_name, "installed module does not define a version"),
         };
 
-        let temp_dir = tempfile::Builder::new()
-            .prefix("asimov-module-installer")
-            .tempdir()
-            .map_err(UpgradeError::CreateTempDir)?;
+        let work_dir = self.work_dir(module_name).await?;
 
         // check if currently enabled, have to re-enable after upgrade
         let was_enabled = self.registry.is_module_enabled(module_name).await?;
 
         let preinstalled = self
-            .preinstall(module_name, options, temp_dir.path())
+            .preinstall(module_name, options, work_dir.path())
             .await?;
 
         // now ok to uninstall old version
         self.uninstall_module(module_name).await?;
 
-        self.finish_install(preinstalled, temp_dir.path()).await?;
+        self.finish_install(preinstalled, work_dir.path()).await?;
 
         if was_enabled {
             self.registry.enable_module(module_name).await?;
@@ -149,6 +148,20 @@ impl Installer {
         self.registry.remove_module(&module_name).await?;
 
         Ok(())
+    }
+
+    async fn work_dir(&self, module_name: &str) -> Result<tempfile::TempDir, WorkDirError> {
+        self.registry
+            .create_file_tree()
+            .await
+            .map_err(WorkDirError::CreateFileTree)?;
+
+        let install_dir = self.registry.install_dir();
+
+        tempfile::Builder::new()
+            .prefix(&format!(".{module_name}-"))
+            .tempdir_in(install_dir.parent().unwrap_or(install_dir))
+            .map_err(WorkDirError::CreateDir)
     }
 
     async fn preinstall(
@@ -268,76 +281,67 @@ impl Installer {
             manifest,
             version,
             readme,
+            extract_dir,
         })
     }
 
     async fn finish_install(
         &self,
         preinstalled: Preinstalled,
-        temp_dir: &Path,
+        work_dir: &Path,
     ) -> Result<(), FinishInstallError> {
         let Preinstalled {
             manifest,
             version,
             readme,
+            extract_dir,
         } = preinstalled;
 
         let module_name = manifest.name.clone();
+        let module_dir = work_dir.join("module");
 
-        self.registry
-            .create_file_tree()
+        tokio::fs::create_dir(&module_dir)
             .await
-            .map_err(FinishInstallError::CreateFileTree)?;
+            .map_err(|e| FinishInstallError::CreateDir(module_dir.clone(), e))?;
 
-        let install_dir = self.registry.install_dir();
-
-        let module_dir = tempfile::Builder::new()
-            .prefix(&format!(".{module_name}-"))
-            .tempdir_in(install_dir.parent().unwrap_or(install_dir))
-            .map_err(FinishInstallError::CreateDir)?;
-
-        write_module(
-            module_dir.path(),
+        assemble_module(
+            &module_dir,
             InstalledModuleManifest {
                 version: Some(version),
                 manifest,
             },
             readme,
-            &temp_dir.join("extract"),
+            &extract_dir,
         )
         .await?;
 
-        self.registry
-            .add_module(&module_name, module_dir.path())
-            .await?;
-
-        let _ = module_dir.keep();
+        self.registry.add_module(&module_name, &module_dir).await?;
 
         Ok(())
     }
 }
 
-async fn write_module(
-    dir: &Path,
+async fn assemble_module(
+    module_dir: &Path,
     manifest: InstalledModuleManifest,
     readme: Option<String>,
     extract_dir: &Path,
-) -> Result<(), WriteModuleError> {
+) -> Result<(), FinishInstallError> {
     #[cfg(unix)]
     {
         use std::fs::Permissions;
         use std::os::unix::fs::PermissionsExt;
 
-        tokio::fs::set_permissions(dir, Permissions::from_mode(0o755))
+        tokio::fs::set_permissions(module_dir, Permissions::from_mode(0o755))
             .await
-            .map_err(WriteModuleError::SetPermissions)?;
+            .map_err(FinishInstallError::SetPermissions)?;
     }
 
-    let bin_dir = dir.join(asimov_registry::BIN_DIR_NAME);
+    let bin_dir = module_dir.join(asimov_registry::BIN_DIR_NAME);
 
     tokio::fs::create_dir_all(&bin_dir)
         .await
-        .map_err(|e| WriteModuleError::CreateDir(bin_dir.clone(), e))?;
+        .map_err(|e| FinishInstallError::CreateDir(bin_dir.clone(), e))?;
 
     for program in &manifest.manifest.provides.programs {
         let src = extract_dir.join(program);
@@ -348,9 +352,9 @@ async fn write_module(
 
         let dst = bin_dir.join(program);
 
-        tokio::fs::copy(&src, &dst)
+        tokio::fs::rename(&src, &dst)
             .await
-            .map_err(|e| WriteModuleError::CopyBinary(program.clone(), e))?;
+            .map_err(|e| FinishInstallError::MoveBinary(program.clone(), e))?;
 
         #[cfg(unix)]
         {
@@ -359,30 +363,30 @@ async fn write_module(
 
             tokio::fs::set_permissions(&dst, Permissions::from_mode(0o755))
                 .await
-                .map_err(WriteModuleError::SetPermissions)?;
+                .map_err(FinishInstallError::SetPermissions)?;
         }
     }
 
     if let Some(readme) = readme {
-        let readme_path = dir.join(asimov_registry::README_FILE_PATH);
+        let readme_path = module_dir.join(asimov_registry::README_FILE_PATH);
         let doc_dir = readme_path.parent().unwrap();
 
         tokio::fs::create_dir_all(doc_dir)
             .await
-            .map_err(|e| WriteModuleError::CreateDir(doc_dir.into(), e))?;
+            .map_err(|e| FinishInstallError::CreateDir(doc_dir.into(), e))?;
 
         tokio::fs::write(&readme_path, readme)
             .await
-            .map_err(|e| WriteModuleError::WriteFile(readme_path, e))?;
+            .map_err(|e| FinishInstallError::WriteFile(readme_path, e))?;
     }
 
-    let manifest_path = dir.join(asimov_registry::MANIFEST_FILE_NAME);
+    let manifest_path = module_dir.join(asimov_registry::MANIFEST_FILE_NAME);
 
-    let serialized = serde_json::to_vec_pretty(&manifest).map_err(WriteModuleError::Serialize)?;
+    let serialized = serde_json::to_vec_pretty(&manifest).map_err(FinishInstallError::Serialize)?;
 
     tokio::fs::write(&manifest_path, serialized)
         .await
-        .map_err(|e| WriteModuleError::WriteFile(manifest_path, e))
+        .map_err(|e| FinishInstallError::WriteFile(manifest_path, e))
 }
 
 async fn find_readme(extract_dir: &Path) -> Option<String> {

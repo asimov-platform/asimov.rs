@@ -12,8 +12,8 @@ use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum InstallError {
-    #[error("failed to create directory for downloading: {0}")]
-    CreateTempDir(io::Error),
+    #[error(transparent)]
+    WorkDir(#[from] WorkDirError),
     #[error(transparent)]
     Preinstall(#[from] PreinstallError),
     #[error(transparent)]
@@ -26,8 +26,8 @@ pub enum UpgradeError {
     Fetch(#[from] FetchError),
     #[error("unable to read current version of module: {0}")]
     CheckVersion(#[from] registry::ModuleVersionError),
-    #[error("failed to create directory for downloading: {0}")]
-    CreateTempDir(io::Error),
+    #[error(transparent)]
+    WorkDir(#[from] WorkDirError),
     #[error("unable to check if module is enabled: {0}")]
     CheckEnabled(#[from] registry::IsModuleEnabledError),
     #[error(transparent)]
@@ -156,30 +156,28 @@ mod common {
     }
 
     #[derive(Debug, Error)]
-    pub enum FinishInstallError {
+    pub enum WorkDirError {
         #[error("failed to create the module file tree: {0}")]
         CreateFileTree(#[source] registry::CreateFileTreeError),
-        #[error("failed to create directory for the module: {0}")]
-        CreateDir(io::Error),
-        #[error(transparent)]
-        WriteModule(#[from] WriteModuleError),
-        #[error("failed to install module: {0}")]
-        AddModule(#[from] registry::AddModuleError),
+        #[error("failed to create directory for installing: {0}")]
+        CreateDir(#[source] io::Error),
     }
 
     #[derive(Debug, Error)]
-    pub enum WriteModuleError {
+    pub enum FinishInstallError {
         #[error("failed to create directory `{0}`: {1}")]
         CreateDir(PathBuf, #[source] io::Error),
         #[error("failed to write `{0}`: {1}")]
         WriteFile(PathBuf, #[source] io::Error),
-        #[error("failed to copy binary `{0}`: {1}")]
-        CopyBinary(String, #[source] io::Error),
+        #[error("failed to move binary `{0}` into place: {1}")]
+        MoveBinary(String, #[source] io::Error),
         #[cfg(unix)]
         #[error("failed to set permissions: {0}")]
         SetPermissions(#[source] io::Error),
         #[error("failed to serialize module manifest: {0}")]
         Serialize(#[source] serde_json::Error),
+        #[error("failed to install module: {0}")]
+        AddModule(#[from] registry::AddModuleError),
     }
 }
 pub use common::*;
