@@ -31,6 +31,7 @@ jobs:
       contents: read
       pull-requests: write
     with:
+      building_toolchain: "1.97.1"
       working_directory: rust
       build_whole_workspace: false
       check_lib_no_default_features: true
