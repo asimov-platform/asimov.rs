@@ -1,0 +1,14 @@
+# See: https://dart.dev/tools/pub/pubspec
+---
+name: asimov
+version: 25.3.0-dev.0
+description: >-
+  ASIMOV Software Development Kit (SDK) for Dart.
+homepage: https://asimov.sh
+repository: https://github.com/asimov-platform/asimov-sdk
+issue_tracker: https://github.com/asimov-platform/asimov-sdk/issues
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.25.0
+environment:
+  sdk: ^3.11.0

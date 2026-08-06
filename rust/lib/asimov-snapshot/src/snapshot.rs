@@ -5,7 +5,7 @@ use alloc::{
     string::{String, ToString},
     vec::Vec,
 };
-use asimov_module::resolve::Resolver;
+use asimov_module::{ModuleName, resolve::Resolver};
 use asimov_registry::Registry;
 use asimov_runner::GraphOutput;
 use jiff::{Span, Timestamp, ToSpan};
@@ -90,9 +90,11 @@ impl<S: crate::storage::Storage> Snapshotter<S> {
             .cloned()
             .ok_or_else(|| std::io::Error::other("No module found for creating snapshot"))?;
 
+        let module_name = ModuleName::try_from(module.name.clone()).map_err(io::Error::other)?;
+
         let programs = self
             .registry
-            .read_manifest(&module.name)
+            .read_manifest(&module_name)
             .await
             .map_err(io::Error::other)?
             .manifest

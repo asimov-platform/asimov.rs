@@ -44,10 +44,15 @@ pub fn init_tracing_subscriber(
         .try_init()
 }
 
-pub use asimov_core::ModuleName;
+pub use asimov_core::{InvalidModuleName, ModuleName};
 
 mod models;
 pub use models::*;
+
+#[cfg(feature = "index")]
+pub mod index;
+#[cfg(feature = "index")]
+pub use index::*;
 
 pub mod resolve;
 

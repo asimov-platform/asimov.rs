@@ -27,13 +27,10 @@ impl crate::ModuleNameIterator for ModuleNameIterator {
                 && let Some(entry_name) = entry.file_name().to_str()
                 && !entry_name.starts_with(".")
                 && let Ok(entry_type) = entry.file_type().await
-                && (entry_type.is_file() || entry_type.is_symlink())
+                && (entry_type.is_dir() || entry_type.is_symlink())
+                && let Ok(module_name) = ModuleName::try_from(entry_name)
             {
-                let entry_stem = [".json", ".yaml"]
-                    .iter()
-                    .find_map(|&ext| entry_name.strip_suffix(ext))
-                    .unwrap_or(entry_name);
-                return Some(entry_stem.into());
+                return Some(module_name);
             }
         }
         None
@@ -61,17 +58,9 @@ impl crate::ModuleManifestIterator for ModuleManifestIterator {
                 && let Some(entry_name) = entry.file_name().to_str()
                 && !entry_name.starts_with(".")
                 && let Ok(entry_type) = entry.file_type().await
-                && (entry_type.is_file() || entry_type.is_symlink())
-                && let Some(ext) = std::path::Path::new(entry_name)
-                    .extension()
-                    .and_then(|ext| ext.to_str())
-                && (ext == "json" || ext == "yaml" || ext == "yml")
-                && let Ok(content) = tokio::fs::read(entry.path()).await
-                && let Some(manifest) = match ext {
-                    "json" => serde_json::from_slice(&content).ok(),
-                    "yaml" | "yml" => serde_yaml_ng::from_slice(&content).ok(),
-                    _ => None,
-                }
+                && (entry_type.is_dir() || entry_type.is_symlink())
+                && let Ok(content) = tokio::fs::read(entry.path().join("manifest.json")).await
+                && let Ok(manifest) = serde_json::from_slice(&content)
             {
                 return Some(manifest);
             }

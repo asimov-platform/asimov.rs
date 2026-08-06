@@ -1,0 +1,12 @@
+version = 1
+revision = 3
+requires-python = ">=3.14"
+
+[options]
+exclude-newer = "2026-07-27T14:15:14.868945Z"
+exclude-newer-span = "P3D"
+
+[[package]]
+name = "asimov-py"
+version = "25.3.0.dev0"
+source = { editable = "." }
