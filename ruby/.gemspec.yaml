@@ -1,0 +1,143 @@
+--- !ruby/object:Gem::Specification
+name: asimov.rb
+version: !ruby/object:Gem::Version
+  version: 25.3.0.dev.0
+platform: ruby
+authors:
+- Arto Bendiken
+bindir: bin
+cert_chain: []
+date: 2026-07-30 00:00:00.000000000 Z
+dependencies:
+- !ruby/object:Gem::Dependency
+  name: rb_sys
+  requirement: !ruby/object:Gem::Requirement
+    requirements:
+    - - ">="
+      - !ruby/object:Gem::Version
+        version: '0'
+  type: :runtime
+  prerelease: false
+  version_requirements: !ruby/object:Gem::Requirement
+    requirements:
+    - - ">="
+      - !ruby/object:Gem::Version
+        version: '0'
+- !ruby/object:Gem::Dependency
+  name: distrib
+  requirement: !ruby/object:Gem::Requirement
+    requirements:
+    - - "~>"
+      - !ruby/object:Gem::Version
+        version: '0'
+  type: :development
+  prerelease: false
+  version_requirements: !ruby/object:Gem::Requirement
+    requirements:
+    - - "~>"
+      - !ruby/object:Gem::Version
+        version: '0'
+- !ruby/object:Gem::Dependency
+  name: rake
+  requirement: !ruby/object:Gem::Requirement
+    requirements:
+    - - "~>"
+      - !ruby/object:Gem::Version
+        version: '13'
+  type: :development
+  prerelease: false
+  version_requirements: !ruby/object:Gem::Requirement
+    requirements:
+    - - "~>"
+      - !ruby/object:Gem::Version
+        version: '13'
+- !ruby/object:Gem::Dependency
+  name: rake-compiler
+  requirement: !ruby/object:Gem::Requirement
+    requirements:
+    - - "~>"
+      - !ruby/object:Gem::Version
+        version: '1.3'
+  type: :development
+  prerelease: false
+  version_requirements: !ruby/object:Gem::Requirement
+    requirements:
+    - - "~>"
+      - !ruby/object:Gem::Version
+        version: '1.3'
+- !ruby/object:Gem::Dependency
+  name: rspec
+  requirement: !ruby/object:Gem::Requirement
+    requirements:
+    - - "~>"
+      - !ruby/object:Gem::Version
+        version: '3.13'
+  type: :development
+  prerelease: false
+  version_requirements: !ruby/object:Gem::Requirement
+    requirements:
+    - - "~>"
+      - !ruby/object:Gem::Version
+        version: '3.13'
+- !ruby/object:Gem::Dependency
+  name: yard
+  requirement: !ruby/object:Gem::Requirement
+    requirements:
+    - - "~>"
+      - !ruby/object:Gem::Version
+        version: '0.9'
+  type: :development
+  prerelease: false
+  version_requirements: !ruby/object:Gem::Requirement
+    requirements:
+    - - "~>"
+      - !ruby/object:Gem::Version
+        version: '0.9'
+description: A polyglot development platform for trustworthy neurosymbolic machine
+  intelligence.
+email:
+- arto@asimov.systems
+executables: []
+extensions:
+- ext/asimov/extconf.rb
+extra_rdoc_files: []
+files:
+- AUTHORS
+- CHANGES.md
+- README.md
+- UNLICENSE
+- VERSION
+- ext/asimov/Cargo.toml
+- ext/asimov/build.rs
+- ext/asimov/extconf.rb
+- ext/asimov/src/lib.rs
+- lib/asimov.rb
+- lib/asimov/version.rb
+homepage: https://asimov.sh
+licenses:
+- Unlicense
+metadata:
+  source_code_uri: https://github.com/asimov-platform/asimov-sdk
+  bug_tracker_uri: https://github.com/asimov-platform/asimov-sdk/issues
+  changelog_uri: https://github.com/asimov-platform/asimov-sdk/blob/master/ruby/CHANGES.md
+  documentation_uri: https://rubydoc.info/gems/asimov.rb
+  homepage_uri: https://asimov.sh
+rdoc_options: []
+require_paths:
+- lib
+required_ruby_version: !ruby/object:Gem::Requirement
+  requirements:
+  - - ">="
+    - !ruby/object:Gem::Version
+      version: '4.0'
+required_rubygems_version: !ruby/object:Gem::Requirement
+  requirements:
+  - - ">="
+    - !ruby/object:Gem::Version
+      version: '0'
+requirements: []
+rubygems_version: 4.0.11
+specification_version: 4
+summary: ASIMOV Software Development Kit (SDK) for Ruby
+test_files: []
+

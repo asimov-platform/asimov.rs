@@ -1,7 +1,12 @@
 // This is free and unencumbered software released into the public domain.
 
-use asimov_module::{InstalledModuleManifest, ModuleManifest, tracing};
-use std::{boxed::Box, path::Path, string::String};
+use alloc::format;
+use asimov_module::{InstalledModuleManifest, ModuleManifest, ModuleName, tracing};
+use std::{
+    boxed::Box,
+    path::{Path, PathBuf},
+    string::String,
+};
 
 pub mod error;
 use error::*;
@@ -38,6 +43,15 @@ pub struct InstallOptions {
     pub model_size: Option<String>,
 }
 
+#[derive(Clone, Debug)]
+struct Preinstalled {
+    module_name: ModuleName,
+    manifest: ModuleManifest,
+    version: String,
+    readme: Option<String>,
+    extract_dir: PathBuf,
+}
+
 impl Installer {
     pub fn new(client: reqwest::Client, registry: Registry) -> Self {
         Self { client, registry }
@@ -46,31 +60,28 @@ impl Installer {
     /// ```rust,no_run
     /// # use asimov_installer::{Installer, InstallOptions};
     /// let i = Installer::default();
-    /// i.install_module("foobar", &InstallOptions::default());
+    /// let module = "foobar".parse().unwrap();
+    /// i.install_module(&module, &InstallOptions::default());
     /// ```
     pub async fn install_module(
         &self,
-        module: impl AsRef<str> + 'static,
+        module_name: &ModuleName,
         options: &InstallOptions,
     ) -> Result<(), InstallError> {
-        let temp_dir = tempfile::Builder::new()
-            .prefix("asimov-module-installer")
-            .tempdir()
-            .map_err(InstallError::CreateTempDir)?;
+        let work_dir = self.work_dir(module_name).await?;
 
-        let (manifest, version) = self
-            .preinstall(module.as_ref(), options, temp_dir.path())
+        let preinstalled = self
+            .preinstall(module_name, options, work_dir.path())
             .await?;
 
-        self.finish_install(version.as_ref(), manifest, temp_dir.path())
-            .await?;
+        self.finish_install(preinstalled, work_dir.path()).await?;
 
         Ok(())
     }
 
     pub async fn fetch_latest_release(
         &self,
-        module_name: impl AsRef<str>,
+        module_name: &ModuleName,
     ) -> Result<String, FetchError> {
         github::fetch_latest_release(&self.client, module_name).await
     }
@@ -78,15 +89,14 @@ impl Installer {
     /// ```rust,no_run
     /// # use asimov_installer::{Installer, InstallOptions};
     /// let i = Installer::default();
-    /// i.upgrade_module("foobar", &InstallOptions::default());
+    /// let module = "foobar".parse().unwrap();
+    /// i.upgrade_module(&module, &InstallOptions::default());
     /// ```
     pub async fn upgrade_module(
         &self,
-        module: impl AsRef<str> + 'static,
+        module_name: &ModuleName,
         options: &InstallOptions,
     ) -> Result<(), UpgradeError> {
-        let module_name = module.as_ref();
-
         let version = if let Some(ref want_version) = options.version {
             want_version.clone()
         } else {
@@ -97,26 +107,22 @@ impl Installer {
         match current_version {
             Some(current) if current == version => return Ok(()),
             Some(_) => (),
-            None => tracing::debug!(module_name, "installed module does not define a version"),
+            None => tracing::debug!(%module_name, "installed module does not define a version"),
         };
 
-        let temp_dir = tempfile::Builder::new()
-            .prefix("asimov-module-installer")
-            .tempdir()
-            .map_err(UpgradeError::CreateTempDir)?;
+        let work_dir = self.work_dir(module_name).await?;
 
         // check if currently enabled, have to re-enable after upgrade
         let was_enabled = self.registry.is_module_enabled(module_name).await?;
 
-        let (manifest, version) = self
-            .preinstall(module_name, options, temp_dir.path())
+        let preinstalled = self
+            .preinstall(module_name, options, work_dir.path())
             .await?;
 
         // now ok to uninstall old version
         self.uninstall_module(module_name).await?;
 
-        self.finish_install(&version, manifest, temp_dir.path())
-            .await?;
+        self.finish_install(preinstalled, work_dir.path()).await?;
 
         if was_enabled {
             self.registry.enable_module(module_name).await?;
@@ -125,13 +131,10 @@ impl Installer {
         Ok(())
     }
 
-    pub async fn uninstall_module(
-        &self,
-        module_name: impl AsRef<str>,
-    ) -> Result<(), UninstallError> {
-        let manifest = self.registry.read_manifest(&module_name).await?;
+    pub async fn uninstall_module(&self, module_name: &ModuleName) -> Result<(), UninstallError> {
+        let manifest = self.registry.read_manifest(module_name).await?;
 
-        self.registry.disable_module(&module_name).await?;
+        self.registry.disable_module(module_name).await?;
 
         for program in &manifest.manifest.provides.programs {
             self.registry
@@ -140,17 +143,31 @@ impl Installer {
                 .map_err(|e| UninstallError::RemoveBinary(program.into(), e))?;
         }
 
-        self.registry.remove_manifest(&module_name).await?;
+        self.registry.remove_module(module_name).await?;
 
         Ok(())
     }
 
+    async fn work_dir(&self, module_name: &ModuleName) -> Result<tempfile::TempDir, WorkDirError> {
+        self.registry
+            .create_file_tree()
+            .await
+            .map_err(WorkDirError::CreateFileTree)?;
+
+        let install_dir = self.registry.install_dir();
+
+        tempfile::Builder::new()
+            .prefix(&format!(".{module_name}-"))
+            .tempdir_in(install_dir.parent().unwrap_or(install_dir))
+            .map_err(WorkDirError::CreateDir)
+    }
+
     async fn preinstall(
         &self,
-        module_name: &str,
+        module_name: &ModuleName,
         options: &InstallOptions,
         temp_dir: &Path,
-    ) -> Result<(ModuleManifest, String), PreinstallError> {
+    ) -> Result<Preinstalled, PreinstallError> {
         let platform = platform::detect_platform();
 
         let version = if let Some(ref want_version) = options.version {
@@ -180,6 +197,9 @@ impl Installer {
             .build();
         let subdeps = &manifest.requires.modules;
         for module in subdeps {
+            let module = ModuleName::try_from(module.clone())
+                .map_err(PreinstallError::InvalidDependencyName)?;
+
             if self
                 .registry
                 .is_module_installed(&module)
@@ -188,9 +208,9 @@ impl Installer {
             {
                 continue;
             }
-            Box::pin(self.install_module(module.clone(), &options))
+            Box::pin(self.install_module(&module, &options))
                 .await
-                .map_err(|e| PreinstallError::Dependency(module.clone(), Box::new(e)))?;
+                .map_err(|e| PreinstallError::Dependency(module.into_string(), Box::new(e)))?;
         }
 
         match github::fetch_checksum(&self.client, &asset_url).await {
@@ -253,34 +273,167 @@ impl Installer {
             asimov_huggingface::ensure_file(repo, filename)?;
         }
 
-        Ok((manifest, version))
+        let readme = match find_readme(&extract_dir).await {
+            Some(readme) => Some(readme),
+            None => github::fetch_readme(&self.client, module_name, &version).await,
+        };
+
+        Ok(Preinstalled {
+            module_name: ModuleName::try_from(manifest.name.clone())
+                .map_err(PreinstallError::InvalidModuleName)?,
+            manifest,
+            version,
+            readme,
+            extract_dir,
+        })
     }
 
     async fn finish_install(
         &self,
-        version: &str,
-        manifest: ModuleManifest,
-        temp_dir: &Path,
+        preinstalled: Preinstalled,
+        work_dir: &Path,
     ) -> Result<(), FinishInstallError> {
-        let extract_dir = temp_dir.join("extract");
-
-        for program in &manifest.provides.programs {
-            let src = extract_dir.join(program);
-
-            // On Windows add the .exe extension to the binary name:
-            #[cfg(windows)]
-            let src = src.with_extension("exe");
-
-            self.registry.add_binary(program, &src).await?;
-        }
-
-        let installed_manifest = InstalledModuleManifest {
-            version: Some(version.into()),
+        let Preinstalled {
+            module_name,
             manifest,
-        };
+            version,
+            readme,
+            extract_dir,
+        } = preinstalled;
 
-        self.registry.add_manifest(installed_manifest).await?;
+        let module_dir = work_dir.join("module");
+
+        tokio::fs::create_dir(&module_dir)
+            .await
+            .map_err(|e| FinishInstallError::CreateDir(module_dir.clone(), e))?;
+
+        assemble_module(
+            &module_dir,
+            InstalledModuleManifest {
+                version: Some(version),
+                manifest,
+            },
+            readme,
+            &extract_dir,
+        )
+        .await?;
+
+        self.registry.add_module(&module_name, &module_dir).await?;
 
         Ok(())
+    }
+}
+
+async fn assemble_module(
+    module_dir: &Path,
+    manifest: InstalledModuleManifest,
+    readme: Option<String>,
+    extract_dir: &Path,
+) -> Result<(), FinishInstallError> {
+    #[cfg(unix)]
+    {
+        use std::fs::Permissions;
+        use std::os::unix::fs::PermissionsExt;
+
+        tokio::fs::set_permissions(module_dir, Permissions::from_mode(0o755))
+            .await
+            .map_err(FinishInstallError::SetPermissions)?;
+    }
+
+    let bin_dir = module_dir.join(asimov_registry::BIN_DIR_NAME);
+
+    tokio::fs::create_dir_all(&bin_dir)
+        .await
+        .map_err(|e| FinishInstallError::CreateDir(bin_dir.clone(), e))?;
+
+    for program in &manifest.manifest.provides.programs {
+        let src = extract_dir.join(program);
+
+        // On Windows add the .exe extension to the binary name:
+        #[cfg(windows)]
+        let src = src.with_extension("exe");
+
+        let dst = bin_dir.join(program);
+
+        tokio::fs::rename(&src, &dst)
+            .await
+            .map_err(|e| FinishInstallError::MoveBinary(program.clone(), e))?;
+
+        #[cfg(unix)]
+        {
+            use std::fs::Permissions;
+            use std::os::unix::fs::PermissionsExt;
+
+            tokio::fs::set_permissions(&dst, Permissions::from_mode(0o755))
+                .await
+                .map_err(FinishInstallError::SetPermissions)?;
+        }
+    }
+
+    if let Some(readme) = readme {
+        let readme_path = module_dir.join(asimov_registry::README_FILE_PATH);
+        let doc_dir = readme_path.parent().unwrap();
+
+        tokio::fs::create_dir_all(doc_dir)
+            .await
+            .map_err(|e| FinishInstallError::CreateDir(doc_dir.into(), e))?;
+
+        tokio::fs::write(&readme_path, readme)
+            .await
+            .map_err(|e| FinishInstallError::WriteFile(readme_path, e))?;
+    }
+
+    let manifest_path = module_dir.join(asimov_registry::MANIFEST_FILE_NAME);
+
+    let serialized = serde_json::to_vec_pretty(&manifest).map_err(FinishInstallError::Serialize)?;
+
+    tokio::fs::write(&manifest_path, serialized)
+        .await
+        .map_err(|e| FinishInstallError::WriteFile(manifest_path, e))
+}
+
+async fn find_readme(extract_dir: &Path) -> Option<String> {
+    let mut entries = tokio::fs::read_dir(extract_dir).await.ok()?;
+
+    while let Ok(Some(entry)) = entries.next_entry().await {
+        let file_name = entry.file_name();
+        let Some(file_name) = file_name.to_str() else {
+            continue;
+        };
+
+        if !file_name.to_ascii_uppercase().starts_with("README") {
+            continue;
+        }
+
+        if !entry
+            .file_type()
+            .await
+            .map(|file_type| file_type.is_file())
+            .unwrap_or(false)
+        {
+            continue;
+        }
+
+        return tokio::fs::read_to_string(entry.path()).await.ok();
+    }
+
+    None
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn find_readme_in_archive() {
+        let dir = tempfile::tempdir().unwrap();
+
+        assert_eq!(find_readme(dir.path()).await, None);
+
+        std::fs::create_dir(dir.path().join("README")).unwrap();
+        assert_eq!(find_readme(dir.path()).await, None);
+
+        std::fs::write(dir.path().join("readme.md"), "# Hello").unwrap();
+        assert_eq!(find_readme(dir.path()).await.as_deref(), Some("# Hello"));
     }
 }

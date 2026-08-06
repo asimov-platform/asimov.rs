@@ -113,6 +113,41 @@ pub async fn fetch_module_manifest(
 }
 
 #[tracing::instrument(skip_all)]
+pub async fn fetch_readme(
+    client: &reqwest::Client,
+    module_name: &str,
+    version: &str,
+) -> Option<String> {
+    // prefer the README of the released version over the one on the default branch
+    for revision in [version, "master", "main"] {
+        let url = format!(
+            "https://raw.githubusercontent.com/asimov-modules/asimov-{module_name}-module/{revision}/README.md",
+        );
+
+        tracing::debug!("trying README URL {url}...");
+
+        let response = match client.get(&url).send().await {
+            Ok(response) => response,
+            Err(err) => {
+                tracing::debug!(?err);
+                continue;
+            },
+        };
+
+        if !response.status().is_success() {
+            continue;
+        }
+
+        match response.text().await {
+            Ok(content) => return Some(content),
+            Err(err) => tracing::debug!(?err),
+        }
+    }
+
+    None
+}
+
+#[tracing::instrument(skip_all)]
 pub async fn fetch_checksum(
     client: &reqwest::Client,
     asset_url: &str,

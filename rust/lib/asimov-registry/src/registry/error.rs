@@ -14,14 +14,20 @@ pub enum CreateFileTreeError {
 }
 
 #[derive(Debug, Error)]
-pub enum AddManifestError {
+pub enum AddModuleError {
     #[error("module is already installed")]
     AlreadyInstalled,
-    #[error("failed to serialize module manifest: {0}")]
-    SerializeManifest(#[from] SerializeError),
-    #[error("failed to write module manifest to `{0}`: {1}")]
-    WriteManifest(PathBuf, #[source] io::Error),
+    #[error("failed to install module from `{0}` to `{1}`: {2}")]
+    Install(PathBuf, PathBuf, #[source] io::Error),
+    #[error("failed to read directory of module binaries `{0}`: {1}")]
+    ReadBinDir(PathBuf, #[source] io::Error),
+    #[error("failed to add module binary `{0}`: {1}")]
+    AddBinary(String, #[source] io::Error),
 }
+
+#[derive(Debug, Error)]
+#[error("failed to read module README at `{0}`: {1}")]
+pub struct ReadReadmeError(pub PathBuf, #[source] pub io::Error);
 
 #[derive(Debug, Error)]
 pub enum ManifestError {
@@ -38,29 +44,22 @@ pub enum ManifestError {
 pub struct ModuleVersionError(#[from] ManifestError);
 
 #[derive(Debug, Error)]
-pub enum RemoveManifestError {
+pub enum RemoveModuleError {
     #[error("error while searching for manifest file: {0}")]
     FindManifest(#[from] FindManifestError),
     #[error("module is not installed")]
     NotInstalled,
-    #[error("failed to remove module manifest at `{0}`: {1}")]
-    RemoveManifest(PathBuf, #[source] io::Error),
+    #[error("failed to remove directory of installed module `{0}`: {1}")]
+    RemoveModuleDir(PathBuf, #[source] io::Error),
 }
 
 #[derive(Debug, Error)]
-pub enum AddBinaryError {
-    #[error("binary already exists")]
-    AlreadyExists,
-    #[error("failed to copy binary: {0}")]
-    Copy(#[source] io::Error),
-    #[cfg(unix)]
-    #[error("failed to make binary executable: {0}")]
-    MakeExecutable(#[source] io::Error),
+pub enum RemoveBinaryError {
+    #[error("invalid program name `{0}`")]
+    InvalidName(String),
+    #[error("failed to remove binary: {0}")]
+    Io(#[from] io::Error),
 }
-
-#[derive(Debug, Error)]
-#[error("failed to remove binary: {0}")]
-pub struct RemoveBinaryError(#[from] pub io::Error);
 
 #[derive(Debug, Error)]
 pub enum InstalledModulesError {
@@ -74,8 +73,6 @@ pub enum InstalledModulesError {
 pub enum EnabledModulesError {
     #[error("failed to read directory for enabled modules `{0}`: {1}")]
     DirIo(PathBuf, #[source] io::Error),
-    #[error("failed to read symlink for enabled module at `{0}`: {1}")]
-    LinkIo(PathBuf, #[source] io::Error),
     #[error("failed to read manifest at `{0}`: {1}")]
     ReadManifestError(PathBuf, #[source] ReadManifestError),
 }
@@ -90,8 +87,6 @@ pub struct IsModuleEnabledError(#[from] io::Error);
 
 #[derive(Debug, Error)]
 pub enum EnableError {
-    #[error("error while searching for manifest file: {0}")]
-    FindManifest(#[from] FindManifestError),
     #[error("module is not installed")]
     NotInstalled,
     #[error("failed to enable module: {0}")]
@@ -111,8 +106,6 @@ mod common {
         InstalledManifestIo(#[from] io::Error),
         #[error("failed to deserialize module manifest: {0}")]
         ManifestDeserialize(#[from] DeserializeError),
-        #[error("unknown manifest format: {}", .0.as_deref().unwrap_or("no file extension"))]
-        UnknownManifestFormat(Option<String>),
     }
 
     impl From<serde_json::Error> for ReadManifestError {
