@@ -193,7 +193,7 @@ tempfile = { version = "3.20", default-features = false }
 thiserror = { version = "2", default-features = false }
 tldr = { version = "0.1", package = "tldr-traits", default-features = false }
 toml = { version = "0.8", default-features = false, features = ["parse"] }
-toml_edit = { version = "0.22", default-features = false, features = [
+toml_edit = { version = "0.25", default-features = false, features = [
     "parse",
     "display",
 ] }
