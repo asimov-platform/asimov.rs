@@ -5,14 +5,15 @@ use asimov_registry::error as registry;
 use std::{
     boxed::Box,
     io,
+    path::PathBuf,
     string::{String, ToString as _},
 };
 use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum InstallError {
-    #[error("failed to create directory for downloading: {0}")]
-    CreateTempDir(io::Error),
+    #[error(transparent)]
+    WorkDir(#[from] WorkDirError),
     #[error(transparent)]
     Preinstall(#[from] PreinstallError),
     #[error(transparent)]
@@ -25,8 +26,8 @@ pub enum UpgradeError {
     Fetch(#[from] FetchError),
     #[error("unable to read current version of module: {0}")]
     CheckVersion(#[from] registry::ModuleVersionError),
-    #[error("failed to create directory for downloading: {0}")]
-    CreateTempDir(io::Error),
+    #[error(transparent)]
+    WorkDir(#[from] WorkDirError),
     #[error("unable to check if module is enabled: {0}")]
     CheckEnabled(#[from] registry::IsModuleEnabledError),
     #[error(transparent)]
@@ -47,8 +48,8 @@ pub enum UninstallError {
     Disable(#[from] registry::DisableError),
     #[error("unable to remove installed module binary `{0}`: {1}")]
     RemoveBinary(String, #[source] registry::RemoveBinaryError),
-    #[error("unable to remove installed module manifest: {0}")]
-    RemoveManifest(#[from] registry::RemoveManifestError),
+    #[error("unable to remove installed module: {0}")]
+    RemoveModule(#[from] registry::RemoveModuleError),
 }
 
 mod common {
@@ -122,6 +123,11 @@ mod common {
 
     #[derive(Debug, Error)]
     pub enum PreinstallError {
+        #[error(transparent)]
+        InvalidModuleName(asimov_module::InvalidModuleName),
+        #[error("invalid name for a required module: {0}")]
+        InvalidDependencyName(asimov_module::InvalidModuleName),
+
         #[error("failed fetch release: {0}")]
         FetchRelease(FetchError),
 
@@ -155,11 +161,28 @@ mod common {
     }
 
     #[derive(Debug, Error)]
+    pub enum WorkDirError {
+        #[error("failed to create the module file tree: {0}")]
+        CreateFileTree(#[source] registry::CreateFileTreeError),
+        #[error("failed to create directory for installing: {0}")]
+        CreateDir(#[source] io::Error),
+    }
+
+    #[derive(Debug, Error)]
     pub enum FinishInstallError {
-        #[error("failed to install binary: {0}")]
-        AddBinary(#[from] registry::AddBinaryError),
-        #[error("failed to add manifest: {0}")]
-        AddManifest(#[from] registry::AddManifestError),
+        #[error("failed to create directory `{0}`: {1}")]
+        CreateDir(PathBuf, #[source] io::Error),
+        #[error("failed to write `{0}`: {1}")]
+        WriteFile(PathBuf, #[source] io::Error),
+        #[error("failed to move binary `{0}` into place: {1}")]
+        MoveBinary(String, #[source] io::Error),
+        #[cfg(unix)]
+        #[error("failed to set permissions: {0}")]
+        SetPermissions(#[source] io::Error),
+        #[error("failed to serialize module manifest: {0}")]
+        Serialize(#[source] serde_json::Error),
+        #[error("failed to install module: {0}")]
+        AddModule(#[from] registry::AddModuleError),
     }
 }
 pub use common::*;
