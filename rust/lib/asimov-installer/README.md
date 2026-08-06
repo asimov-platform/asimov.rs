@@ -1,7 +1,7 @@
 # ASIMOV.rs: Installer Implementation
 
 [![License](https://img.shields.io/badge/license-Public%20Domain-blue.svg)](https://unlicense.org)
-[![Compatibility](https://img.shields.io/badge/rust-1.93%2B-blue)](https://blog.rust-lang.org/2026/01/22/Rust-1.93.0/)
+[![Compatibility](https://img.shields.io/badge/rust-1.97%2B-blue)](https://blog.rust-lang.org/2026/07/09/Rust-1.97.0/)
 [![Package](https://img.shields.io/crates/v/asimov-installer)](https://crates.io/crates/asimov-installer)
 [![Documentation](https://img.shields.io/docsrs/asimov-installer?label=docs.rs)](https://docs.rs/asimov-installer)
 
@@ -34,7 +34,7 @@ for [trustworthy neurosymbolic machine intelligence].
 
 ## 🛠️ Prerequisites
 
-- [Rust](https://rust-lang.org) 1.93+ (2024 edition)
+- [Rust](https://rust-lang.org) 1.97+ (2024 edition)
 
 ## ⬇️ Installation
 

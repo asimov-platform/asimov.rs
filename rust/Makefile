@@ -1,27 +1,24 @@
-BINDGEN = bindgen
-BINDGENFLAGS = --use-core
 CARGO = cargo
+READMER = readmer
 
-SOURCES := $(wildcard lib/*/src/*.rs lib/*/src/*/*.rs lib/*/src/*/*/*.rs)
-VERSION := $(shell cat VERSION)
+all: README.md
 
-all: Cargo.toml $(SOURCES)
-	$(CARGO) build
+README.md: ../.config/readmer/rust/README.md.liquid
+	$(READMER) render $< > $@
 
-check: Cargo.toml $(SOURCES)
-	$(CARGO) test
+build: Cargo.toml
+	$(CARGO) build --release
+
+check: Cargo.toml
+	$(CARGO) test -- --nocapture
 
 clean: Cargo.toml
-	@rm -rf *~ target
+	rm -rf *~ target
 	$(CARGO) clean
 
-distclean: clean
+maintainer-clean: Cargo.toml
+	rm -f Cargo.lock
 
-mostlyclean: clean
-
-maintainer-clean: clean
-
-.PHONY: all check
-.PHONY: clean distclean mostlyclean maintainer-clean
+.PHONY: all check clean maintainer-clean
 .SECONDARY:
 .SUFFIXES:

@@ -46,7 +46,6 @@ tracing = ["dep:tracing", "dep:tracing-subscriber", "clientele?/tracing"]
 asimov-core.workspace = true
 asimov-module = { workspace = true, features = ["all"] }
 bon.workspace = true
-reqwest.workspace = true
 secrecy.workspace = true
 serde.workspace = true
 serde_json.workspace = true
