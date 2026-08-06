@@ -1,0 +1,44 @@
+# See: https://packaging.python.org/en/latest/tutorials/packaging-projects/
+# See: https://packaging.python.org/en/latest/guides/writing-pyproject-toml/
+
+[build-system]
+requires = ["uv_build>=0.10.8,<0.11.0"]
+build-backend = "uv_build"
+
+[project]
+name = "asimov.py"
+description = "ASIMOV Software Development Kit (SDK) for Python"
+readme = "README.md"
+authors = [{ name = "Arto Bendiken", email = "arto@asimov.systems" }]
+license = "Unlicense"
+license-files = ["UNLICENSE"]
+version = "25.3.0.dev0"
+
+requires-python = ">=3.14"
+dependencies = []
+
+keywords = []
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+    "License :: Public Domain",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Software Development :: Libraries",
+]
+
+[project.optional-dependencies]
+
+[project.urls]
+Homepage = "https://asimov.sh"
+Repository = "https://github.com/asimov-platform/asimov-sdk"
+Changelog = "https://github.com/asimov-platform/asimov-sdk/blob/master/CHANGES.md"
+Releases = "https://github.com/asimov-platform/asimov-sdk/releases"
+Issues = "https://github.com/asimov-platform/asimov-sdk/issues"
+Documentation = "https://github.com/asimov-platform/asimov-sdk/blob/master/python/README.md"
+
+[tool.uv.build-backend]
+module-name = "asimov"
