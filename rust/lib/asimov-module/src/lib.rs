@@ -44,7 +44,7 @@ pub fn init_tracing_subscriber(
         .try_init()
 }
 
-pub use asimov_core::ModuleName;
+pub use asimov_core::{InvalidModuleName, ModuleName};
 
 mod models;
 pub use models::*;
