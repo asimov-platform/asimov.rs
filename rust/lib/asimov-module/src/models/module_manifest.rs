@@ -442,6 +442,30 @@ pub struct ConfigurationVariable {
         serde(default, alias = "default", skip_serializing_if = "Option::is_none")
     )]
     pub default_value: Option<String>,
+
+    /// Whether the value is sensitive, such as a credential or an access token.
+    /// Tools must not display secret values unless explicitly asked to.
+    #[cfg_attr(
+        feature = "serde",
+        serde(default, skip_serializing_if = "core::ops::Not::not")
+    )]
+    pub secret: bool,
+
+    /// Whether the module operates without a value for this variable. Only
+    /// meaningful for variables that have no default value, which are otherwise
+    /// taken to be required; see [`ConfigurationVariable::is_required`].
+    #[cfg_attr(
+        feature = "serde",
+        serde(default, skip_serializing_if = "core::ops::Not::not")
+    )]
+    pub optional: bool,
+}
+
+impl ConfigurationVariable {
+    /// Whether a value must be configured for the module to operate.
+    pub fn is_required(&self) -> bool {
+        !self.optional && self.default_value.is_none()
+    }
 }
 
 #[cfg(feature = "serde")]
@@ -539,6 +563,12 @@ config:
       default_value: "foobar"
       environment: API_KEY
 
+    - name: token
+      secret: true
+
+    - name: nickname
+      optional: true
+
 "#;
 
         let dec: ModuleManifest = serde_yaml_ng::from_str(yaml).expect("deser should succeed");
@@ -598,15 +628,26 @@ config:
             "protocol",
         );
 
+        let variables = dec.config.expect("should have config").variables;
+
         assert_eq!(
-            dec.config.expect("should have config").variables.first(),
+            variables.first(),
             Some(&ConfigurationVariable {
                 name: "api_key".into(),
                 description: Some("api key to authorize requests".into()),
                 environment: Some("API_KEY".into()),
-                default_value: Some("foobar".into())
+                default_value: Some("foobar".into()),
+                secret: false,
+                optional: false,
             }),
         );
+        assert!(!variables[0].is_required());
+
+        assert!(variables[1].secret);
+        assert!(variables[1].is_required());
+
+        assert!(variables[2].optional);
+        assert!(!variables[2].is_required());
 
         let requires = dec.requires;
 
